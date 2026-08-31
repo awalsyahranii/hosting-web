@@ -44,15 +44,7 @@ const orders = [
   },
 ];
 
-const invoices = [
-  {
-    id: "#INV-20260817-001",
-    description: "Paket Bisnis Pro",
-    date: "17 Agustus 2026",
-    amount: "Rp 1.500.000",
-    status: "Lunas",
-  },
-];
+// Invoices state will be defined inside the component instead of globally
 
 const notifications = [
   {
@@ -85,6 +77,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [invoices, setInvoices] = useState<any[]>([]);
 
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -108,7 +101,9 @@ export default function DashboardPage() {
     }
 
     try {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      fetchInvoices();
     } catch {
       localStorage.removeItem("hostingwebid_user");
       localStorage.removeItem("hostingweb_auth");
@@ -118,9 +113,49 @@ export default function DashboardPage() {
 
       return;
     }
-
-    setLoading(false);
   }, []);
+
+  async function fetchInvoices() {
+    try {
+      const response = await fetch(
+        "http://localhost/hosting_webid/api/v1/invoice/index.php",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const result = await response.json();
+      if (response.ok && result.status === "success") {
+        setInvoices(result.data || []);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data invoice:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function rupiah(value: string | number) {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(Number(value));
+  }
+
+  function formatDate(dateStr: string) {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(date);
+    } catch {
+      return dateStr;
+    }
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -1180,56 +1215,53 @@ export default function DashboardPage() {
 
             </div>
 
-            {invoices.map((invoice) => (
-              <div
-                className="invoice-item"
-                key={invoice.id}
-              >
+            {invoices.length === 0 ? (
+              <p style={{ fontSize: "11px", color: "#888", padding: "10px 0" }}>Belum ada invoice baru.</p>
+            ) : (
+              invoices.slice(0, 5).map((invoice) => {
+                const isPaid = invoice.status.toLowerCase() === "paid" || invoice.status.toLowerCase() === "lunas";
+                return (
+                  <div
+                    className="invoice-item"
+                    key={invoice.id}
+                  >
+                    <div className="invoice-left">
+                      <div className="invoice-icon">
+                        ▤
+                      </div>
+                      <div>
+                        <strong>
+                          {invoice.invoice_number}
+                        </strong>
+                        <span>
+                          Registrasi Domain / Hosting
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="invoice-left">
+                    <div className="invoice-middle">
+                      <span>
+                        {formatDate(invoice.created_at)}
+                      </span>
+                      <strong>
+                        {rupiah(invoice.total)}
+                      </strong>
+                    </div>
 
-                  <div className="invoice-icon">
-                    ▤
+                    <div className="invoice-right">
+                      <span className={`invoice-status ${isPaid ? "paid" : "unpaid"}`} style={{ color: isPaid ? "#12a34a" : "#b45309" }}>
+                        {isPaid ? "✓ Lunas" : "• Belum Bayar"}
+                      </span>
+                      <Link href={`/dashboard/invoices?id=${invoice.id}`}>
+                        <button type="button">
+                          Lihat
+                        </button>
+                      </Link>
+                    </div>
                   </div>
-
-                  <div>
-                    <strong>
-                      {invoice.id}
-                    </strong>
-
-                    <span>
-                      {invoice.description}
-                    </span>
-                  </div>
-
-                </div>
-
-                <div className="invoice-middle">
-
-                  <span>
-                    {invoice.date}
-                  </span>
-
-                  <strong>
-                    {invoice.amount}
-                  </strong>
-
-                </div>
-
-                <div className="invoice-right">
-
-                  <span className="invoice-status">
-                    ✓ {invoice.status}
-                  </span>
-
-                  <button>
-                    Lihat
-                  </button>
-
-                </div>
-
-              </div>
-            ))}
+                );
+              })
+            )}
 
           </section>
 

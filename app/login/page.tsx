@@ -167,13 +167,13 @@ export default function LoginPage() {
 
             <div className="form-group">
               <label htmlFor="email">
-                Email
+                Email atau Username
               </label>
 
               <input
                 id="email"
-                type="email"
-                placeholder="nama@email.com"
+                type="text"
+                placeholder="Masukkan Email atau Username"
                 value={email}
                 onChange={(e) =>
                   setEmail(e.target.value)
