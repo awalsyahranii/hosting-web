@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type User = {
   name: string;
@@ -46,6 +47,7 @@ export default function CartPage() {
 
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // =========================
   // CHECKOUT
@@ -1282,6 +1284,7 @@ export default function CartPage() {
 
                 <button
                   className="cart-checkout-button"
+                  onClick={() => router.push("/checkout")}
                   disabled={
                     checkoutLoading ||
                     !checkout ||

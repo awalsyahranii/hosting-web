@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -48,7 +48,7 @@ type InvoiceListItem = {
   updated_at: string;
 };
 
-export default function InvoicesPage() {
+function InvoicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialInvoiceId = searchParams.get("id");
@@ -999,5 +999,25 @@ export default function InvoicesPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+export default function InvoicesPage() {
+  return (
+    <Suspense fallback={
+      <main className="dashboard-page" style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#fcfcfd" }}>
+        <div className="loading-state" style={{ textAlign: "center" }}>
+          <div className="spinner" style={{ width: "32px", height: "32px", border: "3px solid #f1f5f9", borderTopColor: "#f7931e", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginBottom: "12px" }} />
+          <p style={{ fontSize: "11px", color: "#666" }}>Memuat halaman invoice...</p>
+        </div>
+        <style>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </main>
+    }>
+      <InvoicesContent />
+    </Suspense>
   );
 }
