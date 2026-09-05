@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type User = {
-  name: string;
+  id?: number;
+  name?: string;
+  username?: string;
   email: string;
+  role: "user" | "admin";
 };
 
 type CheckoutItem = {
@@ -113,43 +116,85 @@ export default function CartPage() {
     useRef<HTMLDivElement>(null);
 
 
-  // =========================
-  // LOAD USER
-  // =========================
+  /* =======================================================
+   CEK AKSES HALAMAN CART
+   ADMIN TIDAK BOLEH MENGAKSES CART USER
+    ======================================================= */
 
-  useEffect(() => {
+    useEffect(() => {
 
-    const savedUser =
-      localStorage.getItem("hostingwebid_user");
+      const savedUser =
+        localStorage.getItem(
+          "hostingwebid_user"
+        );
 
-    if (savedUser) {
 
-      try {
+      // =====================================================
+      // TIDAK ADA SESSION
+      // =====================================================
 
-        setUser(JSON.parse(savedUser));
+      if (!savedUser) {
 
-      } catch {
+        router.replace("/login");
 
-        setUser({
-          name: "Demo User",
-          email: "demo@hostingweb.id",
-        });
+        return;
 
       }
 
-    } else {
 
-      // Frontend sementara
-      setUser({
-        name: "Demo User",
-        email: "demo@hostingweb.id",
-      });
+      try {
 
-    }
+        const parsedUser =
+          JSON.parse(savedUser);
 
-    setLoading(false);
 
-  }, []);
+        // ===================================================
+        // VALIDASI ROLE
+        // ===================================================
+
+        if (
+          parsedUser?.role !== "user"
+        ) {
+
+          // ADMIN TIDAK BOLEH MASUK CART
+
+          router.replace("/admin");
+
+          return;
+
+        }
+
+
+        // ===================================================
+        // USER VALID
+        // ===================================================
+
+        setUser(parsedUser);
+
+        setLoading(false);
+
+      } catch (error) {
+
+        console.error(
+          "Session user tidak valid:",
+          error
+        );
+
+
+        localStorage.removeItem(
+          "hostingwebid_user"
+        );
+
+        localStorage.removeItem(
+          "hostingweb_auth"
+        );
+
+
+        router.replace("/login");
+
+      }
+
+    }, [router]);
 
 
   // =========================
@@ -158,35 +203,94 @@ export default function CartPage() {
 
   useEffect(() => {
 
+    /*
+    * Jangan mengambil checkout sebelum
+    * user berhasil divalidasi.
+    */
+
+    if (
+      loading ||
+      !user ||
+      user.role !== "user"
+    ) {
+
+      return;
+
+    }
+
+
     async function fetchCheckout() {
 
       try {
 
         setCheckoutLoading(true);
+
         setCheckoutError("");
 
-        const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/checkout/index.php",
-          {
-            method: "GET",
-            credentials: "include",
-          }
-        );
 
-        const result =
-          await response.json();
+        const response =
+          await fetch(
+            "http://localhost/hosting_webid/api/v1/checkout/index.php",
+            {
+              method: "GET",
+
+              credentials: "include",
+
+              headers: {
+                Accept:
+                  "application/json",
+              },
+            }
+          );
+
+
+        let result: any;
+
+        try {
+
+          result =
+            await response.json();
+
+        } catch {
+
+          result = null;
+
+        }
+
+
+        /*
+        * Kalau session berubah menjadi admin
+        * atau API menolak akses.
+        */
+
+        if (
+          response.status === 401 ||
+          response.status === 403
+        ) {
+
+          router.replace("/admin");
+
+          return;
+
+        }
+
 
         if (!response.ok) {
 
           setCheckoutError(
-            result.message ||
-            "Gagal mengambil data checkout"
+            result?.message ||
+            "Gagal mengambil data checkout."
           );
 
           return;
+
         }
 
-        setCheckout(result.data);
+
+        setCheckout(
+          result?.data ?? null
+        );
+
 
       } catch (error) {
 
@@ -195,9 +299,11 @@ export default function CartPage() {
           error
         );
 
+
         setCheckoutError(
           "Tidak dapat terhubung ke server."
         );
+
 
       } finally {
 
@@ -207,9 +313,15 @@ export default function CartPage() {
 
     }
 
+
     fetchCheckout();
 
-  }, []);
+
+  }, [
+    loading,
+    user,
+    router
+  ]);
 
 
   // =========================
@@ -346,12 +458,14 @@ export default function CartPage() {
   // =========================
 
   const userName =
-    user?.name || "Demo User";
+    user?.name ||
+    user?.username ||
+    "User";
 
   const userEmail =
-    user?.email || "demo@hostingweb.id";
-
-
+    user?.email ||
+    "";
+    
   // =========================
   // FORMAT RUPIAH
   // =========================
@@ -1120,78 +1234,6 @@ export default function CartPage() {
                 </div>
 
               ))}
-
-              <div className="cart-bottom-line" />
-
-                <label className="coupon-checkbox">
-
-                  <input
-                    type="checkbox"
-                    checked={couponOpen}
-                    onChange={(e) => {
-                      setCouponOpen(e.target.checked);
-
-                      if (!e.target.checked) {
-                        setCouponCode("");
-                      }
-                    }}
-                  />
-
-                  <span>
-                    Saya punya kode kupon
-                  </span>
-
-                </label>
-
-                {couponOpen && (
-                  <div className="coupon-form">
-
-                    <label htmlFor="coupon">
-                      Kode Kupon
-                    </label>
-
-                    <div className="coupon-input-row">
-
-                      <input
-                        id="coupon"
-                        type="text"
-                        placeholder="Masukkan kode kupon"
-                        value={couponCode}
-                        onChange={(e) =>
-                          setCouponCode(e.target.value)
-                        }
-                      />
-
-                        <button
-                          type="button"
-                          className="coupon-button"
-                          disabled={
-                            !couponCode.trim() ||
-                            couponLoading ||
-                            !checkout
-                          }
-                          onClick={handleApplyCoupon}
-                        >
-                          {couponLoading
-                            ? "Memeriksa..."
-                            : "Gunakan"}
-                        </button>
-
-                    </div>
-                    {couponError && (
-                        <div className="coupon-error">
-                          {couponError}
-                        </div>
-                      )}
-
-                      {couponSuccess && (
-                        <div className="coupon-success">
-                          {couponSuccess}
-                        </div>
-                      )}
-
-                  </div>
-                )}
 
           </div>
 

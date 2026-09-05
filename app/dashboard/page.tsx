@@ -9,23 +9,25 @@ type User = {
   password?: string;
 };
 
-const hostingServices = [
-  {
-    domain: "bisniskamu.com",
-    package: "Paket Bisnis Pro",
-    storage: "10 GB",
-    status: "Aktif",
-    expiry: "17 Agustus 2027",
-  },
-];
+type UserService = {
+  id: number;
+  domain_name: string;
+  service_category: string;
+  billing_period: string;
+  service_status: string;
+  start_date: string | null;
+  expiry_date: string | null;
+  order_number: string;
+};
 
-const domains = [
-  {
-    domain: "bisniskamu.com",
-    status: "Aktif",
-    expiry: "17 Agustus 2027",
-  },
-];
+type InvoiceSummary = {
+  id: number;
+  invoice_number: string;
+  total: string | number;
+  status: string;
+  created_at: string;
+  due_date?: string;
+};
 
 const orders = [
   {
@@ -46,7 +48,17 @@ const orders = [
 
 // Invoices state will be defined inside the component instead of globally
 
-const notifications = [
+type DashboardNotification = {
+  id: number | string;
+  icon: string;
+  title: string;
+  description: string;
+  time: string;
+  unread: boolean;
+  href?: string;
+};
+
+const notifications: DashboardNotification[] = [
   {
     id: 1,
     icon: "🔔",
@@ -77,7 +89,9 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceSummary[]>([]);
+  const [userServices, setUserServices] = useState<UserService[]>([]);
+  const [currentTime] = useState(() => Date.now());
 
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -102,8 +116,7 @@ export default function DashboardPage() {
 
     try {
       const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
-      fetchInvoices();
+      setTimeout(() => setUser(parsedUser), 0);
     } catch {
       localStorage.removeItem("hostingwebid_user");
       localStorage.removeItem("hostingweb_auth");
@@ -126,7 +139,14 @@ export default function DashboardPage() {
       );
       const result = await response.json();
       if (response.ok && result.status === "success") {
-        setInvoices(result.data || []);
+        const loadedInvoices: InvoiceSummary[] = result.data || [];
+        setInvoices(loadedInvoices);
+        setNotificationCount(
+          notifications.filter((item) => item.unread).length +
+            loadedInvoices.filter(
+              (invoice) => invoice.status.toLowerCase() === "paid"
+            ).length
+        );
       }
     } catch (error) {
       console.error("Gagal mengambil data invoice:", error);
@@ -134,6 +154,30 @@ export default function DashboardPage() {
       setLoading(false);
     }
   }
+
+  async function fetchUserServices() {
+    try {
+      const response = await fetch(
+        "http://localhost/hosting_webid/api/v1/service/index.php",
+        { method: "GET", credentials: "include" }
+      );
+      const result = await response.json();
+      if (response.ok && result.status === "success") {
+        setUserServices(result.data || []);
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data service:", error);
+    }
+  }
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("hostingwebid_user");
+    if (!savedUser) return;
+    setTimeout(() => {
+      void fetchInvoices();
+      void fetchUserServices();
+    }, 0);
+  }, []);
 
   function rupiah(value: string | number) {
     return new Intl.NumberFormat("id-ID", {
@@ -244,6 +288,58 @@ export default function DashboardPage() {
 
   const userName = user?.name || "User";
   const userEmail = user?.email || "";
+
+  function remainingDays(expiryDate: string | null) {
+    if (!expiryDate) return null;
+    const expiry = new Date(expiryDate.replace(" ", "T")).getTime();
+    if (Number.isNaN(expiry)) return null;
+    return Math.ceil((expiry - currentTime) / 86400000);
+  }
+
+  function serviceStatus(status: string) {
+    if (status.toLowerCase() === "active") return "Aktif";
+    if (status.toLowerCase() === "expired") return "Expired";
+    return "Menunggu";
+  }
+
+  const hostingServices = userServices
+    .filter((service) => service.service_category === "website")
+    .map((service) => ({
+      id: service.id,
+      domain: service.domain_name,
+      package: "Layanan Website",
+      storage: service.billing_period,
+      status: serviceStatus(service.service_status),
+      expiry: service.expiry_date ? formatDate(service.expiry_date) : "Belum aktif",
+    }));
+
+  const domains = userServices.map((service) => ({
+    id: service.id,
+    domain: service.domain_name,
+    status: serviceStatus(service.service_status),
+    expiry: service.expiry_date ? formatDate(service.expiry_date) : "Belum aktif",
+  }));
+
+  const expiringServices = userServices.filter((service) => {
+    const days = remainingDays(service.expiry_date);
+    return service.service_status.toLowerCase() === "active" && days !== null && days <= 7;
+  });
+
+  const dashboardNotifications: DashboardNotification[] = [
+    ...notifications,
+    ...invoices
+      .filter((invoice) => invoice.status.toLowerCase() === "paid")
+      .slice(0, 5)
+      .map((invoice) => ({
+        id: `invoice-${invoice.id}`,
+        icon: "▤",
+        title: "Invoice pembayaran tersedia",
+        description: `${invoice.invoice_number} telah dibuat dan berstatus lunas.`,
+        time: formatDate(invoice.created_at),
+        unread: true,
+        href: `/dashboard/invoices?id=${invoice.id}`,
+      })),
+  ];
 
   return (
     <main className="dashboard-page">
@@ -486,15 +582,17 @@ export default function DashboardPage() {
 
                   <div className="notification-list">
 
-                    {notifications.map(
+                    {dashboardNotifications.map(
                       (notification) => (
-                        <div
+                        <Link
                           className={`notification-item ${
                             notification.unread
                               ? "unread"
                               : ""
                           }`}
                           key={notification.id}
+                          href={notification.href || "/dashboard"}
+                          onClick={closeAllDropdowns}
                         >
 
                           <div className="notification-icon">
@@ -519,7 +617,7 @@ export default function DashboardPage() {
 
                           </div>
 
-                        </div>
+                        </Link>
                       )
                     )}
 
@@ -739,6 +837,15 @@ export default function DashboardPage() {
         {/* CONTENT */}
 
         <div className="dashboard-content">
+
+          {expiringServices.length > 0 && (
+            <div className="service-expiry-warning">
+              <strong>Perhatian: layanan segera berakhir</strong>
+              <span>
+                {expiringServices.map((service) => `${service.domain_name} (${remainingDays(service.expiry_date)} hari)`).join(", ")}
+              </span>
+            </div>
+          )}
 
           {/* WELCOME */}
 
@@ -974,7 +1081,7 @@ export default function DashboardPage() {
                     (service) => (
                       <div
                         className="service-item"
-                        key={service.domain}
+                        key={service.id}
                       >
 
                         <div className="service-icon hosting-service">
@@ -1057,7 +1164,7 @@ export default function DashboardPage() {
                     (domain) => (
                       <div
                         className="service-item"
-                        key={domain.domain}
+                        key={domain.id}
                       >
 
                         <div className="service-icon domain-service">

@@ -115,13 +115,17 @@ export default function LoginPage() {
       );
 
       /*
-       * Session PHP tetap berada di cookie PHPSESSID.
+       * Redirect berdasarkan role user.
        *
-       * credentials: "include" di atas memastikan
-       * browser menerima/mengirim cookie tersebut.
+       * Admin → Dashboard Admin
+       * User  → Dashboard User
        */
+      if (backendUser.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
 
-      router.push("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
 
@@ -132,7 +136,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
-
   return (
     <main className="auth-page">
       <div className="auth-container">
