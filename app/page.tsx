@@ -194,22 +194,144 @@ const faqs = [
   },
 ];
 
+type DomainCheckResponse = {
+  status: string;
+  code: number;
+  available: boolean;
+  message: string;
+
+  data?: {
+    id?: number;
+    domain?: string;
+    extension?: string;
+    price?: string | number;
+  };
+};
+
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [domain, setDomain] = useState("");
+
+const [domainExtension, setDomainExtension] =
+  useState(".com");
+
+const [domainLoading, setDomainLoading] =
+  useState(false);
+
+const [domainResult, setDomainResult] = useState<{
+  id?: number;
+  domain: string;
+  extension?: string;
+  available: boolean;
+  price?: number;
+  message: string;
+} | null>(null);
+
+const [domainError, setDomainError] =
+  useState("");
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // STATE UNTUK MODAL FITUR
-  const [selectedFeature, setSelectedFeature] =
-    useState<(typeof features)[number] | null>(null);
+    // STATE UNTUK MODAL FITUR
+    const [selectedFeature, setSelectedFeature] =
+      useState<(typeof features)[number] | null>(null);
 
-  const searchDomain = () => {
-    if (!domain.trim()) {
-      alert("Silakan masukkan nama domain terlebih dahulu.");
+    const searchDomain = async () => {
+    const cleanDomain = domain
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .replace(/\s+/g, "");
+
+    if (!cleanDomain) {
+      setDomainError(
+        "Silakan masukkan nama domain terlebih dahulu."
+      );
+      setDomainResult(null);
       return;
     }
 
-    alert(`Mencari domain: ${domain}`);
+    const finalDomain =
+      `${cleanDomain}${domainExtension}`;
+
+    setDomainLoading(true);
+    setDomainError("");
+    setDomainResult(null);
+
+    try {
+      const response = await fetch(
+        "http://localhost/hosting_webid/api/v1/domain/check.php",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+
+          body: JSON.stringify({
+            domain: finalDomain,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (
+        !response.ok ||
+        result.status !== "success"
+      ) {
+        throw new Error(
+          result.message ||
+            "Gagal mengecek domain."
+        );
+      }
+
+      setDomainResult({
+        domain:
+          result.data?.domain ||
+          finalDomain,
+
+        extension:
+          result.data?.extension ||
+          domainExtension,
+
+        available:
+          result.available === true,
+
+        price:
+          result.data?.price
+            ? Number(result.data.price)
+            : undefined,
+
+        message:
+          result.message ||
+          (
+            result.available === true
+              ? "Domain tersedia."
+              : "Domain tidak tersedia."
+          ),
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Domain Check Error:",
+        error
+      );
+
+      setDomainError(
+        error instanceof Error
+          ? error.message
+          : "Tidak dapat terhubung ke server."
+      );
+
+    } finally {
+
+      setDomainLoading(false);
+
+    }
   };
 
   return (
@@ -711,70 +833,277 @@ export default function Home() {
       </section>
 
       {/* =====================================================
-          DOMAIN SEARCH
-      ===================================================== */}
-      <section className="domain-section" id="domain">
+              DOMAIN SEARCH
+          ===================================================== */}
 
-        <div className="container">
+          <section
+            className="domain-section"
+            id="domain"
+          >
+            <div className="container">
 
-          <div className="domain-wrapper">
+              <div className="domain-wrapper">
 
-            <div className="domain-text">
+                {/* =================================================
+                    DOMAIN TEXT
+                ================================================= */}
 
-              <span className="section-label">
-                CARI DOMAIN
-              </span>
+                <div className="domain-text">
 
-              <h2>
-                Temukan nama domain
-                <br />
-                <span>untuk brand kamu.</span>
-              </h2>
+                  <span className="section-label">
+                    CARI DOMAIN
+                  </span>
 
-              <p>
-                Pilih nama domain yang mudah diingat dan
-                buat bisnis kamu terlihat lebih profesional.
-              </p>
+                  <h2>
+                    Temukan nama domain
+                    <br />
+                    <span>
+                      untuk brand kamu.
+                    </span>
+                  </h2>
 
-            </div>
+                  <p>
+                    Pilih nama domain yang mudah diingat dan
+                    buat bisnis kamu terlihat lebih profesional.
+                  </p>
 
-            <div className="domain-search-box">
+                </div>
 
-              <div className="domain-input">
 
-                <span>www.</span>
+                {/* =================================================
+                    DOMAIN SEARCH BOX
+                ================================================= */}
 
-                <input
-                  type="text"
-                  placeholder="namabisnis"
-                  value={domain}
-                  onChange={(e) => setDomain(e.target.value)}
-                />
+                <div className="domain-search-box">
 
-                <select defaultValue=".com">
-                  <option value=".com">.com</option>
-                  <option value=".id">.id</option>
-                  <option value=".co.id">.co.id</option>
-                  <option value=".net">.net</option>
-                  <option value=".online">.online</option>
-                </select>
+                  <div className="domain-input">
+
+                    <span>
+                      www.
+                    </span>
+
+                    <input
+                      type="text"
+                      placeholder="namabisnis"
+                      value={domain}
+                      onChange={(e) => {
+                        setDomain(e.target.value);
+
+                        setDomainResult(null);
+                        setDomainError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          void searchDomain();
+                        }
+                      }}
+                      disabled={domainLoading}
+                      autoComplete="off"
+                    />
+
+
+                    <select
+                      value={domainExtension}
+                      onChange={(e) => {
+
+                        setDomainExtension(
+                          e.target.value
+                        );
+
+                        setDomainResult(null);
+                        setDomainError("");
+                      }}
+                      disabled={domainLoading}
+                    >
+
+                      <option value=".com">
+                        .com
+                      </option>
+
+                      <option value=".id">
+                        .id
+                      </option>
+
+                      <option value=".co.id">
+                        .co.id
+                      </option>
+
+                      <option value=".net">
+                        .net
+                      </option>
+
+                      <option value=".online">
+                        .online
+                      </option>
+
+                    </select>
+
+                  </div>
+
+
+                  {/* =================================================
+                      SEARCH BUTTON
+                  ================================================= */}
+
+                  <button
+                    type="button"
+                    className="domain-search-button"
+                    onClick={() => {
+                      void searchDomain();
+                    }}
+                    disabled={domainLoading}
+                  >
+
+                    {domainLoading
+                      ? "Mengecek..."
+                      : "Cari Domain"}
+
+                  </button>
+
+                </div>
+
+
+                {/* =================================================
+                    LOADING
+                ================================================= */}
+
+                {domainLoading && (
+
+                  <div className="domain-result domain-loading">
+
+                    <div className="domain-result-icon">
+                      ⏳
+                    </div>
+
+                    <div className="domain-result-content">
+
+                      <strong>
+                        Sedang mengecek domain...
+                      </strong>
+
+                      <span>
+                        Mohon tunggu sebentar.
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                )}
+
+
+                {/* =================================================
+                    ERROR
+                ================================================= */}
+
+                {domainError &&
+                  !domainLoading && (
+
+                    <div className="domain-result domain-error">
+
+                      <div className="domain-result-icon">
+                        !
+                      </div>
+
+                      <div className="domain-result-content">
+
+                        <strong>
+                          Gagal mengecek domain
+                        </strong>
+
+                        <span>
+                          {domainError}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+
+                {/* =================================================
+                    DOMAIN RESULT
+                ================================================= */}
+
+                {domainResult &&
+                  !domainLoading &&
+                  !domainError && (
+
+                    <div
+                      className={`domain-result ${
+                        domainResult.available
+                          ? "domain-available"
+                          : "domain-unavailable"
+                      }`}
+                    >
+
+                      <div className="domain-result-icon">
+
+                        {domainResult.available
+                          ? "✓"
+                          : "×"}
+
+                      </div>
+
+
+                      <div className="domain-result-content">
+
+                        <strong>
+
+                          {domainResult.available
+                            ? "Domain tersedia"
+                            : "Domain tidak tersedia"}
+
+                        </strong>
+
+
+                        <span>
+                          {domainResult.domain}
+                        </span>
+
+
+                        <small>
+                          {domainResult.message}
+                        </small>
+
+
+                        {/* =================================================
+                            PRICE
+                        ================================================= */}
+
+                        {domainResult.available &&
+                          domainResult.price !== null &&
+                          domainResult.price !== undefined && (
+
+                            <div className="domain-price">
+
+                              Rp{" "}
+
+                              {Number(
+                                domainResult.price
+                              ).toLocaleString(
+                                "id-ID"
+                              )}
+
+                              <span>
+                                / tahun
+                              </span>
+
+                            </div>
+
+                          )}
+
+                      </div>
+
+                    </div>
+
+                  )}
 
               </div>
 
-              <button
-                className="domain-search-button"
-                onClick={searchDomain}
-              >
-                Cari Domain
-              </button>
-
             </div>
-
-          </div>
-
-        </div>
-
-      </section>
+</section>
 
       {/* =====================================================
           HOSTING PLANS

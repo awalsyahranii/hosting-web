@@ -104,6 +104,14 @@ type PaymentResponse = {
   };
 };
 
+type SavedCheckoutPayment = {
+  paymentId: number;
+  paymentNumber: string;
+  orderId: number;
+  orderNumber: string;
+  amount: number;
+};
+
 
 /* =========================================================
    API
@@ -245,6 +253,9 @@ async function readApiResponse<T>(
 
   const [invoiceId, setInvoiceId] =
     useState<number | null>(null);
+
+  const [whatsappConfirmationSent, setWhatsappConfirmationSent] =
+    useState(false);
 
   const [copiedAccount, setCopiedAccount] =
   useState("");
@@ -569,8 +580,7 @@ async function readApiResponse<T>(
       }
 
 
-      const response =
-        await fetch(
+      const response = await fetch(
           COUPON_VALIDATE_API,
           {
             method: "POST",
@@ -766,6 +776,8 @@ async function handleCreateOrder() {
     );
 
     setInvoiceId(null);
+
+    setWhatsappConfirmationSent(false);
 
 
     /* =====================================================
@@ -1046,6 +1058,17 @@ async function handleCreateOrder() {
         : null
     );
 
+    localStorage.setItem(
+      "hostingweb_checkout_payment",
+      JSON.stringify({
+        paymentId: Number(paymentData?.payment_id),
+        paymentNumber: paymentData?.payment_number || "",
+        orderId: Number(paymentData?.order_id),
+        orderNumber: paymentData?.order_number || "",
+        amount,
+      } satisfies SavedCheckoutPayment)
+    );
+
 
     /* =====================================================
        CEK DATA PAYMENT
@@ -1097,6 +1120,38 @@ async function handleCreateOrder() {
 }
 
   useEffect(() => {
+    if (!checkout) return;
+
+    if (checkout.items.length > 0) {
+      localStorage.removeItem("hostingweb_checkout_payment");
+      return;
+    }
+
+    const savedPayment = localStorage.getItem(
+      "hostingweb_checkout_payment"
+    );
+
+    if (!savedPayment) return;
+
+    try {
+      const parsed = JSON.parse(savedPayment) as SavedCheckoutPayment;
+      if (!parsed.paymentId || !parsed.paymentNumber) return;
+
+      setTimeout(() => {
+        setPaymentId(parsed.paymentId);
+        setPaymentNumber(parsed.paymentNumber);
+        setCreatedOrderId(parsed.orderId);
+        setCreatedOrderNumber(parsed.orderNumber);
+        setPaymentAmount(parsed.amount);
+        setPaymentStatus("pending");
+        setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+      }, 0);
+    } catch {
+      localStorage.removeItem("hostingweb_checkout_payment");
+    }
+  }, [checkout]);
+
+  useEffect(() => {
     if (!paymentId || paymentStatus.toLowerCase() === "paid") {
       return;
     }
@@ -1131,7 +1186,7 @@ async function handleCreateOrder() {
     };
 
     void refreshPaymentStatus();
-    const interval = window.setInterval(refreshPaymentStatus, 10000);
+    const interval = window.setInterval(refreshPaymentStatus, 5000);
 
     return () => {
       active = false;
@@ -1334,7 +1389,7 @@ async function handleCopyAccount(
 
     if (paymentId) {
       try {
-        await fetch(
+        const response = await fetch(
           "http://localhost/hosting_webid/api/v1/payment/request-confirmation.php",
           {
             method: "POST",
@@ -1346,6 +1401,10 @@ async function handleCopyAccount(
             body: JSON.stringify({ payment_id: paymentId }),
           }
         );
+
+        if (response.ok) {
+          setWhatsappConfirmationSent(true);
+        }
       } catch (error) {
         console.error("Gagal mencatat konfirmasi WhatsApp:", error);
       }
@@ -2350,8 +2409,9 @@ async function handleCopyAccount(
                       </strong>
 
                       <p>
-                        Konfirmasi kepada admin dan lampirkan
-                        bukti transfer melalui WhatsApp.
+                        {whatsappConfirmationSent
+                          ? "Konfirmasi sudah dikirim. Tetap di halaman ini, status akan berubah otomatis setelah admin mengonfirmasi."
+                          : "Konfirmasi kepada admin dan lampirkan bukti transfer melalui WhatsApp."}
                       </p>
 
                     </div>
@@ -2362,7 +2422,9 @@ async function handleCopyAccount(
                       className="payment-whatsapp-button"
                       onClick={handleWhatsAppConfirmation}
                     >
-                      Konfirmasi via WhatsApp
+                      {whatsappConfirmationSent
+                        ? "Kirim Ulang via WhatsApp"
+                        : "Konfirmasi via WhatsApp"}
                     </button>
 
                   </div>

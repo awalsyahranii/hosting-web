@@ -11075,3 +11075,45 @@ html {
   }
 
 }
+.domain-result {
+  margin-top: 18px;
+  padding: 16px 18px;
+
+  border-radius: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.domain-result strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.domain-result span,
+.domain-result small {
+  font-size: 13px;
+}
+
+.domain-available {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.domain-unavailable {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.domain-error {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
