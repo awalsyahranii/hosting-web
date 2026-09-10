@@ -194,38 +194,28 @@ const faqs = [
   },
 ];
 
-type DomainCheckResponse = {
-  status: string;
-  code: number;
-  available: boolean;
-  message: string;
-
-  data?: {
-    id?: number;
-    domain?: string;
-    extension?: string;
-    price?: string | number;
-  };
+type DomainResultItem = {
+  domain: string;
+  extension: string;
+  available: boolean | null;
+  price: number;
+  promo_price: number | null;
+  domain_id: number;
 };
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [domain, setDomain] = useState("");
 
-const [domainExtension, setDomainExtension] =
-  useState(".com");
-
 const [domainLoading, setDomainLoading] =
   useState(false);
 
-const [domainResult, setDomainResult] = useState<{
-  id?: number;
-  domain: string;
-  extension?: string;
-  available: boolean;
-  price?: number;
-  message: string;
-} | null>(null);
+const [domainResults, setDomainResults] = useState<
+  DomainResultItem[]
+>([]);
+
+const [domainQuery, setDomainQuery] =
+  useState("");
 
 const [domainError, setDomainError] =
   useState("");
@@ -242,26 +232,25 @@ const [domainError, setDomainError] =
       .toLowerCase()
       .replace(/^https?:\/\//, "")
       .replace(/^www\./, "")
-      .replace(/\s+/g, "");
+      .replace(/\s+/g, "")
+      .replace(/\.(com|net|org|id|co\.id|xyz|info|online|cloud|site|store|tech|dev|io|biz|us|me|tv|cc|buzz|lol|mom|it\.com)$/i, "");
 
     if (!cleanDomain) {
       setDomainError(
         "Silakan masukkan nama domain terlebih dahulu."
       );
-      setDomainResult(null);
+      setDomainResults([]);
       return;
     }
 
-    const finalDomain =
-      `${cleanDomain}${domainExtension}`;
-
     setDomainLoading(true);
     setDomainError("");
-    setDomainResult(null);
+    setDomainResults([]);
+    setDomainQuery(cleanDomain);
 
     try {
       const response = await fetch(
-        "http://localhost/hosting_webid/api/v1/domain/check.php",
+        "http://localhost/hosting_webid/api/v1/domain/batch_check.php",
         {
           method: "POST",
 
@@ -271,56 +260,43 @@ const [domainError, setDomainError] =
           },
 
           body: JSON.stringify({
-            domain: finalDomain,
+            domain: cleanDomain,
           }),
         }
       );
 
-      const result = await response.json();
+      const result = await response.json().catch(() => null);
 
       if (
         !response.ok ||
-        result.status !== "success"
+        result?.status !== "success"
       ) {
-        throw new Error(
-          result.message ||
+        setDomainError(
+          result?.message ||
             "Gagal mengecek domain."
         );
+        return;
       }
 
-      setDomainResult({
-        domain:
-          result.data?.domain ||
-          finalDomain,
+      const results: DomainResultItem[] =
+        (result.data?.results || []).map(
+          (item: DomainResultItem) => ({
+            domain: item.domain,
+            extension: item.extension,
+            available: item.available,
+            price: Number(item.price) || 0,
+            promo_price:
+              item.promo_price !== null &&
+              item.promo_price !== undefined
+                ? Number(item.promo_price)
+                : null,
+            domain_id: item.domain_id || 0,
+          })
+        );
 
-        extension:
-          result.data?.extension ||
-          domainExtension,
-
-        available:
-          result.available === true,
-
-        price:
-          result.data?.price
-            ? Number(result.data.price)
-            : undefined,
-
-        message:
-          result.message ||
-          (
-            result.available === true
-              ? "Domain tersedia."
-              : "Domain tidak tersedia."
-          ),
-      });
+      setDomainResults(results);
 
     } catch (error) {
-
-      console.error(
-        "Domain Check Error:",
-        error
-      );
-
       setDomainError(
         error instanceof Error
           ? error.message
@@ -889,7 +865,7 @@ const [domainError, setDomainError] =
                       onChange={(e) => {
                         setDomain(e.target.value);
 
-                        setDomainResult(null);
+                        setDomainResults([]);
                         setDomainError("");
                       }}
                       onKeyDown={(e) => {
@@ -901,42 +877,9 @@ const [domainError, setDomainError] =
                       autoComplete="off"
                     />
 
-
-                    <select
-                      value={domainExtension}
-                      onChange={(e) => {
-
-                        setDomainExtension(
-                          e.target.value
-                        );
-
-                        setDomainResult(null);
-                        setDomainError("");
-                      }}
-                      disabled={domainLoading}
-                    >
-
-                      <option value=".com">
-                        .com
-                      </option>
-
-                      <option value=".id">
-                        .id
-                      </option>
-
-                      <option value=".co.id">
-                        .co.id
-                      </option>
-
-                      <option value=".net">
-                        .net
-                      </option>
-
-                      <option value=".online">
-                        .online
-                      </option>
-
-                    </select>
+                    <span className="domain-input-tld">
+                      .com
+                    </span>
 
                   </div>
 
@@ -963,147 +906,218 @@ const [domainError, setDomainError] =
                 </div>
 
 
-                {/* =================================================
-                    LOADING
-                ================================================= */}
-
-                {domainLoading && (
-
-                  <div className="domain-result domain-loading">
-
-                    <div className="domain-result-icon">
-                      ‚è≥
-                    </div>
-
-                    <div className="domain-result-content">
-
-                      <strong>
-                        Sedang mengecek domain...
-                      </strong>
-
-                      <span>
-                        Mohon tunggu sebentar.
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                )}
-
-
-                {/* =================================================
-                    ERROR
-                ================================================= */}
-
-                {domainError &&
-                  !domainLoading && (
-
-                    <div className="domain-result domain-error">
-
-                      <div className="domain-result-icon">
-                        !
-                      </div>
-
-                      <div className="domain-result-content">
-
-                        <strong>
-                          Gagal mengecek domain
-                        </strong>
-
-                        <span>
-                          {domainError}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  )}
-
-
-                {/* =================================================
-                    DOMAIN RESULT
-                ================================================= */}
-
-                {domainResult &&
-                  !domainLoading &&
-                  !domainError && (
-
-                    <div
-                      className={`domain-result ${
-                        domainResult.available
-                          ? "domain-available"
-                          : "domain-unavailable"
-                      }`}
-                    >
-
-                      <div className="domain-result-icon">
-
-                        {domainResult.available
-                          ? "‚úì"
-                          : "√ó"}
-
-                      </div>
-
-
-                      <div className="domain-result-content">
-
-                        <strong>
-
-                          {domainResult.available
-                            ? "Domain tersedia"
-                            : "Domain tidak tersedia"}
-
-                        </strong>
-
-
-                        <span>
-                          {domainResult.domain}
-                        </span>
-
-
-                        <small>
-                          {domainResult.message}
-                        </small>
-
-
-                        {/* =================================================
-                            PRICE
-                        ================================================= */}
-
-                        {domainResult.available &&
-                          domainResult.price !== null &&
-                          domainResult.price !== undefined && (
-
-                            <div className="domain-price">
-
-                              Rp{" "}
-
-                              {Number(
-                                domainResult.price
-                              ).toLocaleString(
-                                "id-ID"
-                              )}
-
-                              <span>
-                                / tahun
-                              </span>
-
-                            </div>
-
-                          )}
-
-                      </div>
-
-                    </div>
-
-                  )}
-
               </div>
 
             </div>
-</section>
+
+
+            {/* =================================================
+                LOADING
+            ================================================= */}
+
+            {domainLoading && (
+
+              <div className="domain-batch-loading">
+
+                <div className="domain-loading-spinner" />
+
+                <div>
+
+                  <strong>
+                    Sedang mengecek ketersediaan domain...
+                  </strong>
+
+                  <span>
+                    Mengecek semua ekstensi, mohon tunggu sebentar.
+                  </span>
+
+                </div>
+
+              </div>
+
+            )}
+
+
+            {/* =================================================
+                ERROR
+            ================================================= */}
+
+            {domainError &&
+              !domainLoading && (
+
+                <div className="domain-batch-error">
+
+                  <div className="domain-batch-error-icon">
+                    !
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      Gagal mengecek domain
+                    </strong>
+
+                    <span>
+                      {domainError}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              )}
+
+
+            {/* =================================================
+                DOMAIN RESULTS GRID
+            ================================================= */}
+
+            {domainResults.length > 0 &&
+              !domainLoading &&
+              !domainError && (
+
+                <div className="domain-results-section">
+
+                  <div className="domain-results-header">
+
+                    <h3>
+                      Hasil pencarian untuk{" "}
+                      <strong>
+                        &ldquo;{domainQuery}&rdquo;
+                      </strong>
+                    </h3>
+
+                    <span>
+                      {domainResults.filter(
+                        (r) => r.available === true
+                      ).length}{" "}
+                      domain tersedia dari{" "}
+                      {domainResults.length} ekstensi
+                    </span>
+
+                  </div>
+
+
+                  <div className="domain-results-grid">
+
+                    {domainResults.map((item, index) => (
+
+                      <div
+                        className={`domain-result-card ${
+                          item.available === true
+                            ? "domain-card-available"
+                            : item.available === false
+                            ? "domain-card-unavailable"
+                            : "domain-card-unknown"
+                        }`}
+                        key={item.domain}
+                        style={{
+                          animationDelay: `${index * 0.05}s`,
+                        }}
+                      >
+
+                        <div className="domain-card-top">
+
+                          <div className="domain-card-name">
+
+                            <span className="domain-card-base">
+                              {domainQuery}
+                            </span>
+
+                            <span className="domain-card-ext">
+                              {item.extension}
+                            </span>
+
+                          </div>
+
+                          <div
+                            className={`domain-card-badge ${
+                              item.available === true
+                                ? "badge-available"
+                                : item.available === false
+                                ? "badge-unavailable"
+                                : "badge-unknown"
+                            }`}
+                          >
+                            {item.available === true
+                              ? "Tersedia"
+                              : item.available === false
+                              ? "Tidak Tersedia"
+                              : "ó"}
+                          </div>
+
+                        </div>
+
+                        <div className="domain-card-bottom">
+
+                          <div className="domain-card-price">
+
+                            {item.promo_price !== null &&
+                            item.promo_price > 0 ? (
+                              <>
+                                <del>
+                                  Rp{" "}
+                                  {item.price.toLocaleString(
+                                    "id-ID"
+                                  )}
+                                </del>
+
+                                <strong>
+                                  Rp{" "}
+                                  {item.promo_price.toLocaleString(
+                                    "id-ID"
+                                  )}
+                                </strong>
+                              </>
+                            ) : (
+                              <strong>
+                                Rp{" "}
+                                {item.price.toLocaleString(
+                                  "id-ID"
+                                )}
+                              </strong>
+                            )}
+
+                            <span className="domain-card-period">
+                              /tahun
+                            </span>
+
+                          </div>
+
+                          {item.available === true ? (
+                            <Link
+                              href={`/checkout?domain=${encodeURIComponent(
+                                item.domain
+                              )}&domain_id=${item.domain_id}`}
+                              className="domain-card-buy"
+                            >
+                              Beli
+                            </Link>
+                          ) : item.available === false ? (
+                            <span className="domain-card-taken">
+                              Sudah diambil
+                            </span>
+                          ) : (
+                            <span className="domain-card-taken">
+                              ó
+                            </span>
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    ))}
+
+                  </div>
+
+                </div>
+
+              )}
+
+          </div>
+
+        </section>
 
       {/* =====================================================
           HOSTING PLANS
