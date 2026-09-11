@@ -201,24 +201,71 @@ type DomainResultItem = {
   price: number;
   promo_price: number | null;
   domain_id: number;
+  badge?: string;
+  isFirst?: boolean;
 };
+
+const initialDomainResults: DomainResultItem[] = [
+  {
+    domain: "nusantaraartha...",
+    extension: "",
+    available: true,
+    price: 209900,
+    promo_price: null,
+    domain_id: 1,
+    badge: "Tersedia",
+    isFirst: true,
+  },
+  {
+    domain: "nusantaraartha.org",
+    extension: ".org",
+    available: true,
+    price: 229900,
+    promo_price: 149900,
+    domain_id: 2,
+    badge: "Tersedia",
+  },
+  {
+    domain: "nusantaraartha.xyz",
+    extension: ".xyz",
+    available: true,
+    price: 189900,
+    promo_price: 29900,
+    domain_id: 3,
+    badge: "Tersedia",
+  },
+  {
+    domain: "nusantaraartha.id",
+    extension: ".id",
+    available: true,
+    price: 219900,
+    promo_price: 190000,
+    domain_id: 4,
+    badge: "Populer ID",
+  },
+  {
+    domain: "nusantaraartha.buzz",
+    extension: ".buzz",
+    available: true,
+    price: 650000,
+    promo_price: 49000,
+    domain_id: 5,
+    badge: "Tersedia",
+  },
+];
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [domain, setDomain] = useState("");
+  const [domain, setDomain] = useState("nusantaraart");
 
-const [domainLoading, setDomainLoading] =
-  useState(false);
+  const [domainLoading, setDomainLoading] = useState(false);
 
-const [domainResults, setDomainResults] = useState<
-  DomainResultItem[]
->([]);
+  const [domainResults, setDomainResults] =
+    useState<DomainResultItem[]>(initialDomainResults);
 
-const [domainQuery, setDomainQuery] =
-  useState("");
+  const [domainQuery, setDomainQuery] = useState("nusantaraart");
 
-const [domainError, setDomainError] =
-  useState("");
+  const [domainError, setDomainError] = useState("");
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
@@ -329,11 +376,11 @@ const [domainError, setDomainError] =
 
     {/* DESKTOP NAVIGATION */}
     <nav className="nav-menu">
-      <a href="/#hosting">Hosting</a>
-      <a href="/#domain">Domain</a>
-      <a href="/#features">Fitur</a>
-      <a href="/#pricing">Harga</a>
-      <a href="/#faq">FAQ</a>
+      <Link href="/#hosting">Hosting</Link>
+      <Link href="/#domain">Domain</Link>
+      <Link href="/#features">Fitur</Link>
+      <Link href="/#pricing">Harga</Link>
+      <Link href="/#faq">FAQ</Link>
     </nav>
 
     {/* DESKTOP ACTIONS */}
@@ -386,40 +433,40 @@ const [domainError, setDomainError] =
   {mobileMenuOpen && (
     <div className="mobile-menu">
 
-      <a
+      <Link
         href="/#hosting"
         onClick={() => setMobileMenuOpen(false)}
       >
         Hosting
-      </a>
+      </Link>
 
-      <a
+      <Link
         href="/#domain"
         onClick={() => setMobileMenuOpen(false)}
       >
         Domain
-      </a>
+      </Link>
 
-      <a
+      <Link
         href="/#features"
         onClick={() => setMobileMenuOpen(false)}
       >
         Fitur
-      </a>
+      </Link>
 
-      <a
+      <Link
         href="/#pricing"
         onClick={() => setMobileMenuOpen(false)}
       >
         Harga
-      </a>
+      </Link>
 
-      <a
+      <Link
         href="/#faq"
         onClick={() => setMobileMenuOpen(false)}
       >
         FAQ
-      </a>
+      </Link>
 
       <div className="mobile-menu-divider" />
 
@@ -813,311 +860,718 @@ const [domainError, setDomainError] =
           ===================================================== */}
 
           <section
-            className="domain-section"
-            id="domain"
-          >
-            <div className="container">
+              className="domain-section"
+              id="domain"
+            >
+              <div className="container">
 
-              <div className="domain-wrapper">
+                <div className="domain-wrapper">
 
-                {/* =================================================
-                    DOMAIN TEXT
-                ================================================= */}
+                  {/* =================================================
+                      LEFT -                    <div className="domain-section-label">
+                      <span className="domain-label-dot"></span>
+                      <span>CARI DOMAIN</span>
+                    </div>
 
-                <div className="domain-text">
+                    <h2>
+                      Temukan nama
+                      <br />
+                      domain
+                      <br />
+                      <span>
+                        untuk brand
+                        <br />
+                        kamu.
+                      </span>
+                    </h2>
 
-                  <span className="section-label">
-                    CARI DOMAIN
-                  </span>
+                    <p>
+                      Pilih nama domain yang mudah diingat dan buat
+                      bisnis kamu terlihat lebih profesional dengan
+                      jaringan Tier-4 berlatensi ultra-rendah.
+                    </p>
 
-                  <h2>
-                    Temukan nama domain
-                    <br />
-                    <span>
-                      untuk brand kamu.
-                    </span>
-                  </h2>
+                    {/* TRUST BADGES */}
 
-                  <p>
-                    Pilih nama domain yang mudah diingat dan
-                    buat bisnis kamu terlihat lebih profesional.
-                  </p>
+                    <div className="domain-trust-list">
 
-                </div>
+                      <div className="domain-trust-item">
+                        <span className="material-symbols-outlined trust-icon-orange">
+                          check_circle
+                        </span>
 
+                        <span>
+                          Aktivasi Instan &lt; 1 Menit
+                        </span>
+                      </div>
 
-                {/* =================================================
-                    DOMAIN SEARCH BOX
-                ================================================= */}
+                      <div className="domain-trust-item">
+                        <span className="material-symbols-outlined trust-icon-blue">
+                          bolt
+                        </span>
 
-                <div className="domain-search-box">
+                        <span>
+                          Anycast DNS Global
+                        </span>
+                      </div>
 
-                  <div className="domain-input">
+                      <div className="domain-trust-item">
+                        <span className="material-symbols-outlined trust-icon-purple">
+                          lock
+                        </span>
 
-                    <span>
-                      www.
-                    </span>
+                        <span>
+                          Gratis WHOIS Privacy
+                        </span>
+                      </div>
 
-                    <input
-                      type="text"
-                      placeholder="namabisnis"
-                      value={domain}
-                      onChange={(e) => {
-                        setDomain(e.target.value);
+                    </div>
 
-                        setDomainResults([]);
-                        setDomainError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          void searchDomain();
-                        }
-                      }}
-                      disabled={domainLoading}
-                      autoComplete="off"
-                    />
+                    {/* LATENCY */}
 
-                    <span className="domain-input-tld">
-                      .com
-                    </span>
+                    <div className="domain-latency">
+
+                      <div className="domain-latency-left">
+
+                        <span className="domain-status-dot"></span>
+
+                        <span>
+                          JKT-IX Point of Presence:
+                          <strong>
+                            &lt; 3.2 ms
+                          </strong>
+                        </span>
+
+                      </div>
+
+                      <strong className="domain-uptime">
+                        100% Uptime SLA
+                      </strong>
+
+                    </div>
 
                   </div>
 
 
                   {/* =================================================
-                      SEARCH BUTTON
+                      RIGHT - DOMAIN SEARCH
                   ================================================= */}
 
-                  <button
-                    type="button"
-                    className="domain-search-button"
-                    onClick={() => {
-                      void searchDomain();
-                    }}
-                    disabled={domainLoading}
-                  >
+                  <div className="domain-search-box">
 
-                    {domainLoading
-                      ? "Mengecek..."
-                      : "Cari Domain"}
+                    {/* SEARCH HEADER */}
 
-                  </button>
+                    <div className="domain-search-header">
 
-                </div>
+                      <div className="domain-search-title">
 
+                        <span className="material-symbols-outlined">
+                          travel_explore
+                        </span>
 
-              </div>
+                        <strong>
+                          Cek Ketersediaan Domain
+                        </strong>
 
-            </div>
+                      </div>
 
+                      <span className="domain-registrar">
+                        Registrar Resmi ID &amp; Global
+                      </span>
 
-            {/* =================================================
-                LOADING
-            ================================================= */}
-
-            {domainLoading && (
-
-              <div className="domain-batch-loading">
-
-                <div className="domain-loading-spinner" />
-
-                <div>
-
-                  <strong>
-                    Sedang mengecek ketersediaan domain...
-                  </strong>
-
-                  <span>
-                    Mengecek semua ekstensi, mohon tunggu sebentar.
-                  </span>
-
-                </div>
-
-              </div>
-
-            )}
+                    </div>
 
 
-            {/* =================================================
-                ERROR
-            ================================================= */}
+                    {/* =================================================
+                        SEARCH FORM
+                    ================================================= */}
 
-            {domainError &&
-              !domainLoading && (
+                    <form
+                      className="domain-search-form"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        void searchDomain();
+                      }}
+                    >
 
-                <div className="domain-batch-error">
+                      <div className="domain-search-input-wrapper">
 
-                  <div className="domain-batch-error-icon">
-                    !
-                  </div>
+                        {/* INPUT */}
 
-                  <div>
+                        <div className="domain-input">
 
-                    <strong>
-                      Gagal mengecek domain
-                    </strong>
+                          <span className="domain-search-icon material-symbols-outlined">
+                            search
+                          </span>
 
-                    <span>
-                      {domainError}
-                    </span>
+                          <div className="domain-input-content">
 
-                  </div>
-
-                </div>
-
-              )}
-
-
-            {/* =================================================
-                DOMAIN RESULTS GRID
-            ================================================= */}
-
-            {domainResults.length > 0 &&
-              !domainLoading &&
-              !domainError && (
-
-                <div className="domain-results-section">
-
-                  <div className="domain-results-header">
-
-                    <h3>
-                      Hasil pencarian untuk{" "}
-                      <strong>
-                        &ldquo;{domainQuery}&rdquo;
-                      </strong>
-                    </h3>
-
-                    <span>
-                      {domainResults.filter(
-                        (r) => r.available === true
-                      ).length}{" "}
-                      domain tersedia dari{" "}
-                      {domainResults.length} ekstensi
-                    </span>
-
-                  </div>
-
-
-                  <div className="domain-results-grid">
-
-                    {domainResults.map((item, index) => (
-
-                      <div
-                        className={`domain-result-card ${
-                          item.available === true
-                            ? "domain-card-available"
-                            : item.available === false
-                            ? "domain-card-unavailable"
-                            : "domain-card-unknown"
-                        }`}
-                        key={item.domain}
-                        style={{
-                          animationDelay: `${index * 0.05}s`,
-                        }}
-                      >
-
-                        <div className="domain-card-top">
-
-                          <div className="domain-card-name">
-
-                            <span className="domain-card-base">
-                              {domainQuery}
+                            <span className="domain-prefix">
+                              https://
                             </span>
 
-                            <span className="domain-card-ext">
-                              {item.extension}
-                            </span>
+                            <input
+                              type="text"
+                              id="domainQuery"
+                              placeholder="nusantaraart"
+                              value={domain}
+                              onChange={(e) => {
+                                setDomain(e.target.value);
 
-                          </div>
+                                setDomainResults([]);
+                                setDomainError("");
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  void searchDomain();
+                                }
+                              }}
+                              disabled={domainLoading}
+                              autoComplete="off"
+                            />
 
-                          <div
-                            className={`domain-card-badge ${
-                              item.available === true
-                                ? "badge-available"
-                                : item.available === false
-                                ? "badge-unavailable"
-                                : "badge-unknown"
-                            }`}
-                          >
-                            {item.available === true
-                              ? "Tersedia"
-                              : item.available === false
-                              ? "Tidak Tersedia"
-                              : "—"}
                           </div>
 
                         </div>
 
-                        <div className="domain-card-bottom">
 
-                          <div className="domain-card-price">
+                        {/* TLD */}
 
-                            {item.promo_price !== null &&
-                            item.promo_price > 0 ? (
-                              <>
-                                <del>
-                                  Rp{" "}
-                                  {item.price.toLocaleString(
-                                    "id-ID"
-                                  )}
-                                </del>
+                        <div className="domain-tld-wrapper">
 
-                                <strong>
-                                  Rp{" "}
-                                  {item.promo_price.toLocaleString(
-                                    "id-ID"
-                                  )}
-                                </strong>
-                              </>
-                            ) : (
-                              <strong>
-                                Rp{" "}
-                                {item.price.toLocaleString(
-                                  "id-ID"
-                                )}
-                              </strong>
-                            )}
+                          <select
+                            id="tldSelector"
+                            defaultValue=".com"
+                            className="domain-tld-select"
+                          >
+                            <option value=".id">
+                              .id
+                            </option>
 
-                            <span className="domain-card-period">
-                              /tahun
+                            <option value=".com">
+                              .com
+                            </option>
+
+                            <option value=".co.id">
+                              .co.id
+                            </option>
+
+                            <option value=".my.id">
+                              .my.id
+                            </option>
+
+                            <option value=".net">
+                              .net
+                            </option>
+
+                            <option value=".org">
+                              .org
+                            </option>
+                          </select>
+
+                          <span className="material-symbols-outlined">
+                            keyboard_arrow_down
+                          </span>
+
+                        </div>
+
+
+                        {/* SEARCH BUTTON */}
+
+                        <div className="domain-search-action">
+
+                          <button
+                            type="submit"
+                            className="domain-search-button"
+                            disabled={domainLoading}
+                          >
+
+                            <span className="material-symbols-outlined">
+                              search
                             </span>
 
-                          </div>
+                            <span>
+                              {domainLoading
+                                ? "Mengecek..."
+                                : "Cari Domain"}
+                            </span>
 
-                          {item.available === true ? (
-                            <Link
-                              href={`/checkout?domain=${encodeURIComponent(
-                                item.domain
-                              )}&domain_id=${item.domain_id}`}
-                              className="domain-card-buy"
-                            >
-                              Beli
-                            </Link>
-                          ) : item.available === false ? (
-                            <span className="domain-card-taken">
-                              Sudah diambil
-                            </span>
-                          ) : (
-                            <span className="domain-card-taken">
-                              —
-                            </span>
-                          )}
+                          </button>
 
                         </div>
 
                       </div>
 
-                    ))}
+
+                      {/* =================================================
+                          POPULAR EXTENSIONS
+                      ================================================= */}
+
+                      <div className="domain-popular">
+
+                        <div className="domain-popular-heading">
+
+                          <span>
+                            Ekstensi Paling Populer Hari Ini:
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const selector =
+                                document.getElementById(
+                                  "tldSelector"
+                                ) as HTMLSelectElement | null;
+
+                              selector?.focus();
+                            }}
+                          >
+                            Lihat Semua 300+ TLD
+                          </button>
+
+                        </div>
+
+
+                        <div className="domain-popular-list">
+
+                          <button
+                            type="button"
+                            className="domain-pop-card"
+                            onClick={() => {
+                              const selector =
+                                document.getElementById(
+                                  "tldSelector"
+                                ) as HTMLSelectElement | null;
+
+                              if (selector) {
+                                selector.value = ".id";
+                              }
+                            }}
+                          >
+                            <div className="domain-pop-header">
+                              <b>.id</b>
+                              <span className="domain-pill-orange">PILIHAN UTAMA</span>
+                            </div>
+
+                            <div className="domain-pop-price">
+                              <strong>
+                                Rp 199.000
+                              </strong>
+
+                              <small>
+                                250k
+                              </small>
+                            </div>
+                          </button>
+
+
+                          <button
+                            type="button"
+                            className="domain-pop-card domain-pop-active"
+                            onClick={() => {
+                              const selector =
+                                document.getElementById(
+                                  "tldSelector"
+                                ) as HTMLSelectElement | null;
+
+                              if (selector) {
+                                selector.value = ".com";
+                              }
+                            }}
+                          >
+                            <div className="domain-pop-header">
+                              <b>.com</b>
+                              <span className="domain-active-dot"></span>
+                            </div>
+
+                            <div className="domain-pop-price">
+                              <strong>
+                                Rp 125.000
+                              </strong>
+
+                              <small>
+                                180k
+                              </small>
+                            </div>
+                          </button>
+
+
+                          <button
+                            type="button"
+                            className="domain-pop-card"
+                            onClick={() => {
+                              const selector =
+                                document.getElementById(
+                                  "tldSelector"
+                                ) as HTMLSelectElement | null;
+
+                              if (selector) {
+                                selector.value = ".co.id";
+                              }
+                            }}
+                          >
+                            <div className="domain-pop-header">
+                              <b>.co.id</b>
+                              <span className="domain-business-badge">
+                                Bisnis ID
+                              </span>
+                            </div>
+
+                            <div className="domain-pop-price">
+                              <strong>
+                                Rp 275.000
+                              </strong>
+
+                              <small className="domain-pop-period">
+                                /tahun
+                              </small>
+                            </div>
+                          </button>
+
+
+                          <button
+                            type="button"
+                            className="domain-pop-card"
+                            onClick={() => {
+                              const selector =
+                                document.getElementById(
+                                  "tldSelector"
+                                ) as HTMLSelectElement | null;
+
+                              if (selector) {
+                                selector.value = ".my.id";
+                              }
+                            }}
+                          >
+                            <div className="domain-pop-header">
+                              <b>.my.id</b>
+
+                              <span className="domain-save-badge">
+                                HEMAT 85%
+                              </span>
+                            </div>
+
+                            <div className="domain-pop-price">
+                              <strong className="text-orange">
+                                Rp 12.000
+                              </strong>
+
+                              <small>
+                                80k
+                              </small>
+                            </div>
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </form>
+
+
+                    {/* =================================================
+                        LOADING
+                    ================================================= */}
+
+                    {domainLoading && (
+
+                      <div className="domain-batch-loading">
+
+                        <div className="domain-loading-spinner"></div>
+
+                        <div>
+
+                          <strong>
+                            Sedang mengecek ketersediaan domain...
+                          </strong>
+
+                          <span>
+                            Mengecek semua ekstensi,
+                            mohon tunggu sebentar.
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+
+                    {/* =================================================
+                        ERROR
+                    ================================================= */}
+
+                    {domainError && !domainLoading && (
+
+                      <div className="domain-batch-error">
+
+                        <div className="domain-batch-error-icon">
+                          !
+                        </div>
+
+                        <div>
+
+                          <strong>
+                            Gagal mengecek domain
+                          </strong>
+
+                          <span>
+                            {domainError}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+
+                    {/* =================================================
+                        RESULTS
+                    ================================================= */}
+
+                    {domainResults.length > 0 &&
+                      !domainLoading &&
+                      !domainError && (
+
+                        <div className="domain-results-section">
+
+                          <div className="domain-results-header">
+
+                            <div className="domain-results-title-group">
+
+                              <h3>
+                                Hasil Pencarian Domain
+                              </h3>
+
+                              <span className="domain-results-badge">
+                                {domainResults.length} Ekstensi Ditemukan
+                              </span>
+
+                            </div>
+
+                            <span className="domain-tax-note">
+                              Termasuk PPN &amp; DNS
+                            </span>
+
+                          </div>
+
+
+                          <div className="domain-results-grid">
+
+                            {domainResults.map((item, index) => (
+
+                              <div
+                                className={`domain-result-card ${
+                                  item.available === true
+                                    ? "domain-card-available"
+                                    : item.available === false
+                                    ? "domain-card-unavailable"
+                                    : "domain-card-unknown"
+                                }`}
+                                key={item.domain + index}
+                                style={{
+                                  animationDelay:
+                                    `${index * 0.05}s`,
+                                }}
+                              >
+
+                                {/* CARD TOP */}
+
+                                <div className="domain-card-top">
+
+                                  <span className="domain-card-status-dot"></span>
+
+                                  <div className="domain-card-name">
+
+                                    <span className="domain-card-base">
+                                      {item.domain.endsWith("...")
+                                        ? item.domain
+                                        : item.domain.includes(".")
+                                        ? item.domain.split(".")[0]
+                                        : domainQuery}
+                                    </span>
+
+                                    {!item.domain.endsWith("...") && (
+                                      <span className="domain-card-ext">
+                                        {item.extension || (item.domain.includes(".") ? "." + item.domain.split(".").slice(1).join(".") : "")}
+                                      </span>
+                                    )}
+
+                                  </div>
+
+
+                                  <div
+                                    className={`domain-card-badge ${
+                                      item.badge === "Populer ID"
+                                        ? "badge-populer"
+                                        : item.available === true
+                                        ? "badge-available"
+                                        : item.available === false
+                                        ? "badge-unavailable"
+                                        : "badge-unknown"
+                                    }`}
+                                  >
+
+                                    {item.badge ||
+                                      (item.available === true
+                                        ? "Tersedia"
+                                        : item.available === false
+                                        ? "Tidak Tersedia"
+                                        : "Tidak diketahui")}
+
+                                  </div>
+
+                                </div>
+
+
+                                {/* CARD BOTTOM */}
+
+                                <div className="domain-card-bottom">
+
+                                  <div className="domain-card-price">
+
+                                    {item.promo_price !== null &&
+                                    item.promo_price > 0 ? (
+
+                                      <div className="domain-card-price-stack">
+                                        <del>
+                                          Rp{" "}
+                                          {item.price.toLocaleString(
+                                            "id-ID"
+                                          )}
+                                        </del>
+
+                                        <strong className="domain-price-promo">
+                                          Rp{" "}
+                                          {item.promo_price.toLocaleString(
+                                            "id-ID"
+                                          )}
+                                        </strong>
+                                      </div>
+
+                                    ) : (
+
+                                      <div className="domain-card-price-single">
+                                        <strong>
+                                          Rp{" "}
+                                          {item.price.toLocaleString(
+                                            "id-ID"
+                                          )}
+                                        </strong>
+
+                                        <span className="domain-card-period">
+                                          /tahun
+                                        </span>
+                                      </div>
+
+                                    )}
+
+                                  </div>
+
+
+                                  {/* BUY BUTTON */}
+
+                                  {item.isFirst ? (
+
+                                    <div className="domain-card-btn-group">
+                                      <Link
+                                        href={`/checkout?domain=${encodeURIComponent(
+                                          item.domain
+                                        )}&type=hosting`}
+                                        className="domain-card-btn-hosting"
+                                      >
+                                        Beli Hosting
+                                      </Link>
+
+                                      <Link
+                                        href={`/checkout?domain=${encodeURIComponent(
+                                          item.domain
+                                        )}&domain_id=${item.domain_id}`}
+                                        className="domain-card-buy"
+                                      >
+                                        Transfer
+                                      </Link>
+                                    </div>
+
+                                  ) : item.available === true ? (
+
+                                    <Link
+                                      href={`/checkout?domain=${encodeURIComponent(
+                                        item.domain
+                                      )}&domain_id=${item.domain_id}`}
+                                      className="domain-card-buy"
+                                    >
+                                      Beli
+                                    </Link>
+
+                                  ) : item.available === false ? (
+
+                                    <span className="domain-card-taken">
+                                      Sudah diambil
+                                    </span>
+
+                                  ) : (
+
+                                    <span className="domain-card-taken">
+                                      Tidak diketahui
+                                    </span>
+
+                                  )}
+
+                                </div>
+
+                              </div>
+
+                            ))}
+
+                          </div>
+
+                        </div>
+
+                      )}
+
+
+                    {/* =================================================
+                        GUARANTEE
+                    ================================================= */}
+
+                    <div className="domain-guarantee">
+
+                      <span className="guarantee-check">
+                        <span className="material-symbols-outlined">
+                          check
+                        </span>
+
+                        Bebas Biaya Tersembunyi
+                      </span>
+
+                      <i>â€¢</i>
+
+                      <span className="guarantee-dns">
+                        <span className="material-symbols-outlined">
+                          dns
+                        </span>
+
+                        Termasuk DNS Management &amp; Free SSL
+                      </span>
+
+                      <i>â€¢</i>
+
+                      <span className="guarantee-support">
+                        <span className="material-symbols-outlined">
+                          support_agent
+                        </span>
+
+                        Dukungan Teknis 24/7
+                      </span>
 
                   </div>
 
                 </div>
-
-              )}
-
-          </div>
-
-        </section>
+              </div>
+            </section>
 
       {/* =====================================================
           HOSTING PLANS
