@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getWhatsAppUrl, SITE_CONFIG } from "../lib/siteConfig";
 
 /* =========================================================
    TYPE DEFINITIONS
@@ -137,6 +138,60 @@ const HOSTING_PACKAGES: Record<
   },
 };
 
+const GOOGLE_ADS_PACKAGES: Record<
+  string,
+  {
+    name: string;
+    badge: string;
+    specs: string;
+    price: number;
+    duration: string;
+  }
+> = {
+  "pemula-14": {
+    name: "Paket Pemula 14 Hari Google Ads",
+    badge: "Google Search Ads 14 Hari",
+    specs: "Masa Aktif 14 Hari • Dana Harian Rp 50.000 • Riset Kata Kunci • Garansi Halaman 1 Google",
+    price: 700000,
+    duration: "14 Hari",
+  },
+  "pemula-20": {
+    name: "Paket Pemula 20 Hari Google Ads",
+    badge: "Google Search Ads 20 Hari",
+    specs: "Masa Aktif 20 Hari • Dana Harian Rp 50.000 • Optimasi Negatif Keyword • Garansi Halaman 1 Google",
+    price: 1000000,
+    duration: "20 Hari",
+  },
+  "pemula-30": {
+    name: "Paket Pemula 30 Hari Google Ads",
+    badge: "Google Search Ads 30 Hari",
+    specs: "Masa Aktif 30 Hari • Dana Harian Rp 50.000 • Call Extension & Setup Komplit • Garansi Halaman 1 Google",
+    price: 1500000,
+    duration: "30 Hari",
+  },
+  "bisnis-10": {
+    name: "Paket Bisnis 10 Hari Google Ads",
+    badge: "Google Search Ads Bisnis 10 Hari",
+    specs: "Masa Aktif 10 Hari • Dana Harian Rp 100.000 • Conversion Tracking • Garansi Halaman 1 Google",
+    price: 1000000,
+    duration: "10 Hari",
+  },
+  "bisnis-15": {
+    name: "Paket Bisnis 15 Hari Google Ads",
+    badge: "Google Search Ads Bisnis 15 Hari",
+    specs: "Masa Aktif 15 Hari • Dana Harian Rp 100.000 • Copywriting A/B Testing • Garansi Halaman 1 Google",
+    price: 1500000,
+    duration: "15 Hari",
+  },
+  "bisnis-30": {
+    name: "Paket Bisnis 30 Hari Google Ads",
+    badge: "Google Search Ads Bisnis 30 Hari",
+    specs: "Masa Aktif 30 Hari • Dana Harian Rp 100.000 • Analytics & Full Conversion • Garansi Halaman 1 Google",
+    price: 3000000,
+    duration: "30 Hari",
+  },
+};
+
 const BANK_ACCOUNTS = [
   {
     name: "BCA",
@@ -228,6 +283,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
 
   const paketParam = searchParams.get("paket") || "";
+  const adsParam = searchParams.get("ads") || "";
   const cycleParam = searchParams.get("cycle") || "yearly";
   const domainParam = searchParams.get("domain") || "";
   const priceParam = searchParams.get("price") || "";
@@ -312,7 +368,60 @@ function CheckoutContent() {
           return;
         }
 
-        // 1. Hosting package direct order from URL
+        // 1. Google Ads package direct order from URL
+        if (adsParam && GOOGLE_ADS_PACKAGES[adsParam]) {
+          const adPkg = GOOGLE_ADS_PACKAGES[adsParam];
+          const basePrice = adPkg.price;
+          const ppnVal = Math.round(basePrice * 0.11);
+          const totalVal = basePrice + ppnVal;
+
+          setCheckout({
+            items: [
+              {
+                cart_id: 3001,
+                domain_id: 0,
+                domain_name: adPkg.name,
+                extension: `${adPkg.badge} • ${adPkg.specs}`,
+                price: basePrice,
+              },
+            ],
+            subtotal: String(basePrice),
+            ppn: String(ppnVal),
+            total: String(totalVal),
+          });
+
+          // Auto-generate order
+          try {
+            const createRes = await fetch(ORDER_CREATE_API, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                package_name: adPkg.name,
+                domain_name: domainParam || "Google Search Campaign",
+                price: basePrice,
+                duration_years: 1,
+                payment_method: "transfer",
+              }),
+            });
+            const createResult = await createRes.json().catch(() => null);
+            if (createRes.ok && createResult?.status === "success" && createResult.data) {
+              const d = createResult.data;
+              setCreatedOrderId(d.order_id);
+              setCreatedOrderNumber(d.order_number);
+              setPaymentId(d.payment_id || d.order_id);
+              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
+              setPaymentAmount(Number(d.total) || totalVal);
+              setPaymentStatus("pending");
+              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+            }
+          } catch (autoErr) {
+            console.error("Auto create ads order failed:", autoErr);
+          }
+          return;
+        }
+
+        // 2. Hosting package direct order from URL
         if (paketParam && HOSTING_PACKAGES[paketParam]) {
           const pkg = HOSTING_PACKAGES[paketParam];
           const isYearly = cycleParam !== "monthly";
@@ -448,7 +557,7 @@ function CheckoutContent() {
           return;
         }
 
-        // 3. Default domain cart checkout
+        // 3. Default domain cart checkout from server API
         const response = await fetch(CHECKOUT_API, {
           method: "GET",
           credentials: "include",
@@ -844,7 +953,7 @@ function CheckoutContent() {
           order_id: createdOrderId,
           payment_number: paymentNumber,
         };
-        await fetch("http://localhost/hosting_webid/api/v1/payment/request-confirmation.php", {
+        await fetch(`${SITE_CONFIG.apiUrl}/payment/request-confirmation.php`, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -866,7 +975,7 @@ function CheckoutContent() {
         order_id: createdOrderId,
         payment_number: paymentNumber,
       };
-      await fetch("http://localhost/hosting_webid/api/v1/payment/request-confirmation.php", {
+      await fetch(`${SITE_CONFIG.apiUrl}/payment/request-confirmation.php`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -881,10 +990,8 @@ function CheckoutContent() {
     const ordNum = createdOrderNumber || "ORD-TERBARU";
     const payNum = paymentNumber || "PAY-TERBARU";
     const amt = rupiah(calculatedTotal);
-    const text = encodeURIComponent(
-      `Halo Admin HostingWeb, saya ingin konfirmasi pembayaran untuk:\n- Nomor Order: ${ordNum}\n- Nomor Payment: ${payNum}\n- Total: ${amt}\n- Durasi: ${durationYears} Tahun\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk diproses dan diaktifkan. Terima kasih!`
-    );
-    return `https://wa.me/6281234567890?text=${text}`;
+    const text = `Halo Admin HostingWeb, saya ingin konfirmasi pembayaran untuk:\n- Nomor Order: ${ordNum}\n- Nomor Payment: ${payNum}\n- Total: ${amt}\n- Durasi: ${durationYears} Tahun\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk diproses dan diaktifkan. Terima kasih!`;
+    return getWhatsAppUrl(text);
   }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears]);
 
   if (loading) {

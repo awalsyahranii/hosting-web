@@ -72,8 +72,21 @@ export default function AdminDomainPage() {
         const combinedList: DomainItem[] = [];
         const seenDomains = new Set<string>();
 
+        const isAdsOrWeb = (item: any) => {
+          const text = `${item.package_name || ""} ${item.plan_name || ""} ${item.domain_name || item.domain || ""} ${item.service_category || ""}`.toLowerCase();
+          return (
+            text.includes("google") ||
+            text.includes("ads") ||
+            text.includes("iklan") ||
+            text.includes("kampanye") ||
+            text.includes("company profile") ||
+            text.includes("toko online")
+          );
+        };
+
         // Add from services/report (Strictly Domains)
         rawServices.forEach((s: any, idx: number) => {
+          if (isAdsOrWeb(s)) return;
           const cat = (s.service_category || "").toLowerCase();
           const dom = (s.domain_name || "").toLowerCase();
           const isHosting =
@@ -104,6 +117,7 @@ export default function AdminDomainPage() {
 
         // Add from payments (Strictly Domains)
         rawPayments.forEach((p: any, idx: number) => {
+          if (isAdsOrWeb(p)) return;
           const pName = (p.domain_name || p.domain || "").toLowerCase();
           const pAmount = Number(p.amount || p.total || 0);
           const isHosting =

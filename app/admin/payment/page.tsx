@@ -70,15 +70,28 @@ function paymentName(payment: Payment) {
 }
 
 /**
- * Accurately determines if payment is for Hosting or Domain strictly from database and specs.
+ * Accurately determines if payment is for Hosting, Domain, or Google Ads.
  */
-function getPaymentCategory(payment: Payment): "hosting" | "domain" {
+function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ads" {
   const cat = (payment.service_category || "").toLowerCase();
-  if (cat === "hosting" || cat.includes("hosting")) return "hosting";
-  if (cat === "website" || cat === "domain" || cat.includes("domain")) return "domain";
-
   const dom = (payment.domain_name || payment.domain || (payment as any).domains || "").toLowerCase();
   const amt = Number(payment.amount ?? payment.total ?? 0);
+
+  if (
+    cat.includes("ads") ||
+    cat.includes("iklan") ||
+    cat.includes("google") ||
+    dom.includes("google ads") ||
+    dom.includes("paket pemula") ||
+    dom.includes("paket bisnis 10") ||
+    dom.includes("paket bisnis 15") ||
+    dom.includes("paket bisnis 30")
+  ) {
+    return "google_ads";
+  }
+
+  if (cat === "hosting" || cat.includes("hosting")) return "hosting";
+  if (cat === "website" || cat === "domain" || cat.includes("domain")) return "domain";
 
   // If explicit hosting keywords in service description
   if (
@@ -188,7 +201,7 @@ export default function AdminPaymentPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain">("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain" | "google_ads">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -281,6 +294,7 @@ export default function AdminPaymentPage() {
   // CATEGORY COUNTS
   const hostingCount = payments.filter((p) => getPaymentCategory(p) === "hosting").length;
   const domainCount = payments.filter((p) => getPaymentCategory(p) === "domain").length;
+  const adsCount = payments.filter((p) => getPaymentCategory(p) === "google_ads").length;
   const pendingCount = payments.filter((p) => statusLabel(p.status) === "Pending").length;
   const paidCount = payments.filter((p) => statusLabel(p.status) === "Paid").length;
 
@@ -454,6 +468,19 @@ export default function AdminPaymentPage() {
               <span>🌐 Payment Domain</span>
               <span className="pill-badge">{domainCount}</span>
             </button>
+            <button
+              type="button"
+              className={`filter-pill ${categoryFilter === "google_ads" ? "active" : ""}`}
+              style={{
+                borderColor: categoryFilter === "google_ads" ? "#ea580c" : undefined,
+                background: categoryFilter === "google_ads" ? "#fff7ed" : undefined,
+                color: categoryFilter === "google_ads" ? "#c2410c" : undefined,
+              }}
+              onClick={() => setCategoryFilter("google_ads")}
+            >
+              <span>🎯 Google Ads</span>
+              <span className="pill-badge" style={{ background: "#ea580c", color: "#fff" }}>{adsCount}</span>
+            </button>
           </div>
 
           {/* STATUS SELECTOR */}
@@ -517,6 +544,10 @@ export default function AdminPaymentPage() {
                           {cat === "hosting" ? (
                             <span className="badge-category hosting">
                               🔥 HOSTING
+                            </span>
+                          ) : cat === "google_ads" ? (
+                            <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
+                              🎯 GOOGLE ADS
                             </span>
                           ) : (
                             <span className="badge-category domain">

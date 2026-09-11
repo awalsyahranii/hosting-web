@@ -117,6 +117,15 @@ export default function AdminOrderPage() {
     }
   }, [user]);
 
+  const [catFilter, setCatFilter] = useState("all");
+
+  function detectOrderCategory(o: OrderLog): "hosting" | "domain" | "google_ads" {
+    const text = `${o.service_category || ""} ${o.domain_name || ""}`.toLowerCase();
+    if (text.includes("ads") || text.includes("iklan") || text.includes("google") || text.includes("pemula-") || text.includes("bisnis-") || text.includes("paket pemula")) return "google_ads";
+    if (text.includes("domain") || text.includes(".com") || text.includes(".id")) return "domain";
+    return "hosting";
+  }
+
   const filtered = orders.filter((o) => {
     const matchSearch =
       (o.order_number || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -126,7 +135,10 @@ export default function AdminOrderPage() {
     const matchStatus =
       statusFilter === "all" ||
       (o.order_status || "").toLowerCase() === statusFilter.toLowerCase();
-    return matchSearch && matchStatus;
+    const matchCat =
+      catFilter === "all" ||
+      detectOrderCategory(o) === catFilter;
+    return matchSearch && matchStatus && matchCat;
   });
 
   function rupiah(val: number | string) {
@@ -183,6 +195,23 @@ export default function AdminOrderPage() {
 
         {/* TOOLBAR */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex gap-2 flex-wrap">
+            {["all", "hosting", "domain", "google_ads"].map((ct) => (
+              <button
+                key={ct}
+                type="button"
+                onClick={() => setCatFilter(ct)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition ${
+                  catFilter === ct
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                }`}
+              >
+                {ct === "all" ? "Semua Kategori" : ct === "google_ads" ? "🎯 Google Ads" : ct}
+              </button>
+            ))}
+          </div>
+
           <div className="flex gap-2">
             {["all", "completed", "pending", "cancelled"].map((st) => (
               <button
@@ -195,7 +224,7 @@ export default function AdminOrderPage() {
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                 }`}
               >
-                {st === "all" ? "Semua Order" : st}
+                {st === "all" ? "Semua Status" : st}
               </button>
             ))}
           </div>

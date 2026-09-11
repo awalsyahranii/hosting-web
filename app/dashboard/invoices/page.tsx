@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getWhatsAppUrl } from "../../lib/siteConfig";
 
 type OrderItem = {
   id: number;
@@ -345,7 +346,7 @@ function InvoicesContent() {
                   </div>
 
                   <a
-                    href={`https://wa.me/6281234567890?text=Halo%20HostingWeb%2C%20saya%20sudah%20transfer%20untuk%20invoice%20${selectedInvoice.invoice_number}`}
+                    href={getWhatsAppUrl(`Halo HostingWeb, saya sudah transfer untuk konfirmasi pembayaran invoice #${selectedInvoice.invoice_number}. Mohon diproses. Terima kasih!`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 mt-1"

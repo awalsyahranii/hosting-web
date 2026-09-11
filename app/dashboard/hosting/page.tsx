@@ -55,6 +55,10 @@ export default function HostingPage() {
   }, [router]);
 
   const hostingList = services.filter((s) => {
+    const text = `${s.domain_name || ""} ${s.plan_name || ""} ${s.service_category || ""}`.toLowerCase();
+    if (text.includes("google") || text.includes("ads") || text.includes("iklan") || text.includes("kampanye")) {
+      return false;
+    }
     if (!search) return true;
     const q = search.toLowerCase();
     return (

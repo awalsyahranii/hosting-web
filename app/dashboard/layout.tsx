@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getExpiryInfo } from "@/app/lib/expiryHelper";
+import { getWhatsAppUrl } from "@/app/lib/siteConfig";
 
 type User = {
   id?: number;
@@ -62,6 +63,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [hostings, setHostings] = useState<any[]>([]);
   const [domains, setDomains] = useState<any[]>([]);
   const [ordersCount, setOrdersCount] = useState(0);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   async function fetchInvoices() {
     try {
@@ -286,6 +288,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <span className="dash-badge-count">{domainCount}</span>
               )}
             </Link>
+
+            <Link
+              href="/dashboard/ads"
+              className={`dash-nav-link ${pathname.startsWith("/dashboard/ads") ? "active" : ""}`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                </span>
+                <span>Google Ads</span>
+              </div>
+              <span className="dash-badge-count" style={{ background: "#ea580c", color: "#fff" }}>Ads</span>
+            </Link>
           </div>
 
           {/* SECTION: TRANSAKSI & BILLING */}
@@ -385,7 +405,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <h5>Butuh bantuan teknis?</h5>
               <p>Tim support siap 24/7 untuk Anda.</p>
               <a
-                href="https://wa.me/6281234567890"
+                href={getWhatsAppUrl("Halo Admin HostingWeb, saya butuh bantuan teknis di dashboard.")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="dash-help-link"
@@ -591,19 +611,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               )}
             </div>
 
-            {/* CART ICON */}
-            <Link
-              href="/cart"
-              className="dash-header-icon-btn"
-              title="Keranjang Belanja"
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-              <span className="dash-badge-dot-header">0</span>
-            </Link>
+
 
             {/* USER PROFILE PILL */}
             <div className="relative" ref={profileRef}>

@@ -56,9 +56,29 @@ export default function AdminHostingPage() {
         );
         const json = await res.json().catch(() => null);
 
+        const isAdsOrWeb = (item: any) => {
+          const text = `${item.package_name || ""} ${item.plan_name || ""} ${item.domain_name || ""} ${item.service_category || ""}`.toLowerCase();
+          return (
+            text.includes("google") ||
+            text.includes("ads") ||
+            text.includes("iklan") ||
+            text.includes("kampanye") ||
+            text.includes("company profile") ||
+            text.includes("toko online")
+          );
+        };
+
+        const isDomainOnly = (item: any) => {
+          const cat = (item.service_category || "").toLowerCase();
+          const dom = (item.domain_name || "").toLowerCase();
+          const price = Number(item.price || item.order_total || 0);
+          return cat.includes("domain") || (dom.includes(".") && !dom.includes("hosting") && !cat.includes("hosting") && price < 400000);
+        };
+
         if (res.ok && json?.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
+          const filtered = json.data.filter((h: any) => !isAdsOrWeb(h) && !isDomainOnly(h));
           setServices(
-            json.data.map((h: any) => ({
+            filtered.map((h: any) => ({
               id: Number(h.id),
               order_number: h.order_number || `ORD-${h.order_id || h.id}`,
               username: h.username || (h.email ? h.email.split("@")[0] : "-"),
@@ -85,13 +105,14 @@ export default function AdminHostingPage() {
 
         const combinedList: ServiceItem[] = [];
         rawServices.forEach((s: any, idx: number) => {
+          if (isAdsOrWeb(s) || isDomainOnly(s)) return;
           combinedList.push({
             id: Number(s.id || s.order_id || idx + 1),
             order_number: s.order_number || (s.order_id ? `ORD-${s.order_id}` : "-"),
             username: s.username || s.user_name || (s.email ? s.email.split("@")[0] : "-"),
             email: s.email || "-",
             domain_name: s.domain_name || "Paket Hosting Cloud",
-            service_category: "Cloud Hosting NVMe",
+            service_category: s.service_category || "Cloud Hosting NVMe",
             billing_period: s.billing_period || "Tahunan",
             start_date: s.start_date || s.order_date || "-",
             expiry_date: s.expiry_date || "-",

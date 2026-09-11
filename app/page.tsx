@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
 
 interface PlanFeature {
   text: string;
@@ -104,6 +105,158 @@ const plans: PlanItem[] = [
       { text: "Setting SEO On-Page", icon: "✔️", checkColor: "teal" },
       { text: "Garansi Bebas Error", icon: "🛡️", checkColor: "teal" },
       { text: "Optimasi SEO untuk Traffic", icon: "📈", checkColor: "teal" },
+    ],
+  },
+];
+
+interface GoogleAdsPackage {
+  id: string;
+  category: "pemula" | "bisnis";
+  categoryLabel: string;
+  durationDays: number;
+  durationLabel: string;
+  title: string;
+  description: string;
+  dailyBudget: string;
+  dailyBudgetValue: number;
+  price: number;
+  priceFormatted: string;
+  originalPrice?: string;
+  features: string[];
+}
+
+const googleAdsPackages: GoogleAdsPackage[] = [
+  {
+    id: "pemula-14",
+    category: "pemula",
+    categoryLabel: "Paket Pemula",
+    durationDays: 14,
+    durationLabel: "14 Hari",
+    title: "Paket Pemula 14 Hari",
+    description: "Ideal untuk uji coba pasar, testing kata kunci & bisnis lokal.",
+    dailyBudget: "Rp 50.000 / hari",
+    dailyBudgetValue: 50000,
+    price: 700000,
+    priceFormatted: "Rp 700.000",
+    features: [
+      "Masa Aktif 14 Hari Penuh",
+      "Dana Harian Rp 50.000 ke Google",
+      "Riset Kata Kunci Potensial & Relevan",
+      "Teks Iklan Kami Bantu (Copywriting Persuasif)",
+      "Optimasi Iklan Berkala & Pemantauan",
+      "Include Jasa Setting & Setup Akun",
+      "Belum termasuk PPN 11%",
+    ],
+  },
+  {
+    id: "pemula-20",
+    category: "pemula",
+    categoryLabel: "Paket Pemula",
+    durationDays: 20,
+    durationLabel: "20 Hari",
+    title: "Paket Pemula 20 Hari",
+    description: "Visibilitas lebih lama untuk menjaring pelanggan berulang.",
+    dailyBudget: "Rp 50.000 / hari",
+    dailyBudgetValue: 50000,
+    price: 1000000,
+    priceFormatted: "Rp 1.000.000",
+    features: [
+      "Masa Aktif 20 Hari Penuh",
+      "Dana Harian Rp 50.000 ke Google",
+      "Riset Kata Kunci Potensial Tertarget",
+      "Teks Iklan Kami Bantu (Multi-Variasi)",
+      "Optimasi Iklan Berkala & Negative Keyword",
+      "Include Jasa Setting & Setup Ekstensi WA",
+      "Belum termasuk PPN 11%",
+    ],
+  },
+  {
+    id: "pemula-30",
+    category: "pemula",
+    categoryLabel: "Paket Pemula",
+    durationDays: 30,
+    durationLabel: "30 Hari",
+    title: "Paket Pemula 30 Hari",
+    description: "Sebulan penuh tayang non-stop dengan anggaran paling hemat.",
+    dailyBudget: "Rp 50.000 / hari",
+    dailyBudgetValue: 50000,
+    price: 1500000,
+    priceFormatted: "Rp 1.500.000",
+    features: [
+      "Masa Aktif 30 Hari Sebulan Penuh",
+      "Dana Harian Rp 50.000 ke Google",
+      "Riset Kata Kunci Mendalam & Relevan",
+      "Teks Iklan Kami Bantu & Setting Call Extension",
+      "Optimasi Iklan Mingguan",
+      "Include Jasa Setting & Setup Komplit",
+      "Belum termasuk PPN 11%",
+    ],
+  },
+  {
+    id: "bisnis-10",
+    category: "bisnis",
+    categoryLabel: "Paket Bisnis",
+    durationDays: 10,
+    durationLabel: "10 Hari",
+    title: "Paket Bisnis 10 Hari",
+    description: "Traffic lebih deras dengan budget harian lebih tinggi.",
+    dailyBudget: "Rp 100.000 / hari",
+    dailyBudgetValue: 100000,
+    price: 1000000,
+    priceFormatted: "Rp 1.000.000",
+    features: [
+      "Masa Aktif 10 Hari Penuh",
+      "Dana Harian Rp 100.000 ke Google",
+      "Riset Kata Kunci Kompetitor Tertarget",
+      "Teks Iklan High Converting Copywriting",
+      "Optimasi Harian & Bid Adjustment",
+      "Include Setup Conversion Tracking",
+      "Belum termasuk PPN 11%",
+    ],
+  },
+  {
+    id: "bisnis-15",
+    category: "bisnis",
+    categoryLabel: "Paket Bisnis",
+    durationDays: 15,
+    durationLabel: "15 Hari",
+    title: "Paket Bisnis 15 Hari",
+    description: "Penetrasi pasar optimal untuk campaign promo atau momentum khusus.",
+    dailyBudget: "Rp 100.000 / hari",
+    dailyBudgetValue: 100000,
+    price: 1500000,
+    priceFormatted: "Rp 1.500.000",
+    features: [
+      "Masa Aktif 15 Hari Penuh",
+      "Dana Harian Rp 100.000 ke Google",
+      "Riset Kata Kunci Premium & Negatif Keyword",
+      "Copywriting A/B Testing untuk CTR Tinggi",
+      "Optimasi Berkala & Bid Strategi",
+      "Include Setup Akun & Remarketing Tag",
+      "Belum termasuk PPN 11%",
+    ],
+  },
+  {
+    id: "bisnis-30",
+    category: "bisnis",
+    categoryLabel: "Paket Bisnis",
+    durationDays: 30,
+    durationLabel: "30 Hari",
+    title: "Paket Bisnis 30 Hari",
+    description: "Solusi terlengkap dominasi halaman 1 Google selama sebulan penuh.",
+    dailyBudget: "Rp 100.000 / hari",
+    dailyBudgetValue: 100000,
+    price: 3000000,
+    priceFormatted: "Rp 3.000.000",
+    originalPrice: "Rp 3.450.000",
+    features: [
+      "Masa Aktif 30 Hari Penuh",
+      "Dana Harian Rp 100.000 ke Google",
+      "Riset Kata Kunci Skala Penuh & Kompetitif",
+      "Multiple Ad Extensions & Callouts",
+      "Optimasi Intensif Mingguan",
+      "Include Setup Google Analytics & Conversion Tracking",
+      "Belum termasuk PPN 11%",
     ],
   },
 ];
@@ -583,6 +736,19 @@ export default function Home() {
   const [portfolioSearch, setPortfolioSearch] = useState("");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
 
+  // Google Ads Filter
+  const [adsFilter, setAdsFilter] = useState<"all" | "pemula" | "bisnis">("all");
+
+  const handleBuyAds = (pkg: GoogleAdsPackage) => {
+    const targetUrl = `/checkout?ads=${encodeURIComponent(pkg.id)}`;
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
+  };
+
   const handleBuyPackage = (planId: string) => {
     const targetUrl = `/checkout?paket=${encodeURIComponent(planId)}&cycle=${billingCycle}`;
     const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
@@ -707,19 +873,18 @@ export default function Home() {
 
     {/* DESKTOP NAVIGATION */}
     <nav className="nav-menu">
-      <Link href="/#hosting">Hosting</Link>
+      <Link href="/#pricing">Hosting</Link>
       <Link href="/#domain">Domain</Link>
       <Link href="/#portfolio">Portfolio</Link>
+      <Link href="/#google-ads">Google Ads</Link>
       <Link href="/#features">Fitur</Link>
-      <Link href="/#pricing">Harga</Link>
       <Link href="/#faq">FAQ</Link>
     </nav>
 
     {/* DESKTOP ACTIONS */}
     <div className="nav-actions">
-
       <a
-        href="https://wa.me/6281234567890"
+        href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya seputar layanan web hosting.")}
         target="_blank"
         rel="noopener noreferrer"
         className="nav-contact"
@@ -766,7 +931,7 @@ export default function Home() {
     <div className="mobile-menu">
 
       <Link
-        href="/#hosting"
+        href="/#pricing"
         onClick={() => setMobileMenuOpen(false)}
       >
         Hosting
@@ -787,17 +952,17 @@ export default function Home() {
       </Link>
 
       <Link
+        href="/#google-ads"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        Google Ads
+      </Link>
+
+      <Link
         href="/#features"
         onClick={() => setMobileMenuOpen(false)}
       >
         Fitur
-      </Link>
-
-      <Link
-        href="/#pricing"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Harga
       </Link>
 
       <Link
@@ -810,7 +975,7 @@ export default function Home() {
       <div className="mobile-menu-divider" />
 
       <a
-        href="https://wa.me/6281234567890"
+        href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya seputar layanan web hosting.")}
         target="_blank"
         rel="noopener noreferrer"
         className="mobile-contact"
@@ -1588,7 +1753,7 @@ export default function Home() {
                             )}
                           </div>
 
-                          {/* ACTION BUTTON */}
+                          {/* ACTION BUTTONS */}
                           {item.available === true ? (
                             <Link
                               href={`/checkout?domain=${encodeURIComponent(
@@ -2171,6 +2336,181 @@ export default function Home() {
       </section>
 
       {/* =====================================================
+          JASA IKLAN GOOGLE ADS SECTION
+      ===================================================== */}
+      <section className="google-ads-section" id="google-ads">
+        <div className="container">
+          {/* SECTION HEADER */}
+          <div className="gads-header-center">
+            <div className="gads-top-pill">
+              <span className="gads-top-dot" />
+              <span>GOOGLE SEARCH CAMPAIGN SPECIALIST</span>
+            </div>
+
+            <h2 className="gads-main-title">
+              Jasa Iklan <span className="gads-title-highlight">Google Ads</span> Terpercaya
+            </h2>
+
+            <p className="gads-main-subtitle">
+              Garansi Masuk Halaman 1 Google. <strong>Bayar hanya jika iklan Anda sudah muncul dan tayang di halaman 1 Google.</strong> Tanpa resiko, transparan, dan terukur.
+            </p>
+
+            {/* TRUST PILLS */}
+            <div className="gads-trust-pills-row">
+              <span className="gads-trust-pill">
+                <span>🛡️</span> Garansi Halaman 1 Google
+              </span>
+              <span className="gads-trust-pill">
+                <span>⚡</span> Proses Cepat 1 Hari Selesai
+              </span>
+              <span className="gads-trust-pill">
+                <span>💳</span> Bayar Setelah Iklan Tayang
+              </span>
+            </div>
+
+            {/* FILTER TABS */}
+            <div className="gads-filter-wrapper">
+              <div className="gads-filter-tabs">
+                <button
+                  type="button"
+                  className={`gads-tab-btn ${adsFilter === "all" ? "active" : ""}`}
+                  onClick={() => setAdsFilter("all")}
+                >
+                  Semua Paket (6)
+                </button>
+                <button
+                  type="button"
+                  className={`gads-tab-btn ${adsFilter === "pemula" ? "active" : ""}`}
+                  onClick={() => setAdsFilter("pemula")}
+                >
+                  Paket Pemula
+                </button>
+                <button
+                  type="button"
+                  className={`gads-tab-btn ${adsFilter === "bisnis" ? "active" : ""}`}
+                  onClick={() => setAdsFilter("bisnis")}
+                >
+                  Paket Bisnis
+                </button>
+              </div>
+
+              <span className="gads-notice-pill">
+                <span>ℹ️</span> Semua harga sudah mencakup saldo alokasi harian Google + jasa setting riset lengkap
+              </span>
+            </div>
+          </div>
+
+          {/* SUB NAV & SLIDER HEADER */}
+          <div className="gads-sub-nav-row">
+            <div className="gads-sub-heading">
+              <span className="gads-sub-dot" />
+              <span>Pilihan Paket Siap Pakai • Klik tombol untuk pesan atau konsultasi langsung</span>
+            </div>
+            <div className="gads-slider-arrows">
+              <button
+                type="button"
+                className="gads-arrow-btn"
+                onClick={() => scrollSlider("gadsSliderTrack", -360)}
+                aria-label="Scroll kiri"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="gads-arrow-btn"
+                onClick={() => scrollSlider("gadsSliderTrack", 360)}
+                aria-label="Scroll kanan"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+
+          {/* CARDS GRID */}
+          <div className="gads-cards-track" id="gadsSliderTrack">
+            {googleAdsPackages
+              .filter((pkg) => adsFilter === "all" || pkg.category === adsFilter)
+              .map((pkg) => (
+                <div className="gads-card" key={pkg.id}>
+                  {/* BROWSER TOP PREVIEW */}
+                  <div className="gads-card-browser">
+                    <div className="flex items-center gap-2">
+                      <span className="gads-ad-badge">IKLAN</span>
+                      <span className="text-slate-600 font-medium">bisnis-anda.com</span>
+                    </div>
+                    <div className="text-amber-500 font-bold">★★★★★</div>
+                  </div>
+
+                  {/* META TOP */}
+                  <div className="gads-card-meta-top">
+                    <span className="gads-badge-duration">
+                      <span>📅</span> {pkg.durationLabel}
+                    </span>
+                    <span className="gads-badge-category">{pkg.categoryLabel}</span>
+                  </div>
+
+                  {/* TITLE & DESC */}
+                  <h3 className="gads-card-title">{pkg.title}</h3>
+                  <p className="gads-card-desc">{pkg.description}</p>
+
+                  {/* DANA HARIAN */}
+                  <div className="gads-daily-budget-box">
+                    <span>Dana Harian Iklan:</span>
+                    <strong>{pkg.dailyBudget}</strong>
+                  </div>
+
+                  {/* TOTAL HARGA */}
+                  <div className="gads-total-price-box">
+                    <span className="total-label">TOTAL BIAYA:</span>
+                    <div className="price-num">{pkg.priceFormatted}</div>
+                    <small>Termasuk saldo iklan harian + biaya jasa optimasi</small>
+                  </div>
+
+                  {/* FEATURES LIST */}
+                  <ul className="gads-features-list">
+                    {pkg.features.map((feat, fIdx) => (
+                      <li key={fIdx}>
+                        {feat.includes("Belum termasuk") ? (
+                          <span className="gads-feat-dash">−</span>
+                        ) : (
+                          <span className="gads-feat-check">✓</span>
+                        )}
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* BOTTOM GUARANTEE */}
+                  <div className="gads-guarantee-box">
+                    <span>🛡️</span>
+                    <span>PROSES 1 HARI • BAYAR SETELAH IKLAN TAYANG</span>
+                  </div>
+
+                  {/* ACTION BUTTONS */}
+                  <div className="gads-card-actions">
+                    <a
+                      href={getWhatsAppUrl(`Halo Admin HostingWeb, saya tertarik dengan layanan *${pkg.title}* (${pkg.priceFormatted}). Bisa konsultasi kata kunci dan target iklannya?`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="gads-btn-wa"
+                    >
+                      <span>💬</span> Chat Admin
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleBuyAds(pkg)}
+                      className="gads-btn-buy"
+                    >
+                      <span>🛍️</span> {pkg.priceFormatted}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
           FEATURES
       ===================================================== */}
       <section className="features-section" id="features">
@@ -2589,7 +2929,7 @@ export default function Home() {
                   <span>→</span>
                 </a>
                 <a
-                  href="https://wa.me/6281234567890"
+                  href={getWhatsAppUrl("Halo Admin HostingWeb, saya tertarik dengan promo paket hosting. Bisa dibantu penjelasannya?")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cta-btn-whatsapp"
@@ -2649,7 +2989,7 @@ export default function Home() {
                 <strong>Ada pertanyaan khusus?</strong>
                 <p>Konsultasikan kebutuhan website kamu secara gratis dengan Customer Success kami.</p>
                 <a
-                  href="https://wa.me/6281234567890"
+                  href={getWhatsAppUrl("Halo Customer Success HostingWeb, saya ingin konsultasi kebutuhan website saya.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="faq-help-link"
@@ -2697,108 +3037,191 @@ export default function Home() {
           FOOTER
       ===================================================== */}
       <footer className="footer" id="contact">
-        <div className="container">
-          <div className="footer-grid-5col">
-            {/* COL 1: BRAND */}
-            <div className="footer-brand-col">
-              <div className="footer-logo-box">
-                <img src="/logo.png" alt="Hostingwebid" />
+        <div className="container footer-premium-container">
+          {/* TOP ROW: BRAND & FEATURE PILLS */}
+          <div className="footer-top-row">
+            <div className="footer-top-brand-box">
+              <div className="footer-logo-wrap">
+                <img src="/logo.png" alt="hostingwebid" />
+              </div>
+              <p className="footer-top-desc">
+                Solusi hosting, domain, dan pembuatan website murah, cepat, dan terpercaya di Indonesia. Didesain untuk memaksimalkan performa bisnis digital Anda secara terjamin.
+              </p>
+            </div>
+
+            <div className="footer-top-features">
+              <div className="footer-feat-pill">
+                <div className="feat-icon-box feat-red">⚡</div>
+                <div className="feat-text">
+                  <span className="feat-label">Kecepatan</span>
+                  <strong className="feat-value">NVMe SSD Cepat</strong>
+                </div>
               </div>
 
-              <p className="footer-brand-desc">
-                Solusi hosting dan domain untuk membantu website dan bisnis kamu berkembang lebih cepat dengan infrastruktur Tier-4, LiteSpeed Web Server, dan keamanan tingkat tinggi.
+              <div className="footer-feat-pill">
+                <div className="feat-icon-box feat-orange">🛡️</div>
+                <div className="feat-text">
+                  <span className="feat-label">Keamanan</span>
+                  <strong className="feat-value">Garansi 99.9% Up</strong>
+                </div>
+              </div>
+
+              <div className="footer-feat-pill">
+                <div className="feat-icon-box feat-teal">🎧</div>
+                <div className="feat-text">
+                  <span className="feat-label">Bantuan</span>
+                  <strong className="feat-value">24/7 Siap Sigap</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer-divider-glow" />
+
+          {/* MAIN 4-COLUMN GRID */}
+          <div className="footer-premium-grid">
+            {/* COL 1: KANTOR LAYANAN */}
+            <div className="footer-col-kantor">
+              <h3 className="footer-sec-title">
+                <span className="title-bar" /> KANTOR LAYANAN
+              </h3>
+              <p className="footer-sec-sub">Hubungi langsung tim helpdesk &amp; representatif kami:</p>
+
+              <div className="footer-contact-stack">
+                <div className="contact-row">
+                  <div className="contact-icon-box">📞</div>
+                  <div className="contact-meta">
+                    <span className="contact-meta-label">Telepon:</span>
+                    <a href={`tel:${SITE_CONFIG.phone.replace(/[^0-9]/g, "")}`} className="contact-meta-val">
+                      {SITE_CONFIG.phone}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="contact-row">
+                  <div className="contact-icon-box contact-wa-icon">💬</div>
+                  <div className="contact-meta">
+                    <span className="contact-meta-label">WhatsApp:</span>
+                    <a
+                      href={getWhatsAppUrl("Halo Admin HostingWeb, saya ingin berkonsultasi.")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="contact-meta-val"
+                    >
+                      {SITE_CONFIG.whatsappDisplay}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="contact-row">
+                  <div className="contact-icon-box">✉️</div>
+                  <div className="contact-meta">
+                    <span className="contact-meta-label">Email Resmi:</span>
+                    <a href={`mailto:${SITE_CONFIG.email}`} className="contact-meta-val">
+                      {SITE_CONFIG.email}
+                    </a>
+                  </div>
+                </div>
+
+                <div className="contact-row">
+                  <div className="contact-icon-box">📍</div>
+                  <div className="contact-meta">
+                    <span className="contact-meta-label">Alamat Kantor:</span>
+                    <span className="contact-meta-val">Ruko No. 2A/11, Jl. Tamalate II</span>
+                    <span className="contact-meta-sub">Kota Makassar - Sulawesi Selatan 90245</span>
+                  </div>
+                </div>
+
+                <div className="contact-row">
+                  <div className="contact-icon-box">🕒</div>
+                  <div className="contact-meta">
+                    <span className="contact-meta-label">Jam Operasional:</span>
+                    <span className="contact-meta-val">Senin - Sabtu Pkl. 08.00 - 17.00 WIB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* COL 2: LAYANAN */}
+            <div className="footer-col-nav">
+              <h3 className="footer-sec-title">
+                <span className="title-bar" /> LAYANAN
+              </h3>
+              <ul className="footer-nav-links">
+                <li><a href="#portfolio">Jasa Pembuatan Website</a></li>
+                <li><a href="#google-ads">Jasa Iklan Google Ads</a></li>
+                <li><a href="#features">Jasa SEO</a></li>
+              </ul>
+            </div>
+
+            {/* COL 3: INFORMASI */}
+            <div className="footer-col-nav">
+              <h3 className="footer-sec-title">
+                <span className="title-bar" /> INFORMASI
+              </h3>
+              <ul className="footer-nav-links">
+                <li><a href="#">Affiliasi</a></li>
+                <li><a href="/checkout">Konfirmasi Pembayaran</a></li>
+                <li><a href="#about">Tentang Kami</a></li>
+                <li><a href="#">PKL</a></li>
+                <li><a href="#">Legalitas Perusahaan</a></li>
+                <li><a href="#portfolio">Portofolio Proyek</a></li>
+              </ul>
+            </div>
+
+            {/* COL 4: SECURE SHOPPING */}
+            <div className="footer-col-secure">
+              <h3 className="footer-sec-title">
+                <span className="title-bar" /> SECURE SHOPPING
+              </h3>
+              <p className="footer-sec-sub">
+                Transaksi aman dan terenkripsi menggunakan sertifikasi keamanan berstandar internasional.
               </p>
 
-              <div className="footer-social-icons">
-                <a href="#" aria-label="Instagram">IG</a>
-                <a href="#" aria-label="Facebook">FB</a>
-                <a href="#" aria-label="TikTok">TK</a>
-                <a href="https://wa.me/6281234567890" aria-label="WhatsApp">WA</a>
-                <a href="#" aria-label="LinkedIn">IN</a>
-              </div>
-            </div>
-
-            {/* COL 2: PRODUK */}
-            <div className="footer-nav-col">
-              <h4 className="footer-col-title">PRODUK</h4>
-              <ul className="footer-links-list">
-                <li><a href="#hosting">Web Hosting</a></li>
-                <li><a href="#hosting">Cloud VPS NVMe</a></li>
-                <li><a href="#domain">Domain Murah</a></li>
-                <li><a href="#portfolio">Jasa Web Murah</a></li>
-                <li><a href="#hosting">Email Bisnis</a></li>
-                <li><a href="#hosting">SSL Certificate</a></li>
-              </ul>
-            </div>
-
-            {/* COL 3: PERUSAHAAN */}
-            <div className="footer-nav-col">
-              <h4 className="footer-col-title">PERUSAHAAN</h4>
-              <ul className="footer-links-list">
-                <li><a href="#">Tentang Kami</a></li>
-                <li><a href="#">Kontak Resmi</a></li>
-                <li><a href="#">Blog &amp; Berita</a></li>
-                <li>
-                  <a href="#">
-                    Karir <span className="footer-hiring-badge">Hiring</span>
-                  </a>
-                </li>
-                <li><a href="#">Program Afiliasi</a></li>
-              </ul>
-            </div>
-
-            {/* COL 4: BANTUAN */}
-            <div className="footer-nav-col">
-              <h4 className="footer-col-title">BANTUAN</h4>
-              <ul className="footer-links-list">
-                <li><a href="#faq">FAQ</a></li>
-                <li><a href="#">Knowledge Base</a></li>
-                <li><a href="#">Panduan Migrasi</a></li>
-                <li>
-                  <a href="#">
-                    Status Server <span className="footer-status-dot">●</span>
-                  </a>
-                </li>
-                <li><a href="#">Kebijakan Layanan</a></li>
-              </ul>
-            </div>
-
-            {/* COL 5: HUBUNGI KAMI */}
-            <div className="footer-nav-col footer-contact-col">
-              <h4 className="footer-col-title">HUBUNGI KAMI</h4>
-              <div className="footer-contact-info">
-                <div className="contact-item">
-                  <span className="contact-label">WhatsApp CS (24 Jam)</span>
-                  <a href="https://wa.me/6281234567890" className="contact-value highlight">
-                    +62 812-3456-7890
-                  </a>
+              <div className="footer-security-cards">
+                {/* 1. GOOGLE SAFE BROWSING */}
+                <div className="security-card">
+                  <div className="sec-card-left">
+                    <div className="google-g-logo">G</div>
+                    <div className="sec-card-info">
+                      <div className="sec-card-title flex items-center gap-1">
+                        <span>Google Safe Browsing</span>
+                        <span className="text-emerald-400">✓</span>
+                      </div>
+                      <span className="sec-card-desc">Terverifikasi Bebas Malware &amp; Phishing</span>
+                    </div>
+                  </div>
+                  <span className="badge-active-green">ACTIVE</span>
                 </div>
 
-                <div className="contact-item">
-                  <span className="contact-label">Email Resmi</span>
-                  <a href="mailto:hello@hostingwebid.com" className="contact-value">
-                    hello@hostingwebid.com
-                  </a>
+                {/* 2. SSL SECURED 256-BIT */}
+                <div className="security-card">
+                  <div className="sec-card-left">
+                    <div className="ssl-lock-box">🔒</div>
+                    <div className="sec-card-info">
+                      <div className="sec-card-title">SSL SECURED 256-BIT</div>
+                      <span className="sec-card-desc">End-to-End Encryption Protocol</span>
+                    </div>
+                  </div>
+                  <span className="badge-tls">TLS 1.3</span>
                 </div>
-
-                <p className="contact-address">
-                  Cyber Building 1, Kuningan Barat, Jakarta Selatan - 12710
-                </p>
               </div>
             </div>
           </div>
 
           {/* BOTTOM SUB-FOOTER */}
-          <div className="footer-sub-bar">
-            <span>© 2026 Hostingwebid. All rights reserved.</span>
-            <div className="footer-legal-links">
-              <a href="#">Kebijakan Privasi</a>
-              <span className="footer-sep">•</span>
-              <a href="#">Syarat &amp; Ketentuan</a>
+          <div className="footer-premium-bottom">
+            <div className="footer-copyright">
+              © 2026 <strong>hostingwebid</strong> • Seluruh hak cipta dilindungi undang-undang.
             </div>
-            <div className="footer-server-status">
-              <span className="server-dot">●</span>
-              <span>Server: Cyber Building, Jakarta (IDC 3D)</span>
+            <div className="footer-legal-bar">
+              <a href="#">Syarat &amp; Ketentuan</a>
+              <span>•</span>
+              <a href="#">Kebijakan Privasi</a>
+              <span>•</span>
+              <a href="#">Status Layanan</a>
+              <span>•</span>
+              <a href="#">Sitemap</a>
             </div>
           </div>
         </div>
@@ -2808,7 +3231,9 @@ export default function Home() {
           WHATSAPP FLOATING BUTTON
       ===================================================== */}
       <a
-        href="https://wa.me/6281234567890"
+        href={getWhatsAppUrl("Halo Customer Service HostingWeb, saya butuh informasi / bantuan.")}
+        target="_blank"
+        rel="noopener noreferrer"
         className="whatsapp-float"
         aria-label="Chat WhatsApp"
       >
