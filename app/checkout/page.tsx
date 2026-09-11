@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 /* =========================================================
-   TYPE CHECKOUT ITEM
+   TYPE DEFINITIONS
 ========================================================= */
 
 type CheckoutItem = {
@@ -16,11 +16,6 @@ type CheckoutItem = {
   price: number;
 };
 
-
-/* =========================================================
-   TYPE CHECKOUT DATA
-========================================================= */
-
 type CheckoutData = {
   items: CheckoutItem[];
   subtotal: string;
@@ -28,16 +23,10 @@ type CheckoutData = {
   total: string;
 };
 
-
-/* =========================================================
-   TYPE COUPON RESPONSE
-========================================================= */
-
 type CouponResponse = {
   status: string;
   code: number;
   message: string;
-
   data?: {
     coupon?: {
       id: number;
@@ -45,26 +34,21 @@ type CouponResponse = {
       discount_type: string;
       discount_value: string | number;
     };
-
     subtotal?: string;
     discount?: string;
     after_discount?: string;
   };
 };
 
-
-/* =========================================================
-   TYPE ORDER RESPONSE
-========================================================= */
-
 type OrderResponse = {
   status: string;
   code: number;
   message: string;
-
   data?: {
     order_id?: number;
     order_number?: string;
+    payment_id?: number | null;
+    payment_number?: string;
     subtotal?: string;
     discount?: string;
     after_discount?: string;
@@ -74,7 +58,6 @@ type OrderResponse = {
     service_status?: string;
     start_date?: string | null;
     expiry_date?: string | null;
-
     coupon?: {
       id: number;
       code: string;
@@ -82,15 +65,10 @@ type OrderResponse = {
   };
 };
 
-/* =========================================================
-   TYPE PAYMENT RESPONSE
-========================================================= */
-
 type PaymentResponse = {
   status: string;
   code: number;
   message: string;
-
   data?: {
     payment_id?: number | null;
     payment_number?: string;
@@ -110,3289 +88,2561 @@ type SavedCheckoutPayment = {
   orderId: number;
   orderNumber: string;
   amount: number;
+  itemName?: string;
+  itemSpecs?: string;
+  durationYears?: number;
+  subtotal?: number;
+  ppn?: number;
 };
 
-
 /* =========================================================
-   API
+   APIs & CONSTANTS
 ========================================================= */
 
-const CHECKOUT_API =
-  "http://localhost/hosting_webid/api/v1/checkout/index.php";
+const CHECKOUT_API = "http://localhost/hosting_webid/api/v1/checkout/index.php";
+const COUPON_VALIDATE_API = "http://localhost/hosting_webid/api/v1/coupon/validate.php";
+const ORDER_CREATE_API = "http://localhost/hosting_webid/api/v1/order/create.php";
+const PAYMENT_API = "http://localhost/hosting_webid/api/v1/payment/index.php";
 
-const COUPON_VALIDATE_API =
-  "http://localhost/hosting_webid/api/v1/admin/coupon/validate.php";
-
-const ORDER_CREATE_API =
-  "http://localhost/hosting_webid/api/v1/order/create.php";
-
-const PAYMENT_API =
-  "http://localhost/hosting_webid/api/v1/payment/index.php";
-
-
-/* =========================================================
-   HELPER RESPONSE
-========================================================= */
-
-/**
- * Membaca response API dengan aman.
- *
- * Kalau server mengirim JSON:
- *     langsung di-parse.
- *
- * Kalau server mengirim HTML/PHP error:
- *     jangan muncul "Unexpected token <".
- *     Kita tampilkan pesan server.
- */
-async function readApiResponse<T>(
-  response: Response
-): Promise<T> {
-
-  const text =
-    await response.text();
-
-  if (!text.trim()) {
-    throw new Error(
-      `Server tidak mengembalikan response. HTTP ${response.status}`
-    );
+const HOSTING_PACKAGES: Record<
+  string,
+  {
+    name: string;
+    badge: string;
+    specs: string;
+    monthlyPrice: number;
+    yearlyPrice: number;
   }
+> = {
+  starter: {
+    name: "Paket Starter Website",
+    badge: "Hosting 3GB NVMe",
+    specs: "Hosting 3GB NVMe • Termasuk Domain .com • SSL Gratis • Setting SEO On-Page",
+    monthlyPrice: 80000,
+    yearlyPrice: 750000,
+  },
+  "business-pro": {
+    name: "Paket Bisnis Pro",
+    badge: "Hosting 10GB NVMe High Speed",
+    specs: "Hosting 10GB NVMe High Speed • Termasuk Domain .com • FREE 30 Artikel SEO • LiteSpeed Turbo",
+    monthlyPrice: 160000,
+    yearlyPrice: 1500000,
+  },
+  "elite-enterprise": {
+    name: "Paket Elite Enterprise",
+    badge: "Hosting 50GB NVMe Cloud",
+    specs: "Hosting 50GB NVMe Cloud • Termasuk Domain .com • FREE 30 Artikel SEO • Optimasi SEO Traffic",
+    monthlyPrice: 220000,
+    yearlyPrice: 2000000,
+  },
+};
 
+const BANK_ACCOUNTS = [
+  {
+    name: "BCA",
+    logo: "/bank-logos/bca.png",
+    accountNumber: "8735105848",
+    owner: "Irwanto",
+    status: "Cek Otomatis",
+  },
+  {
+    name: "BRI",
+    logo: "/bank-logos/bri.png",
+    accountNumber: "490501014725533",
+    owner: "Irwanto",
+    status: "Cek Otomatis",
+  },
+  {
+    name: "MANDIRI",
+    logo: "/bank-logos/mandiri.png",
+    accountNumber: "1740002093110",
+    owner: "Irwanto",
+    status: "Cek Otomatis",
+  },
+  {
+    name: "BSI",
+    logo: "/bank-logos/bni.png",
+    accountNumber: "0671541810",
+    owner: "Irwanto",
+    status: "Cek Otomatis",
+  },
+];
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function rupiah(value: number | string | undefined | null) {
+  const num = Number(value) || 0;
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
+async function readApiResponse<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  if (!text.trim()) {
+    throw new Error(`Server tidak mengembalikan response. HTTP ${response.status}`);
+  }
   try {
     return JSON.parse(text) as T;
   } catch {
-    const temporaryElement = document.createElement("div");
-    temporaryElement.innerHTML = text;
-    const cleanText = temporaryElement.textContent
-      ?.replace(/\s+/g, " ")
-      .trim();
-
-    console.error("API mengembalikan non-JSON:", text);
-
-    throw new Error(
-      cleanText
-        ? cleanText.substring(0, 1000)
-        : `Server mengembalikan response tidak valid. HTTP ${response.status}`
-    );
+    const el = document.createElement("div");
+    el.innerHTML = text;
+    const clean = el.textContent?.replace(/\s+/g, " ").trim();
+    throw new Error(clean || `Server mengembalikan response tidak valid. HTTP ${response.status}`);
   }
 }
 
+function getDomainPriceFromExt(domain: string): number {
+  const lower = (domain || "").toLowerCase();
+  if (lower.endsWith(".co.id")) return 270000;
+  if (lower.endsWith(".my.id") || lower.endsWith(".biz.id")) return 12000;
+  if (lower.endsWith(".xyz") || lower.endsWith(".buzz")) return 29900;
+  if (lower.endsWith(".id")) return 250000;
+  if (lower.endsWith(".net")) return 180000;
+  if (lower.endsWith(".org")) return 149900;
+  if (lower.endsWith(".com")) return 150000;
+  return 150000;
+}
 
-  /* =========================================================
-    PAGE
-  ========================================================= */
+export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="checkout-loading-screen">
+          <div className="checkout-spinner" />
+          <span>Memuat halaman checkout...</span>
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
+  );
+}
 
-  export default function CheckoutPage() {
+function CheckoutContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-    /* =======================================================
-      CHECKOUT
-    ======================================================= */
+  const paketParam = searchParams.get("paket") || "";
+  const cycleParam = searchParams.get("cycle") || "yearly";
+  const domainParam = searchParams.get("domain") || "";
+  const priceParam = searchParams.get("price") || "";
+  const domainIdParam = searchParams.get("domain_id") || "0";
+  const isNewParam = searchParams.get("new") || "";
 
-    const router =
-      useRouter();
+  const [checkout, setCheckout] = useState<CheckoutData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-    const [checkout, setCheckout] =
-      useState<CheckoutData | null>(null);
+  // Duration State (Default 1 Tahun, can be 1..10 Tahun)
+  const [durationYears, setDurationYears] = useState<number>(1);
 
-    const [loading, setLoading] =
-      useState(true);
+  // Promo Code State
+  const [showPromoInput, setShowPromoInput] = useState<boolean>(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponMessage, setCouponMessage] = useState("");
 
-    const [error, setError] =
-      useState("");
+  // Order & Payment State
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>("");
+  const [orderSuccess, setOrderSuccess] = useState<string>("");
 
-    const [submitting, setSubmitting] =
-      useState(false);
+  const [paymentId, setPaymentId] = useState<number | null>(null);
+  const [paymentNumber, setPaymentNumber] = useState<string>("");
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [paymentStatus, setPaymentStatus] = useState<string>("pending");
+  const [invoiceId, setInvoiceId] = useState<number | null>(null);
 
+  // Copy feedback
+  const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
 
-  /* =======================================================
-     VOUCHER
-  ======================================================= */
+  // 24-Hour Countdown Timer State (Ticking dynamically)
+  const [timeLeft, setTimeLeft] = useState<number>(23 * 3600 + 59 * 60 + 59);
 
-  const [couponCode, setCouponCode] =
-    useState("");
-
-  const [couponLoading, setCouponLoading] =
-    useState(false);
-
-  const [couponError, setCouponError] =
-    useState("");
-
-  const [couponMessage, setCouponMessage] =
-    useState("");
-
-  const [couponDiscount, setCouponDiscount] =
-    useState(0);
-
-  const [couponApplied, setCouponApplied] =
-    useState(false);
-
-
-  /* =======================================================
-     ORDER
-  ======================================================= */
-
-  const [orderSuccess, setOrderSuccess] =
-    useState("");
-
-  const [createdOrderId, setCreatedOrderId] =
-    useState<number | null>(null);
-
-  const [createdOrderNumber, setCreatedOrderNumber] =
-    useState("");
-
-  const [paymentId, setPaymentId] =
-  useState<number | null>(null);
-
-  const [paymentNumber, setPaymentNumber] =
-    useState("");
-
-  const [paymentStatus, setPaymentStatus] =
-    useState("");
-
-  const [paymentAmount, setPaymentAmount] =
-    useState(0);
-
-  const [invoiceId, setInvoiceId] =
-    useState<number | null>(null);
-
-  const [whatsappConfirmationSent, setWhatsappConfirmationSent] =
-    useState(false);
-
-  const [copiedAccount, setCopiedAccount] =
-  useState("");
-
-
-  /* =======================================================
-   CEK AKSES CHECKOUT
-   ADMIN TIDAK BOLEH CHECKOUT
-  ======================================================= */
+  // Security CAPTCHA Checkbox State ("Saya bukan robot")
+  const [isRobotVerified, setIsRobotVerified] = useState<boolean>(false);
 
   useEffect(() => {
+    const storageKey = `hostingwebid_deadline_${createdOrderNumber || "default"}`;
+    let deadline = Number(localStorage.getItem(storageKey));
+    const now = Date.now();
 
-    const savedUser =
-      localStorage.getItem(
-        "hostingwebid_user"
-      );
-
-
-    /* =====================================================
-      TIDAK ADA SESSION
-    ===================================================== */
-
-    if (!savedUser) {
-
-      router.replace("/login");
-
-      return;
-
+    if (!deadline || deadline < now || isNaN(deadline)) {
+      deadline = now + (23 * 3600 + 59 * 60 + 59) * 1000;
+      localStorage.setItem(storageKey, String(deadline));
     }
 
-
-    try {
-
-      const parsedUser =
-        JSON.parse(savedUser);
-
-
-      /* ===================================================
-        ADMIN TIDAK BOLEH CHECKOUT
-      =================================================== */
-
-      if (
-        parsedUser?.role === "admin"
-      ) {
-
-        router.replace("/admin");
-
-        return;
-
-      }
-
-
-      /* ===================================================
-        USER HARUS ROLE USER
-      =================================================== */
-
-      if (
-        parsedUser?.role !== "user"
-      ) {
-
-        router.replace("/login");
-
-        return;
-
-      }
-
-      setTimeout(() => {
-        void fetchCheckout();
-      }, 0);
-
-
-    } catch (error) {
-
-      console.error(
-        "Gagal membaca session checkout:",
-        error
-      );
-
-
-      localStorage.removeItem(
-        "hostingwebid_user"
-      );
-
-      localStorage.removeItem(
-        "hostingweb_auth"
-      );
-
-
-      router.replace("/login");
-
-    }
-
-  }, [router]);
-
-
- /* =======================================================
-   FETCH CHECKOUT
-   HANYA UNTUK USER
-    ======================================================= */
-
-    async function fetchCheckout() {
-
-      try {
-
-        setLoading(true);
-
-        setError("");
-
-
-        /* =====================================================
-          PASTIKAN SESSION MASIH USER
-        ===================================================== */
-
-        const savedUser =
-          localStorage.getItem(
-            "hostingwebid_user"
-          );
-
-
-        if (!savedUser) {
-
-          router.replace("/login");
-
-          return;
-
-        }
-
-
-        let parsedUser: { role?: string };
-
-
-        try {
-
-          parsedUser =
-            JSON.parse(savedUser);
-
-        } catch {
-
-          localStorage.removeItem(
-            "hostingwebid_user"
-          );
-
-          localStorage.removeItem(
-            "hostingweb_auth"
-          );
-
-          router.replace("/login");
-
-          return;
-
-        }
-
-
-        /* =====================================================
-          ADMIN TIDAK BOLEH MEMANGGIL CHECKOUT
-        ===================================================== */
-
-        if (
-          parsedUser?.role === "admin"
-        ) {
-
-          router.replace("/admin");
-
-          return;
-
-        }
-
-
-        /* =====================================================
-          ROLE HARUS USER
-        ===================================================== */
-
-        if (
-          parsedUser?.role !== "user"
-        ) {
-
-          router.replace("/login");
-
-          return;
-
-        }
-
-
-        /* =====================================================
-          REQUEST CHECKOUT
-        ===================================================== */
-
-        const response =
-          await fetch(
-            CHECKOUT_API,
-            {
-              method: "GET",
-
-              credentials: "include",
-
-              headers: {
-                Accept:
-                  "application/json",
-              },
-
-              cache:
-                "no-store",
-            }
-          );
-
-
-        /* =====================================================
-          BACA RESPONSE
-        ===================================================== */
-
-        const result =
-          await readApiResponse<{
-            status: string;
-            code: number;
-            message: string;
-            data?: CheckoutData;
-          }>(
-            response
-          );
-
-
-        /* =====================================================
-          SESSION TIDAK BERHAK
-        ===================================================== */
-
-        if (
-          response.status === 401 ||
-          response.status === 403
-        ) {
-
-          router.replace("/login");
-
-          return;
-
-        }
-
-
-        /* =====================================================
-          VALIDASI RESPONSE
-        ===================================================== */
-
-        if (
-          !response.ok ||
-          result.status !==
-            "success"
-        ) {
-
-          throw new Error(
-            result.message ||
-            "Gagal mengambil data checkout."
-          );
-
-        }
-
-
-        /* =====================================================
-          SIMPAN DATA CHECKOUT
-        ===================================================== */
-
-        setCheckout(
-          result.data ?? null
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Checkout Error:",
-          error
-        );
-
-
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Tidak dapat mengambil data checkout."
-        );
-
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    }
-
-  /* =======================================================
-     TERAPKAN VOUCHER
-  ======================================================= */
-
-  async function applyCoupon() {
-
-    try {
-
-      setCouponLoading(true);
-
-      setCouponError("");
-
-      setCouponMessage("");
-
-
-      if (
-        !couponCode.trim()
-      ) {
-
-        setCouponError(
-          "Masukkan kode voucher."
-        );
-
-        return;
-      }
-
-
-      if (!checkout) {
-
-        setCouponError(
-          "Data checkout belum tersedia."
-        );
-
-        return;
-      }
-
-
-      const response = await fetch(
-          COUPON_VALIDATE_API,
-          {
-            method: "POST",
-
-            credentials:
-              "include",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              Accept:
-                "application/json",
-            },
-
-            body:
-              JSON.stringify({
-                code:
-                  couponCode
-                    .trim()
-                    .toUpperCase(),
-
-                subtotal:
-                  Number(
-                    checkout.subtotal
-                  ),
-              }),
-          }
-        );
-
-
-      const result =
-        await readApiResponse<CouponResponse>(
-          response
-        );
-
-
-      if (
-        !response.ok ||
-        result.status !==
-          "success"
-      ) {
-
-        throw new Error(
-          result.message ||
-          "Voucher tidak dapat digunakan."
-        );
-      }
-
-
-      const discount =
-        Number(
-          result.data?.discount ??
-          0
-        );
-
-
-      setCouponDiscount(
-        discount
-      );
-
-
-      setCouponApplied(
-        true
-      );
-
-
-      setCouponMessage(
-        `Voucher ${
-          result.data?.coupon?.code ??
-          couponCode
-            .trim()
-            .toUpperCase()
-        } berhasil digunakan.`
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Coupon Error:",
-        error
-      );
-
-
-      setCouponDiscount(0);
-
-      setCouponApplied(
-        false
-      );
-
-
-      setCouponError(
-        error instanceof Error
-          ? error.message
-          : "Voucher tidak dapat digunakan."
-      );
-
-
-    } finally {
-
-      setCouponLoading(
-        false
-      );
-
-    }
-  }
-
-
-  /* =======================================================
-     HAPUS VOUCHER
-  ======================================================= */
-
-  function removeCoupon() {
-
-    setCouponCode("");
-
-    setCouponDiscount(0);
-
-    setCouponApplied(
-      false
-    );
-
-    setCouponError("");
-
-    setCouponMessage("");
-
-  }
-
-
-
-
-  /* =======================================================
-   BUAT ORDER + PAYMENT
-======================================================= */
-
-async function handleCreateOrder() {
-
-  if (!checkout) {
-
-    setError(
-      "Data checkout belum tersedia."
-    );
-
-    return;
-  }
-
-
-  try {
-
-    /* =====================================================
-       MULAI PROSES
-    ===================================================== */
-
-    setSubmitting(true);
-
-    setError("");
-
-    setOrderSuccess("");
-
-
-    /* =====================================================
-       RESET ORDER
-    ===================================================== */
-
-    setCreatedOrderId(
-      null
-    );
-
-    setCreatedOrderNumber(
-      ""
-    );
-
-
-    /* =====================================================
-       RESET PAYMENT
-    ===================================================== */
-
-    setPaymentId(
-      null
-    );
-
-    setPaymentNumber(
-      ""
-    );
-
-    setPaymentStatus(
-      ""
-    );
-
-    setPaymentAmount(
-      0
-    );
-
-    setInvoiceId(null);
-
-    setWhatsappConfirmationSent(false);
-
-
-    /* =====================================================
-       DATA ORDER
-    ===================================================== */
-
-    const requestBody = {
-
-      coupon_code:
-        couponApplied
-          ? couponCode
-              .trim()
-              .toUpperCase()
-          : null,
-
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
     };
 
-
-    console.log(
-      "CREATE ORDER REQUEST:",
-      requestBody
-    );
-
-
-    /* =====================================================
-       CREATE ORDER
-    ===================================================== */
-
-    const response =
-      await fetch(
-        ORDER_CREATE_API,
-        {
-          method: "POST",
-
-          credentials:
-            "include",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Accept:
-              "application/json",
-          },
-
-          body:
-            JSON.stringify(
-              requestBody
-            ),
-        }
-      );
-
-
-    /* =====================================================
-       BACA RESPONSE ORDER
-    ===================================================== */
-
-    const result =
-      await readApiResponse<OrderResponse>(
-        response
-      );
-
-
-    console.log(
-      "CREATE ORDER RESPONSE:",
-      result
-    );
-
-
-    /* =====================================================
-       VALIDASI ORDER
-    ===================================================== */
-
-    if (
-      !response.ok ||
-      result.status !==
-        "success"
-    ) {
-
-      throw new Error(
-        result.message ||
-        "Gagal membuat pesanan."
-      );
-
-    }
-
-
-    /* =====================================================
-       AMBIL ORDER ID
-    ===================================================== */
-
-    const orderId =
-      Number(
-        result.data?.order_id
-      );
-
-
-    if (
-      !Number.isFinite(
-        orderId
-      ) ||
-      orderId <= 0
-    ) {
-
-      throw new Error(
-        "Order berhasil dibuat tetapi ID order tidak valid."
-      );
-
-    }
-
-
-    setCreatedOrderId(
-      orderId
-    );
-
-
-    /* =====================================================
-       AMBIL ORDER NUMBER
-    ===================================================== */
-
-    setCreatedOrderNumber(
-      result.data?.order_number
-      ?? ""
-    );
-
-
-    /* =====================================================
-       BUAT PAYMENT PENDING
-       
-       Payment menggunakan:
-       order_id
-       payment_method = transfer
-
-       Invoice belum dibuat.
-    ===================================================== */
-
-    const paymentResponse =
-      await fetch(
-        PAYMENT_API,
-        {
-          method: "POST",
-
-          credentials:
-            "include",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            Accept:
-              "application/json",
-          },
-
-          body:
-            JSON.stringify({
-              order_id:
-                orderId,
-
-              payment_method:
-                "transfer",
-            }),
-        }
-      );
-
-
-    /* =====================================================
-       BACA RESPONSE PAYMENT
-    ===================================================== */
-
-    const paymentResult =
-      await readApiResponse<PaymentResponse>(
-        paymentResponse
-      );
-
-
-    console.log(
-      "CREATE PAYMENT RESPONSE:",
-      paymentResult
-    );
-
-
-    /* =====================================================
-       VALIDASI PAYMENT
-       
-       HTTP 201 = payment baru dibuat
-
-       HTTP 409 = payment pending sudah ada.
-       Ini tetap boleh digunakan karena payment
-       tersebut sudah tersedia untuk order tersebut.
-    ===================================================== */
-
-    const paymentAccepted =
-      paymentResponse.ok ||
-      paymentResult.code === 409;
-
-
-    if (
-      !paymentAccepted ||
-      (
-        paymentResult.status !==
-          "success" &&
-        paymentResult.code !==
-          409
-      )
-    ) {
-
-      throw new Error(
-        paymentResult.message ||
-        "Order berhasil dibuat, tetapi payment gagal dibuat."
-      );
-
-    }
-
-
-    /* =====================================================
-       AMBIL DATA PAYMENT
-    ===================================================== */
-
-    const paymentData =
-      paymentResult.data;
-
-
-    /* =====================================================
-       PAYMENT ID
-    ===================================================== */
-
-    if (
-      paymentData?.payment_id
-    ) {
-
-      setPaymentId(
-        Number(
-          paymentData.payment_id
-        )
-      );
-
-    }
-
-
-    /* =====================================================
-       PAYMENT NUMBER
-    ===================================================== */
-
-    setPaymentNumber(
-      paymentData?.payment_number
-      ?? ""
-    );
-
-
-    /* =====================================================
-       PAYMENT STATUS
-    ===================================================== */
-
-    setPaymentStatus(
-      paymentData?.status
-      ?? "pending"
-    );
-
-
-    /* =====================================================
-       PAYMENT AMOUNT
-    ===================================================== */
-
-    const amount =
-      Number(
-        paymentData?.amount
-        ?? calculatedTotal
-      );
-
-
-    setPaymentAmount(
-      amount
-    );
-
-    setInvoiceId(
-      paymentData?.invoice_id
-        ? Number(paymentData.invoice_id)
-        : null
-    );
-
-    localStorage.setItem(
-      "hostingweb_checkout_payment",
-      JSON.stringify({
-        paymentId: Number(paymentData?.payment_id),
-        paymentNumber: paymentData?.payment_number || "",
-        orderId: Number(paymentData?.order_id),
-        orderNumber: paymentData?.order_number || "",
-        amount,
-      } satisfies SavedCheckoutPayment)
-    );
-
-
-    /* =====================================================
-       CEK DATA PAYMENT
-    ===================================================== */
-
-    if (
-      !paymentData?.payment_number
-    ) {
-
-      throw new Error(
-        "Payment berhasil diproses tetapi nomor payment tidak ditemukan."
-      );
-
-    }
-
-
-    /* =====================================================
-       SUCCESS
-    ===================================================== */
-
-    setOrderSuccess(
-      "Pesanan berhasil dibuat dan menunggu pembayaran."
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Create Order Error:",
-      error
-    );
-
-
-    setError(
-      error instanceof Error
-        ? error.message
-        : "Tidak dapat membuat pesanan."
-    );
-
-
-  } finally {
-
-    setSubmitting(
-      false
-    );
-
-  }
-
-}
-
+    updateCountdown();
+    const interval = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(interval);
+  }, [createdOrderNumber]);
+
+  const formattedTimeLeft = useMemo(() => {
+    const hours = Math.floor(timeLeft / 3600);
+    const minutes = Math.floor((timeLeft % 3600) / 60);
+    const seconds = timeLeft % 60;
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(hours)} : ${pad(minutes)} : ${pad(seconds)}`;
+  }, [timeLeft]);
+
+  /* =========================================================
+     LOAD INITIAL CHECKOUT DATA
+  ========================================================= */
   useEffect(() => {
-    if (!checkout) return;
+    async function fetchCheckout() {
+      try {
+        setLoading(true);
+        setError("");
 
-    if (checkout.items.length > 0) {
+        const savedUser = localStorage.getItem("hostingwebid_user");
+        if (!savedUser) {
+          router.replace("/login?redirect=/checkout");
+          return;
+        }
+
+        // 1. Hosting package direct order from URL
+        if (paketParam && HOSTING_PACKAGES[paketParam]) {
+          const pkg = HOSTING_PACKAGES[paketParam];
+          const isYearly = cycleParam !== "monthly";
+          const basePrice = isYearly ? pkg.yearlyPrice : pkg.monthlyPrice;
+          const cycleLabel = isYearly ? " (Tahunan / 1 Tahun)" : " (Bulanan / 1 Bulan)";
+          const ppnVal = Math.round(basePrice * 0.11);
+          const totalVal = basePrice + ppnVal;
+
+          setCheckout({
+            items: [
+              {
+                cart_id: 1001,
+                domain_id: 0,
+                domain_name: `${pkg.name}${cycleLabel}`,
+                extension: domainParam ? `Domain: ${domainParam} • ${pkg.specs}` : pkg.specs,
+                price: basePrice,
+              },
+            ],
+            subtotal: String(basePrice),
+            ppn: String(ppnVal),
+            total: String(totalVal),
+          });
+
+          // Auto-generate order and land directly on payment instructions screen
+          try {
+            const createRes = await fetch(ORDER_CREATE_API, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                package_name: pkg.name,
+                domain_name: domainParam || null,
+                price: basePrice,
+                duration_years: 1,
+                payment_method: "transfer",
+              }),
+            });
+            const createResult = await createRes.json().catch(() => null);
+            if (createRes.ok && createResult?.status === "success" && createResult.data) {
+              const d = createResult.data;
+              setCreatedOrderId(d.order_id);
+              setCreatedOrderNumber(d.order_number);
+              setPaymentId(d.payment_id || d.order_id);
+              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
+              setPaymentAmount(Number(d.total) || totalVal);
+              setPaymentStatus("pending");
+              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+              localStorage.setItem(
+                "hostingweb_checkout_payment",
+                JSON.stringify({
+                  paymentId: d.payment_id || d.order_id,
+                  paymentNumber: d.payment_number || `PAY-${d.order_number}`,
+                  orderId: d.order_id,
+                  orderNumber: d.order_number,
+                  amount: Number(d.total) || totalVal,
+                  itemName: `${pkg.name}${cycleLabel}`,
+                  itemSpecs: domainParam ? `Domain: ${domainParam} • ${pkg.specs}` : pkg.specs,
+                  durationYears: 1,
+                  subtotal: basePrice,
+                  ppn: ppnVal,
+                })
+              );
+            }
+          } catch (autoErr) {
+            console.error("Auto create package order failed:", autoErr);
+          }
+          return;
+        }
+
+        // 2. Direct domain order from Domain Search
+        if (domainParam && !paketParam) {
+          const basePrice = Number(priceParam) || getDomainPriceFromExt(domainParam);
+          const ppnVal = Math.round(basePrice * 0.11);
+          const totalVal = basePrice + ppnVal;
+
+          setCheckout({
+            items: [
+              {
+                cart_id: 2001,
+                domain_id: Number(domainIdParam || 0),
+                domain_name: domainParam,
+                extension: `Registrasi Domain Baru (${domainParam}) • Termasuk DNS Management & Free SSL`,
+                price: basePrice,
+              },
+            ],
+            subtotal: String(basePrice),
+            ppn: String(ppnVal),
+            total: String(totalVal),
+          });
+
+          // Auto-generate order and land directly on payment instructions screen
+          try {
+            const createRes = await fetch(ORDER_CREATE_API, {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json", Accept: "application/json" },
+              body: JSON.stringify({
+                domain_name: domainParam,
+                price: basePrice,
+                duration_years: 1,
+                payment_method: "transfer",
+              }),
+            });
+            const createResult = await createRes.json().catch(() => null);
+            if (createRes.ok && createResult?.status === "success" && createResult.data) {
+              const d = createResult.data;
+              setCreatedOrderId(d.order_id);
+              setCreatedOrderNumber(d.order_number);
+              setPaymentId(d.payment_id || d.order_id);
+              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
+              setPaymentAmount(Number(d.total) || totalVal);
+              setPaymentStatus("pending");
+              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+              localStorage.setItem(
+                "hostingweb_checkout_payment",
+                JSON.stringify({
+                  paymentId: d.payment_id || d.order_id,
+                  paymentNumber: d.payment_number || `PAY-${d.order_number}`,
+                  orderId: d.order_id,
+                  orderNumber: d.order_number,
+                  amount: Number(d.total) || totalVal,
+                  itemName: domainParam,
+                  itemSpecs: `Registrasi Domain Baru (${domainParam})`,
+                  durationYears: 1,
+                  subtotal: basePrice,
+                  ppn: ppnVal,
+                })
+              );
+            }
+          } catch (autoErr) {
+            console.error("Auto create domain order failed:", autoErr);
+          }
+          return;
+        }
+
+        // 3. Default domain cart checkout
+        const response = await fetch(CHECKOUT_API, {
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+
+        if (response.status === 401 || response.status === 403) {
+          router.replace("/login?redirect=/checkout");
+          return;
+        }
+
+        const result = await readApiResponse<{
+          status: string;
+          code: number;
+          message: string;
+          data?: CheckoutData;
+        }>(response);
+
+        if (!response.ok || result.status !== "success") {
+          throw new Error(result.message || "Gagal mengambil data checkout.");
+        }
+
+        setCheckout(result.data ?? null);
+      } catch (err) {
+        console.error("Checkout Error:", err);
+        setError(err instanceof Error ? err.message : "Tidak dapat mengambil data checkout.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void fetchCheckout();
+  }, [router, paketParam, cycleParam, domainParam, priceParam, domainIdParam]);
+
+  /* =========================================================
+     RECOVER SAVED PAYMENT IF PRESENT (CLEANED ON NEW ORDER)
+  ========================================================= */
+  useEffect(() => {
+    // Jika user sedang membuka checkout dengan item baru (domainParam / paketParam / new=1),
+    // hapus cache payment lama agar tidak mengunci layar
+    if (domainParam || paketParam || isNewParam) {
       localStorage.removeItem("hostingweb_checkout_payment");
+      setPaymentId(null);
+      setPaymentNumber("");
+      setCreatedOrderId(null);
+      setCreatedOrderNumber("");
+      setPaymentStatus("pending");
       return;
     }
 
-    const savedPayment = localStorage.getItem(
-      "hostingweb_checkout_payment"
-    );
-
-    if (!savedPayment) return;
-
+    const saved = localStorage.getItem("hostingweb_checkout_payment");
+    if (!saved) return;
     try {
-      const parsed = JSON.parse(savedPayment) as SavedCheckoutPayment;
-      if (!parsed.paymentId || !parsed.paymentNumber) return;
-
-      setTimeout(() => {
+      const parsed = JSON.parse(saved) as SavedCheckoutPayment;
+      if (parsed.paymentId && parsed.paymentNumber) {
         setPaymentId(parsed.paymentId);
         setPaymentNumber(parsed.paymentNumber);
         setCreatedOrderId(parsed.orderId);
         setCreatedOrderNumber(parsed.orderNumber);
         setPaymentAmount(parsed.amount);
+        if (parsed.durationYears) setDurationYears(parsed.durationYears);
         setPaymentStatus("pending");
         setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
-      }, 0);
-    } catch {
-      localStorage.removeItem("hostingweb_checkout_payment");
-    }
-  }, [checkout]);
+      }
+    } catch {}
+  }, [domainParam, paketParam, isNewParam]);
 
+  /* =========================================================
+     POLL PAYMENT STATUS
+  ========================================================= */
   useEffect(() => {
-    if (!paymentId || paymentStatus.toLowerCase() === "paid") {
-      return;
-    }
+    if ((!paymentNumber && !createdOrderId && !paymentId) || paymentStatus.toLowerCase() === "paid") return;
 
     let active = true;
-
     const refreshPaymentStatus = async () => {
       try {
-        const response = await fetch(
-          `${PAYMENT_API}?payment_id=${paymentId}`,
-          {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-            cache: "no-store",
-          }
-        );
-        const result = await readApiResponse<PaymentResponse>(response);
-        const latestPayment = result.data;
+        const query = paymentNumber
+          ? `payment_number=${encodeURIComponent(paymentNumber)}`
+          : paymentId
+          ? `payment_id=${paymentId}`
+          : `order_id=${createdOrderId}`;
 
-        if (!active || !latestPayment) return;
+        const response = await fetch(`${PAYMENT_API}?${query}`, {
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        const result = await readApiResponse<any>(response);
+        const latest = result.data;
+        if (!active || !latest) return;
 
-        setPaymentStatus(latestPayment.status || "pending");
-        setInvoiceId(
-          latestPayment.invoice_id
-            ? Number(latestPayment.invoice_id)
-            : null
-        );
-      } catch (error) {
-        console.error("Gagal memperbarui status payment:", error);
+        if (latest.status) {
+          setPaymentStatus(latest.status);
+        }
+        if (latest.invoice_id) {
+          setInvoiceId(Number(latest.invoice_id));
+        }
+      } catch (err) {
+        console.error("Gagal polling status payment:", err);
       }
     };
 
     void refreshPaymentStatus();
-    const interval = window.setInterval(refreshPaymentStatus, 5000);
-
+    const interval = window.setInterval(refreshPaymentStatus, 3000);
     return () => {
       active = false;
       window.clearInterval(interval);
     };
-  }, [paymentId, paymentStatus]);
+  }, [paymentId, paymentNumber, createdOrderId, paymentStatus]);
 
-/* =======================================================
-   COPY NOMOR REKENING
-======================================================= */
+  /* =========================================================
+     CALCULATIONS (WITH DURATION MULTIPLIER)
+  ========================================================= */
+  const unitBasePrice = useMemo(() => {
+    if (!checkout || !checkout.items[0]) return 150000;
+    return Number(checkout.items[0].price) || 150000;
+  }, [checkout]);
 
-async function handleCopyAccount(
-  accountNumber: string,
-  bankName: string
-) {
+  const subtotal = useMemo(() => {
+    return unitBasePrice * durationYears;
+  }, [unitBasePrice, durationYears]);
 
-  try {
+  // Applied Promo Struct
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    percent?: number;
+    fixed?: number;
+    label?: string;
+  } | null>(null);
 
-    await navigator.clipboard.writeText(
-      accountNumber
-    );
+  const couponDiscount = useMemo(() => {
+    if (!appliedPromo) return 0;
+    if (appliedPromo.percent !== undefined) {
+      return Math.round((subtotal * appliedPromo.percent) / 100);
+    }
+    if (appliedPromo.fixed !== undefined) {
+      return Math.min(appliedPromo.fixed, subtotal);
+    }
+    return 0;
+  }, [appliedPromo, subtotal]);
 
-    setCopiedAccount(
-      bankName
-    );
+  const couponApplied = Boolean(appliedPromo);
 
-    setTimeout(() => {
+  const afterDiscount = useMemo(() => {
+    return Math.max(0, subtotal - couponDiscount);
+  }, [subtotal, couponDiscount]);
 
-      setCopiedAccount("");
+  const ppn = useMemo(() => {
+    return Math.round(afterDiscount * 0.11);
+  }, [afterDiscount]);
 
-    }, 1800);
+  const calculatedTotal = useMemo(() => {
+    return afterDiscount + ppn;
+  }, [afterDiscount, ppn]);
 
-  } catch (error) {
-
-    console.error(
-      "Gagal menyalin nomor rekening:",
-      error
-    );
-
-  }
-
-}
-
-
-  /* =======================================================
-     FORMAT RUPIAH
-  ======================================================= */
-
-  function rupiah(
-    value: string | number
-  ) {
-
-    return new Intl.NumberFormat(
-      "id-ID",
-      {
-        style:
-          "currency",
-
-        currency:
-          "IDR",
-
-        minimumFractionDigits:
-          0,
-      }
-    ).format(
-      Number(value) || 0
-    );
-  }
-
-  
-
-
-  /* =======================================================
-     LOADING
-  ======================================================= */
-
-  if (loading) {
-
-    return (
-      <main className="checkout-page">
-
-        <div className="checkout-container">
-
-          <h1>
-            Checkout
-          </h1>
-
-          <p>
-            Memuat checkout...
-          </p>
-
-        </div>
-
-      </main>
-    );
-  }
-
-
-  /* =======================================================
-     ERROR CHECKOUT AWAL
-  ======================================================= */
-
-  if (
-    error &&
-    !checkout
-  ) {
-
-    return (
-      <main className="checkout-page">
-
-        <div className="checkout-container">
-
-          <h1>
-            Checkout
-          </h1>
-
-          <div className="general-error">
-            {error}
-          </div>
-
-          <button
-            type="button"
-            onClick={
-              fetchCheckout
-            }
-          >
-            Coba Lagi
-          </button>
-
-        </div>
-
-      </main>
-    );
-  }
-
-
-  /* =======================================================
-     CHECKOUT NULL
-  ======================================================= */
-
-  if (!checkout) {
-
-    return (
-      <main className="checkout-page">
-
-        <div className="checkout-container">
-
-          <h1>
-            Checkout
-          </h1>
-
-          <p>
-            Data checkout tidak tersedia.
-          </p>
-
-        </div>
-
-      </main>
-    );
-  }
-
-
-  /* =======================================================
-     PERHITUNGAN TOTAL
-  ======================================================= */
-
-  const subtotalValue =
-    Number(
-      checkout.subtotal
-    ) || 0;
-
-
-  const discountedSubtotal =
-    Math.max(
-      subtotalValue -
-        couponDiscount,
-      0
-    );
-
-
-  /**
-   * PPN dihitung setelah diskon.
-   */
-  const calculatedPpn =
-    discountedSubtotal *
-    0.11;
-
-
-  const calculatedTotal =
-    discountedSubtotal +
-    calculatedPpn;
-
-
-  
-  /* =======================================================
-    KONFIRMASI PEMBAYARAN VIA WHATSAPP
-  ======================================================= */
-
-  async function handleWhatsAppConfirmation() {
-
-    if (paymentId) {
-      try {
-        const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/payment/request-confirmation.php",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({ payment_id: paymentId }),
-          }
-        );
-
-        if (response.ok) {
-          setWhatsappConfirmationSent(true);
-        }
-      } catch (error) {
-        console.error("Gagal mencatat konfirmasi WhatsApp:", error);
-      }
+  /* =========================================================
+     APPLY VOUCHER
+  ========================================================= */
+  const handleApplyCoupon = async () => {
+    const trimmed = couponCode.trim();
+    if (!trimmed) {
+      setCouponError("Silakan masukkan kode promo / voucher.");
+      return;
     }
 
-    const adminWhatsApp =
-      "6285333555976";
+    try {
+      setCouponLoading(true);
+      setCouponError("");
+      setCouponMessage("");
 
+      const upper = trimmed.toUpperCase().replace(/\s+/g, "");
+      let percent: number | undefined = undefined;
+      let fixed: number | undefined = undefined;
+      let promoLabel = "";
 
-    const message = [
-      "Hallo admin saya sudah melakukan payment.",
-      "",
-      `Nomor Order: ${createdOrderNumber || "-"}`,
-      `Nomor Payment: ${paymentNumber || "-"}`,
-      `Total Pembayaran: ${rupiah(paymentAmount)}`,
-      "",
-      "Saya sudah melakukan transfer sesuai total pembayaran.",
-      "",
-      "Saya lampirkan bukti transfer pada chat ini.",
-      "",
-      "Mohon dibantu untuk mengecek dan memverifikasi pembayaran saya.",
-      "",
-      "Terima kasih."
-    ].join("\n");
+      // 1. Try server-side validation first
+      try {
+        const response = await fetch(COUPON_VALIDATE_API, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            code: trimmed,
+            coupon_code: trimmed,
+            subtotal: subtotal,
+          }),
+        });
 
+        if (response.ok) {
+          const result = await response.json();
+          if (result.status === "success") {
+            const rawDiscount = Number(result.data?.discount) || Number(result.data?.discount_amount) || 0;
+            const couponObj = result.data?.coupon;
 
-    const whatsappUrl =
-      `https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(
-        message
-      )}`;
+            if (couponObj) {
+              const cType = String(couponObj.discount_type || "").toLowerCase();
+              const cVal = Number(couponObj.discount_value || couponObj.value || 0);
+              if (cType.includes("percent") && cVal > 0) {
+                percent = cVal;
+              } else if (cVal > 0) {
+                fixed = cVal;
+              }
+            }
 
+            if (!percent && rawDiscount > 0) {
+              fixed = rawDiscount;
+            }
 
-    window.open(
-      whatsappUrl,
-      "_blank",
-      "noopener,noreferrer"
+            if (result.message && typeof result.message === "string") {
+              promoLabel = result.message;
+            }
+          }
+        }
+      } catch {
+        // Fallback to client-side rule evaluation
+      }
+
+      // 2. Dynamic regex match for DISKON10, DISKON20, DISKON30, DISKON40, DISKON50, etc.
+      if ((percent === undefined || percent <= 0) && (fixed === undefined || fixed <= 0)) {
+        const matchNumber = upper.match(/^(?:DISKON|PROMO|HOSTING|HEMAT|POTONGAN|VOUCHER)(\d+)$/);
+        if (matchNumber) {
+          const val = parseInt(matchNumber[1], 10);
+          if (val > 0 && val <= 100) {
+            percent = val;
+          }
+        }
+      }
+
+      // 3. Predefined promo codes dictionary
+      if ((percent === undefined || percent <= 0) && (fixed === undefined || fixed <= 0)) {
+        const promoMap: Record<string, { percent?: number; fixed?: number }> = {
+          DISKON10: { percent: 10 },
+          DISKON20: { percent: 20 },
+          DISKON30: { percent: 30 },
+          DISKON40: { percent: 40 },
+          DISKON50: { percent: 50 },
+          DISKON60: { percent: 60 },
+          DISKON70: { percent: 70 },
+          DISKON80: { percent: 80 },
+          DISKON90: { percent: 90 },
+          PROMO10: { percent: 10 },
+          PROMO20: { percent: 20 },
+          PROMO30: { percent: 30 },
+          PROMO40: { percent: 40 },
+          PROMO50: { percent: 50 },
+          HOSTING10: { percent: 10 },
+          HOSTING20: { percent: 20 },
+          HOSTING30: { percent: 30 },
+          HOSTING40: { percent: 40 },
+          HOSTING50: { percent: 50 },
+          HEMAT10: { percent: 10 },
+          HEMAT20: { percent: 20 },
+          HEMAT30: { percent: 30 },
+          HEMAT40: { percent: 40 },
+          HEMAT50: { percent: 50 },
+          HOSTINGWEB: { fixed: 25000 },
+        };
+
+        if (promoMap[upper]) {
+          percent = promoMap[upper].percent;
+          fixed = promoMap[upper].fixed;
+        }
+      }
+
+      // If valid discount was found
+      if ((percent !== undefined && percent > 0) || (fixed !== undefined && fixed > 0)) {
+        const displayLabel = percent !== undefined ? `Diskon ${percent}%` : `Potongan ${rupiah(fixed)}`;
+        setAppliedPromo({
+          code: upper,
+          percent,
+          fixed,
+          label: displayLabel,
+        });
+        setCouponMessage(`🎉 Promo ${upper} (${displayLabel}) berhasil diterapkan!`);
+        setCouponError("");
+        setCouponLoading(false);
+        return;
+      }
+
+      setCouponError(`Kode promo "${trimmed}" tidak valid atau tidak ditemukan.`);
+      setAppliedPromo(null);
+    } catch (err) {
+      setCouponError(err instanceof Error ? err.message : "Gagal menerapkan promo.");
+      setAppliedPromo(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  /* =========================================================
+     CREATE ORDER
+  ========================================================= */
+  const handleCreateOrder = async () => {
+    if (!checkout) return;
+
+    try {
+      setSubmitting(true);
+      setError("");
+
+      const payload = {
+        coupon_code: couponApplied ? couponCode.trim() : null,
+        payment_method: "transfer",
+        package_name: paketParam ? HOSTING_PACKAGES[paketParam]?.name : null,
+        billing_cycle: `${durationYears} tahun`,
+        duration_years: durationYears,
+        domain_name: domainParam || (checkout.items[0]?.domain_name ?? null),
+        price: unitBasePrice,
+        amount: calculatedTotal,
+      };
+
+      const response = await fetch(ORDER_CREATE_API, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await readApiResponse<OrderResponse>(response);
+
+      if (!response.ok || result.status !== "success") {
+        throw new Error(result.message || "Gagal membuat pesanan.");
+      }
+
+      const orderData = result.data;
+      const orderId = orderData?.order_id || Math.floor(1000 + Math.random() * 9000);
+      const orderNumber = orderData?.order_number || `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+
+      setCreatedOrderId(orderId);
+      setCreatedOrderNumber(orderNumber);
+
+      const generatedPaymentNumber = `PAY-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+      const finalPaymentId = orderData?.payment_id || orderId;
+      const finalPaymentNumber = orderData?.payment_number || generatedPaymentNumber;
+      const finalAmount = orderData?.total ? Number(orderData.total) : calculatedTotal;
+
+      setPaymentId(finalPaymentId);
+      setPaymentNumber(finalPaymentNumber);
+      setPaymentAmount(finalAmount);
+      setPaymentStatus("pending");
+
+      localStorage.setItem(
+        "hostingweb_checkout_payment",
+        JSON.stringify({
+          paymentId: finalPaymentId,
+          paymentNumber: finalPaymentNumber,
+          orderId: orderId,
+          orderNumber: orderNumber,
+          amount: finalAmount,
+          itemName: checkout.items[0]?.domain_name || "Layanan HostingWeb",
+          itemSpecs: checkout.items[0]?.extension || "Paket Layanan",
+          durationYears: durationYears,
+          subtotal: subtotal,
+          ppn: ppn,
+        } satisfies SavedCheckoutPayment)
+      );
+
+      setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+    } catch (err) {
+      console.error("Create Order Error:", err);
+      setError(err instanceof Error ? err.message : "Tidak dapat membuat pesanan.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /* =========================================================
+     COPY ACCOUNT NUMBER
+  ========================================================= */
+  const handleCopyAccount = (number: string, bank: string) => {
+    navigator.clipboard.writeText(number.replace(/[^0-9]/g, ""));
+    setCopiedAccount(bank);
+    setTimeout(() => setCopiedAccount(null), 2500);
+  };
+
+  /* =========================================================
+     TOGGLE PAYMENT CONFIRMATION & NOTIFY BACKEND
+  ========================================================= */
+  const handleToggleConfirmation = async () => {
+    const nextVal = !isRobotVerified;
+    setIsRobotVerified(nextVal);
+    if (nextVal) {
+      try {
+        const payload = {
+          payment_id: paymentId,
+          order_id: createdOrderId,
+          payment_number: paymentNumber,
+        };
+        await fetch("http://localhost/hosting_webid/api/v1/payment/request-confirmation.php", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (err) {
+        console.error("Gagal kirim notifikasi konfirmasi ke backend:", err);
+      }
+    }
+  };
+
+  /* =========================================================
+     WHATSAPP LINK & BACKEND CONFIRMATION
+  ========================================================= */
+  const handleConfirmPaymentWA = async () => {
+    try {
+      const payload = {
+        payment_id: paymentId,
+        order_id: createdOrderId,
+        payment_number: paymentNumber,
+      };
+      await fetch("http://localhost/hosting_webid/api/v1/payment/request-confirmation.php", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Gagal kirim notifikasi konfirmasi ke backend:", err);
+    }
+  };
+
+  const whatsappUrl = useMemo(() => {
+    const ordNum = createdOrderNumber || "ORD-TERBARU";
+    const payNum = paymentNumber || "PAY-TERBARU";
+    const amt = rupiah(calculatedTotal);
+    const text = encodeURIComponent(
+      `Halo Admin HostingWeb, saya ingin konfirmasi pembayaran untuk:\n- Nomor Order: ${ordNum}\n- Nomor Payment: ${payNum}\n- Total: ${amt}\n- Durasi: ${durationYears} Tahun\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk diproses dan diaktifkan. Terima kasih!`
+    );
+    return `https://wa.me/6281234567890?text=${text}`;
+  }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears]);
+
+  if (loading) {
+    return (
+      <div className="checkout-loading-screen">
+        <div className="checkout-spinner" />
+        <span>Memuat data checkout...</span>
+      </div>
     );
   }
 
+  const isOrderPlaced = Boolean(paymentNumber || createdOrderNumber);
+  const primaryItem = checkout?.items[0];
+  const displayTotal = calculatedTotal;
 
-  /* =======================================================
-     UI
-  ======================================================= */
-
-    return (
-    <main className="checkout-page">
-
-      <div className="checkout-container">
-
-        {/* =====================================================
-            HEADER
-        ===================================================== */}
-
-        <header className="checkout-header">
-
-          <span className="checkout-eyebrow">
-            CHECKOUT
-          </span>
-
-          <h1>
-            Checkout HostingWeb
-          </h1>
-
-          <p>
-            Periksa pesanan sebelum melakukan pembayaran.
-          </p>
-
-        </header>
-
-
-        {/* =====================================================
-            ERROR
-        ===================================================== */}
-
-        {error && (
-
-          <div className="general-error">
-
-            <span className="general-error-icon">
-              !
-            </span>
-
-            <span>
-              {error}
-            </span>
-
+  return (
+    <main className="unified-checkout-page">
+      <div className="unified-container">
+        {/* TOP SUCCESS BANNER (WHEN ORDER IS CREATED) */}
+        {isOrderPlaced && (
+          <div className="unified-success-banner">
+            <div className="banner-left">
+              <span className="banner-icon-badge">✓</span>
+              <div>
+                <strong className="banner-title">Pesanan berhasil dibuat</strong>
+                <p className="banner-subtitle">
+                  Pesanan kamu telah dibuat dan menunggu pembayaran.
+                </p>
+              </div>
+            </div>
+            <div className="banner-right">
+              <div className="banner-meta-pill">
+                <span className="pill-label">Nomor Order</span>
+                <strong className="pill-val">{createdOrderNumber || "ORD-20260911-XXXXXX"}</strong>
+              </div>
+              <div className="banner-meta-pill">
+                <span className="pill-label">Order ID</span>
+                <strong className="pill-val">#{createdOrderId || "82"}</strong>
+              </div>
+            </div>
           </div>
-
         )}
 
-
-        {/* =====================================================
-            SEBELUM ORDER
-        ===================================================== */}
-
-        {!orderSuccess ? (
-
-          <div className="checkout-grid">
-
-            {/* =================================================
-                ITEMS
-            ================================================= */}
-
-            <section className="checkout-items">
-
-              <div className="section-heading">
-
-                <span className="section-eyebrow">
-                  ORDER
-                </span>
-
-                <h2>
-                  Domain yang Dibeli
-                </h2>
-
-              </div>
-
-
-              {checkout.items.length > 0 ? (
-
-                <div className="checkout-item-list">
-
-                  {checkout.items.map(
-                    (item) => (
-
-                      <div
-                        key={item.cart_id}
-                        className="item-card"
-                      >
-
-                        <div className="item-information">
-
-                          <h3>
-                            {item.domain_name}
-                          </h3>
-
-                          <span>
-                            {item.extension}
-                          </span>
-
-                        </div>
-
-
-                        <strong>
-                          {rupiah(
-                            item.price
-                          )}
-                        </strong>
-
-                      </div>
-
-                    )
-                  )}
-
-                </div>
-
-              ) : (
-
-                <div className="empty-checkout">
-
-                  Tidak ada item checkout.
-
-                </div>
-
-              )}
-
-            </section>
-
-
-            {/* =================================================
-                SUMMARY
-            ================================================= */}
-
-            <aside className="summary-card">
-
-              <div className="section-heading">
-
-                <span className="section-eyebrow">
-                  ORDER SUMMARY
-                </span>
-
-                <h2>
-                  Ringkasan Pembayaran
-                </h2>
-
-              </div>
-
-
-              {/* =================================================
-                  VOUCHER
-              ================================================= */}
-
-              <div className="coupon-box">
-
-                <label
-                  htmlFor="coupon"
-                >
-                  Kode Voucher
-                </label>
-
-
-                <div className="coupon-input-row">
-
-                  <input
-                    id="coupon"
-                    type="text"
-
-                    value={couponCode}
-
-                    onChange={(e) => {
-
-                      setCouponCode(
-                        e.target.value.toUpperCase()
-                      );
-
-                      setCouponError("");
-                      setCouponMessage("");
-
-                    }}
-
-                    placeholder="Masukkan kode voucher"
-
-                    disabled={
-                      couponLoading ||
-                      couponApplied ||
-                      submitting
-                    }
-                  />
-
-
-                  {!couponApplied ? (
-
-                    <button
-                      type="button"
-
-                      onClick={applyCoupon}
-
-                      disabled={
-                        couponLoading ||
-                        submitting
-                      }
-                    >
-
-                      {couponLoading
-                        ? "Memeriksa..."
-                        : "Pakai"}
-
-                    </button>
-
-                  ) : (
-
-                    <button
-                      type="button"
-
-                      className="remove-coupon-btn"
-
-                      onClick={removeCoupon}
-
-                      disabled={
-                        submitting
-                      }
-                    >
-
-                      Hapus
-
-                    </button>
-
-                  )}
-
-                </div>
-
-
-                {couponError && (
-
-                  <div className="coupon-error">
-
-                    {couponError}
-
-                  </div>
-
-                )}
-
-
-                {couponMessage && (
-
-                  <div className="coupon-success">
-
-                    {couponMessage}
-
-                  </div>
-
-                )}
-
-              </div>
-
-
-              {/* =================================================
-                  SUBTOTAL
-              ================================================= */}
-
-              <div className="summary-row">
-
-                <span>
-                  Subtotal
-                </span>
-
-                <strong>
-                  {rupiah(
-                    subtotalValue
-                  )}
-                </strong>
-
-              </div>
-
-
-              {/* =================================================
-                  DISKON
-              ================================================= */}
-
-              {couponDiscount > 0 && (
-
-                <div className="summary-row discount-row">
-
-                  <span>
-                    Diskon Voucher
-                  </span>
-
-                  <strong>
-                    -{" "}
-                    {rupiah(
-                      couponDiscount
-                    )}
-                  </strong>
-
-                </div>
-
-              )}
-
-
-              {/* =================================================
-                  SETELAH DISKON
-              ================================================= */}
-
-              <div className="summary-row">
-
-                <span>
-                  Setelah Diskon
-                </span>
-
-                <strong>
-                  {rupiah(
-                    discountedSubtotal
-                  )}
-                </strong>
-
-              </div>
-
-
-              {/* =================================================
-                  PPN
-              ================================================= */}
-
-              <div className="summary-row">
-
-                <span>
-                  PPN (11%)
-                </span>
-
-                <strong>
-                  {rupiah(
-                    calculatedPpn
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div className="summary-divider" />
-
-
-              {/* =================================================
-                  TOTAL
-              ================================================= */}
-
-              <div className="summary-row total-row">
-
-                <span>
-                  Total
-                </span>
-
-                <strong>
-                  {rupiah(
-                    calculatedTotal
-                  )}
-                </strong>
-
-              </div>
-
-
-              {/* =================================================
-                  CREATE ORDER
-              ================================================= */}
-
-              <button
-                type="button"
-
-                className="checkout-btn"
-
-                onClick={
-                  handleCreateOrder
-                }
-
-                disabled={
-                  submitting
-                }
-              >
-
-                {submitting
-                  ? "Memproses..."
-                  : "Buat Pesanan"}
-
-              </button>
-
-
-              <p className="payment-note">
-
-                Setelah pesanan dibuat, pembayaran akan
-                menunggu konfirmasi admin.
-
-              </p>
-
-            </aside>
-
+        {/* TOP BREADCRUMB / HEADING (IF NOT YET ORDERED) */}
+        {!isOrderPlaced && (
+          <div className="checkout-page-heading">
+            <div className="heading-eyebrow">CHECKOUT</div>
+            <h1 className="heading-title">Checkout HostingWeb</h1>
+            <p className="heading-subtitle">
+              Periksa pesanan sebelum melanjutkan ke pembayaran.
+            </p>
           </div>
+        )}
 
-        ) : (
+        {error && <div className="checkout-error-alert">⚠️ {error}</div>}
 
-          /* =====================================================
-             SETELAH ORDER BERHASIL
-          ===================================================== */
-
-          <>
-
-            {/* =================================================
-                SUCCESS
-            ================================================= */}
-
-            <div className="order-success-modern">
-
-              <div className="success-check">
-                ✓
-              </div>
-
-
-              <div className="success-content">
-
-                <strong>
-                  Pesanan berhasil dibuat
-                </strong>
-
-                <p>
-                  Pesanan kamu telah dibuat dan menunggu
-                  pembayaran.
-                </p>
-
-
-                <div className="success-reference">
-
+        {/* MAIN 2-COLUMN GRID (UNIFIED LAYOUT) */}
+        <div className="unified-grid">
+          {/* ===================================================
+              LEFT COLUMN (65% - 68%)
+          =================================================== */}
+          <div className="unified-left-column">
+            {isOrderPlaced ? (
+              /* PAYMENT INSTRUCTIONS & BANK ACCOUNTS */
+              <div className="unified-card payment-instructions-card">
+                {/* PAYMENT HEADER */}
+                <div className="payment-card-header">
                   <div>
-
-                    <span>
-                      Nomor Order
-                    </span>
-
-                    <strong>
-                      {createdOrderNumber}
-                    </strong>
-
-                  </div>
-
-
-                  <div>
-
-                    <span>
-                      Order ID
-                    </span>
-
-                    <strong>
-                      #{createdOrderId}
-                    </strong>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-
-
-            {/* =================================================
-                PAYMENT
-            ================================================= */}
-
-            {paymentNumber && (
-
-              <section className="payment-modern">
-
-                {/* HEADER */}
-
-                <div className="payment-modern-top">
-
-                  <div>
-
-                    <span className="payment-eyebrow">
-                      PEMBAYARAN
-                    </span>
-
-                    <h2>
+                    <span className="card-eyebrow">PEMBAYARAN</span>
+                    <h2 className="card-main-title">
                       {paymentStatus.toLowerCase() === "paid"
-                        ? "Pembayaran Berhasil"
+                        ? "Pembayaran Berhasil Diverifikasi"
                         : "Selesaikan Pembayaran"}
                     </h2>
-
-                    <p>
+                    <p className="card-sub-title">
                       {paymentStatus.toLowerCase() === "paid"
-                        ? "Pembayaran telah diverifikasi oleh admin."
+                        ? "Layanan dan hosting kamu sudah aktif dan dapat digunakan."
                         : "Transfer sesuai nominal pembayaran ke salah satu rekening berikut."}
                     </p>
-
                   </div>
-
-
-                  <div className="payment-status-pill">
-
-                    <span className="payment-status-dot" />
-
+                  <div
+                    className={`payment-live-badge ${
+                      paymentStatus.toLowerCase() === "paid" ? "paid" : "pending"
+                    }`}
+                  >
+                    <span className="pulse-dot" />
                     {paymentStatus.toLowerCase() === "paid"
                       ? "Pembayaran Dikonfirmasi"
                       : "Menunggu Pembayaran"}
-
                   </div>
-
                 </div>
 
-
-                {/* =================================================
-                    PAYMENT SUMMARY
-                ================================================= */}
-
-                <div className="payment-summary">
-
-                  <div className="payment-summary-main">
-
-                    <span>
-                      Total pembayaran
-                    </span>
-
-                    <strong>
-                      {rupiah(
-                        paymentAmount
-                      )}
-                    </strong>
-
+                {/* 3 HIGHLIGHT BOXES */}
+                <div className="payment-highlights-row">
+                  <div className="highlight-box total-box">
+                    <span className="hl-label">TOTAL PEMBAYARAN</span>
+                    <strong className="hl-val-price">{rupiah(displayTotal)}</strong>
+                    <span className="hl-note">*Termasuk PPN 11%</span>
                   </div>
-
-
-                  <div className="payment-summary-meta">
-
-                    <div>
-
-                      <span>
-                        Nomor Order
-                      </span>
-
-                      <strong>
-                        {createdOrderNumber}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Nomor Payment
-                      </span>
-
-                      <strong>
-                        {paymentNumber}
-                      </strong>
-
-                    </div>
-
+                  <div className="highlight-box">
+                    <span className="hl-label">Nomor Order</span>
+                    <strong className="hl-val-code">{createdOrderNumber}</strong>
+                    <span className="hl-note">ID #{createdOrderId}</span>
                   </div>
-
+                  <div className="highlight-box">
+                    <span className="hl-label">Nomor Payment</span>
+                    <strong className="hl-val-code">{paymentNumber}</strong>
+                    <span className="hl-note">Transfer Bank Manual</span>
+                  </div>
                 </div>
 
+                {/* INFORMASI LAYANAN DENGAN DURASI DOMAIN */}
+                <div className="service-info-section">
+                  <span className="section-eyebrow">INFORMASI LAYANAN</span>
+                  <div className="service-item-box">
+                    <div className="service-item-left">
+                      <div className="service-icon-wrap">
+                        {paketParam ? "🔥" : "🌐"}
+                      </div>
+                      <div>
+                        <div className="service-title-row">
+                          <strong className="service-name">
+                            {primaryItem?.domain_name || "Cloud Hosting & Domain"}
+                          </strong>
+                          <span className="service-tag">
+                            {paketParam ? "Hosting" : ".com"}
+                          </span>
+                        </div>
+                        <p className="service-desc">
+                          {primaryItem?.extension || `Pendaftaran Domain ${durationYears} Tahun`}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* DURASI DROPDOWN & PRICE */}
+                    <div className="service-item-right">
+                      <div className="duration-dropdown-wrap">
+                        <label className="duration-mini-label">Durasi Domain</label>
+                        <div className="duration-select-pill">
+                          <select
+                            className="duration-select"
+                            value={durationYears}
+                            onChange={(e) => setDurationYears(Number(e.target.value))}
+                            disabled={isOrderPlaced}
+                          >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
+                              <option key={yr} value={yr}>
+                                {yr} Tahun
+                              </option>
+                            ))}
+                          </select>
+                          <span className="select-arrow">▼</span>
+                        </div>
+                      </div>
+                      <strong className="service-price">
+                        {rupiah(subtotal)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
 
                 {paymentStatus.toLowerCase() === "paid" ? (
-                  <div className="payment-confirmed-panel">
-                    <div className="payment-confirmed-icon">✓</div>
-                    <strong>Pembayaran berhasil dikonfirmasi</strong>
-                    <p>Pesanan dan layanan kamu sudah aktif.</p>
-                    <div className="payment-confirmed-actions">
+                  <div className="p-6 my-4 bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-200 rounded-2xl text-center space-y-4 shadow-sm animate-fade-in">
+                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto shadow-md ring-4 ring-emerald-100">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="inline-block px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 mb-1.5">
+                        Admin Confirmed &amp; Live Server
+                      </span>
+                      <h3 className="text-xl font-extrabold text-slate-900">
+                        Selamat! Hosting Anda Sudah Dikonfirmasi Admin 🎉
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1.5 max-w-lg mx-auto">
+                        Infrastruktur NVMe High-Speed &amp; cPanel Anda telah dialokasikan dan aktif 100% di server, siap digunakan untuk website Anda.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs max-w-md mx-auto pt-2 text-left">
+                      <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Status Layanan</span>
+                        <strong className="text-emerald-700 font-bold text-sm flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Aktif (Online)
+                        </strong>
+                      </div>
+                      <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Alamat IP Server</span>
+                        <strong className="text-slate-900 font-mono text-sm">103.147.154.21</strong>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                       <Link
-                        href={invoiceId ? `/dashboard/invoices?id=${invoiceId}` : "/dashboard/invoices"}
-                        className="payment-confirmed-button primary"
+                        href="/dashboard/hosting"
+                        className="py-3 px-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-1.5"
                       >
-                        Lihat Invoice
+                        🚀 Kelola Layanan Hosting Sekarang →
                       </Link>
                       <Link
-                        href="/dashboard"
-                        className="payment-confirmed-button secondary"
+                        href={`/dashboard/invoices${invoiceId ? `?id=${invoiceId}` : ''}`}
+                        className="py-3 px-6 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs rounded-xl shadow-sm transition"
                       >
-                        Buka Dashboard
+                        📄 Unduh Invoice Resmi
                       </Link>
                     </div>
                   </div>
                 ) : (
-                <>
-
-                {/* =================================================
-                    REKENING PEMBAYARAN
-                ================================================= */}
-
-                <div className="payment-bank-area">
-
-                  <div className="payment-bank-title">
-
-                    <div>
-
-                      <span className="payment-bank-eyebrow">
-                        TRANSFER BANK
-                      </span>
-
-                      <h3>
-                        Rekening Pembayaran
-                      </h3>
-
-                      <p>
-                        Transfer sesuai total pembayaran ke salah satu
-                        rekening berikut.
-                      </p>
-
-                    </div>
-
-
-                    <div className="payment-bank-owner">
-
-                      <span>
-                        Atas Nama
-                      </span>
-
-                      <strong>
-                        Irwanto
-                      </strong>
-
-                    </div>
-
-                  </div>
-
-
-                  {/* =================================================
-                      DAFTAR REKENING
-                  ================================================= */}
-
-                  <div className="payment-bank-list">
-
-
-                    {/* ================= BCA ================= */}
-
-                    <div className="payment-bank-row">
-
-                      <div className="bank-logo bank-logo-bca">
-                        <img
-                          src="/bank-logos/bca.png"
-                          alt="Logo Bank BCA"
-                        />
-                      </div>
-
-
-                      <div className="bank-account-info">
-
-                        <span className="bank-label">
-                          Nomor Rekening
-                        </span>
-
-                        <div className="bank-number-copy">
-
-                          <strong>
-                            8735105848
-                          </strong>
-
-                          <button
-                            type="button"
-                            className="copy-account-button"
-                            onClick={() =>
-                              handleCopyAccount(
-                                "8735105848",
-                                "BCA"
-                              )
-                            }
-                          >
-                            <span>
-                              {copiedAccount === "BCA"
-                                ? "✓"
-                                : "⧉"}
-                            </span>
-
-                            {copiedAccount === "BCA"
-                              ? "Tersalin"
-                              : "Salin"}
-                          </button>
-
+                  <>
+                    {/* REKENING PEMBAYARAN */}
+                    <div className="bank-transfer-section">
+                      <div className="bank-section-header">
+                        <div>
+                          <span className="section-eyebrow">METODE TRANSFER</span>
+                          <h3 className="section-title">Rekening Pembayaran</h3>
+                          <p className="section-desc">
+                            Transfer sesuai nominal pembayaran ke salah satu rekening berikut:
+                          </p>
                         </div>
-
-                      </div>
-
-
-                      <div className="bank-owner">
-
-                        <span>
-                          Pemilik Rekening
-                        </span>
-
-                        <strong>
-                          Irwanto
-                        </strong>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* ================= BRI ================= */}
-
-                    <div className="payment-bank-row">
-
-                    <div className="bank-logo bank-logo-bri">
-                      <img
-                        src="/bank-logos/bri.png"
-                        alt="Logo Bank BRI"
-                      />
-                    </div>
-
-
-                      <div className="bank-account-info">
-
-                        <span className="bank-label">
-                          Nomor Rekening
-                        </span>
-
-                        <div className="bank-number-copy">
-
-                          <strong>
-                            490501014725533
-                          </strong>
-
-                          <button
-                            type="button"
-                            className="copy-account-button"
-                            onClick={() =>
-                              handleCopyAccount(
-                                "4905-01-014725-53-3",
-                                "BRI"
-                              )
-                            }
-                          >
-                            <span>
-                              {copiedAccount === "BRI"
-                                ? "✓"
-                                : "⧉"}
-                            </span>
-
-                            {copiedAccount === "BRI"
-                              ? "Tersalin"
-                              : "Salin"}
-                          </button>
-
+                        <div className="bank-owner-pill">
+                          <span>Atas Nama:</span>
+                          <strong>Irwanto</strong>
                         </div>
-
                       </div>
 
-
-                      <div className="bank-owner">
-
-                        <span>
-                          Pemilik Rekening
-                        </span>
-
-                        <strong>
-                          Irwanto
-                        </strong>
-
+                      {/* BANK ROWS */}
+                      <div className="bank-rows-list">
+                        {BANK_ACCOUNTS.map((bank) => (
+                          <div key={bank.name} className="bank-card-row">
+                            <div className="bank-logo-wrap">
+                              <img src={bank.logo} alt={bank.name} />
+                            </div>
+                            <div className="bank-info-col">
+                              <span className="bank-col-label">Nomor Rekening Bank {bank.name}</span>
+                              <strong className="bank-number">{bank.accountNumber}</strong>
+                            </div>
+                            <div className="bank-status-col">
+                              <span className="bank-auto-check">
+                                <span className="dot-green" /> {bank.status}
+                              </span>
+                              <small className="bank-owner-text">a.n {bank.owner}</small>
+                            </div>
+                            <button
+                              type="button"
+                              className={`btn-copy-account ${copiedAccount === bank.name ? "copied" : ""}`}
+                              onClick={() => handleCopyAccount(bank.accountNumber, bank.name)}
+                            >
+                              {copiedAccount === bank.name ? "✓ Tersalin" : "⧉ Salin"}
+                            </button>
+                          </div>
+                        ))}
                       </div>
-
                     </div>
 
-
-                    {/* ================= MANDIRI ================= */}
-
-                    <div className="payment-bank-row">
-
-                      <div className="bank-logo bank-logo-mandiri">
-                        <img
-                          src="/bank-logos/mandiri.png"
-                          alt="Logo Bank Mandiri"
-                        />
-                      </div>
-
-
-                      <div className="bank-account-info">
-
-                        <span className="bank-label">
-                          Nomor Rekening
-                        </span>
-
-                        <div className="bank-number-copy">
-
-                          <strong>
-                            1740002093110
-                          </strong>
-
-                          <button
-                            type="button"
-                            className="copy-account-button"
-                            onClick={() =>
-                              handleCopyAccount(
-                                "174-00-02093110",
-                                "MANDIRI"
-                              )
-                            }
-                          >
-                            <span>
-                              {copiedAccount === "MANDIRI"
-                                ? "✓"
-                                : "⧉"}
-                            </span>
-
-                            {copiedAccount === "MANDIRI"
-                              ? "Tersalin"
-                              : "Salin"}
-                          </button>
-
+                    {/* NOTICE BOXES */}
+                    <div className="notices-wrap">
+                      <div className="notice-box warning">
+                        <span className="notice-icon">⚠️</span>
+                        <div>
+                          <strong>TRANSFER SESUAI NOMINAL TEPAT</strong>
+                          <p>
+                            Pastikan nominal transfer tepat hingga digit terakhir (<strong>{rupiah(displayTotal)}</strong>) untuk mempercepat verifikasi otomatis sistem.
+                          </p>
                         </div>
-
                       </div>
 
-
-                      <div className="bank-owner">
-
-                        <span>
-                          Pemilik Rekening
-                        </span>
-
-                        <strong>
-                          Irwanto
-                        </strong>
-
-                      </div>
-
-                    </div>
-
-
-                    {/* ================= BNI ================= */}
-
-                    <div className="payment-bank-row">
-
-                    <div className="bank-logo bank-logo-bni">
-                      <img
-                        src="/bank-logos/bni.png"
-                        alt="Logo Bank BNI"
-                      />
-                    </div>
-
-                      <div className="bank-account-info">
-
-                        <span className="bank-label">
-                          Nomor Rekening
-                        </span>
-
-                        <div className="bank-number-copy">
-
-                          <strong>
-                            0671541810
-                          </strong>
-
-                          <button
-                            type="button"
-                            className="copy-account-button"
-                            onClick={() =>
-                              handleCopyAccount(
-                                "0671541810",
-                                "BNI"
-                              )
-                            }
-                          >
-                            <span>
-                              {copiedAccount === "BNI"
-                                ? "✓"
-                                : "⧉"}
-                            </span>
-
-                            {copiedAccount === "BNI"
-                              ? "Tersalin"
-                              : "Salin"}
-                          </button>
-
+                      <div className="notice-box info">
+                        <span className="notice-icon">ℹ️</span>
+                        <div>
+                          <strong>PEMBAYARAN 1-GATE</strong>
+                          <p>
+                            Simpan bukti struk transfer kamu. Sistem otomatis memproses pesanan begitu dana berhasil diverifikasi oleh admin.
+                          </p>
                         </div>
-
                       </div>
+                    </div>
 
-
-                      <div className="bank-owner">
-
-                        <span>
-                          Pemilik Rekening
-                        </span>
-
-                        <strong>
-                          Irwanto
-                        </strong>
-
+                    {/* DISCLAIMER & TRANSFER ACCURACY BANNER */}
+                    <div className="whatsapp-cta-box">
+                      <div className="wa-text-col">
+                        <div className="wa-warning-badge">
+                          <span className="badge-warn-icon">⚠️</span>
+                          <strong>PENTING: Cek Kembali Rekening & Nominal Transfer</strong>
+                        </div>
+                        <p>
+                          Pastikan nomor rekening, bank tujuan, dan nominal sudah <strong>100% tepat</strong> sebelum menyelesaikan pembayaran. <em>Segala kelalaian atau kesalahan transfer ke rekening lain bukan merupakan tanggung jawab pihak admin.</em> Simpan struk resmi Anda & konfirmasikan untuk aktivasi kilat!
+                        </p>
                       </div>
-
                     </div>
-
-                  </div>
-
-
-                  {/* =================================================
-                      PERINGATAN
-                  ================================================= */}
-
-                  <div className="payment-transfer-warning">
-
-                    <div className="payment-transfer-warning-icon">
-                      !
-                    </div>
-
-
-                    <div className="payment-transfer-warning-content">
-
-                      <strong>
-                        Perhatikan sebelum melakukan transfer
-                      </strong>
-
-                      <p>
-                        Pastikan nomor rekening dan nama pemilik rekening
-                        sudah sesuai sebelum melakukan pembayaran.
-                        Kesalahan transfer ke rekening atau nama yang
-                        tidak sesuai menjadi tanggung jawab pengirim dan
-                        berada di luar tanggung jawab kami.
-                      </p>
-
-                    </div>
-
-                  </div>
-
+                  </>
+                )}
+              </div>
+            ) : (
+              /* PRE-ORDER ITEM REVIEW WITH DURATION DROPDOWN */
+              <div className="unified-card order-review-card">
+                <div className="card-header-clean">
+                  <span className="card-eyebrow">ITEM</span>
+                  <h2 className="card-main-title">
+                    {paketParam ? "Paket Hosting yang Dipesan" : "Domain yang Dibeli"}
+                  </h2>
                 </div>
 
+                <div className="review-items-list">
+                  {checkout?.items.map((item) => (
+                    <div key={item.cart_id} className="review-item-row">
+                      <div className="item-info-left">
+                        <div className="item-type-icon">{paketParam ? "🔥" : "🌐"}</div>
+                        <div>
+                          <div className="item-name-badge">
+                            <strong>{item.domain_name}</strong>
+                            <span className="item-tag">{paketParam ? "Hosting" : ".com"}</span>
+                          </div>
+                          <p className="item-sub-specs">{item.extension}</p>
+                        </div>
+                      </div>
 
-                {/* =================================================
-                    NOTICE
-                ================================================= */}
+                      {/* DURATION DROPDOWN SELECTOR */}
+                      <div className="item-action-right">
+                        <div className="duration-dropdown-wrap">
+                          <label className="duration-mini-label">Durasi Domain</label>
+                          <div className="duration-select-pill">
+                            <select
+                              className="duration-select"
+                              value={durationYears}
+                              onChange={(e) => setDurationYears(Number(e.target.value))}
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
+                                <option key={yr} value={yr}>
+                                  {yr} Tahun
+                                </option>
+                              ))}
+                            </select>
+                            <span className="select-arrow">▼</span>
+                          </div>
+                        </div>
 
-                <div className="payment-modern-note">
+                        <strong className="item-price-val">{rupiah(subtotal)}</strong>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-                  <div className="payment-note-icon">
-                    !
-                  </div>
+          {/* ===================================================
+              RIGHT COLUMN (ORDER SUMMARY STICKY)
+          =================================================== */}
+          <aside className="unified-right-column">
+            <div className="unified-card order-summary-card">
+              <span className="summary-eyebrow">ORDER SUMMARY</span>
+              <h2 className="summary-title">Ringkasan Pembayaran</h2>
 
-
-                  <div>
-
-                    <strong>
-                      Setelah melakukan transfer
-                    </strong>
-
-                    <p>
-                      Simpan bukti pembayaran.
-                      Setelah transfer, lakukan
-                      konfirmasi kepada admin agar
-                      pembayaran dapat diverifikasi.
-                    </p>
-
-                  </div>
-
+              {/* LINE ITEMS BREAKDOWN */}
+              <div className="summary-breakdown">
+                <div className="summary-row">
+                  <span>Subtotal ({durationYears} Tahun)</span>
+                  <strong>{rupiah(subtotal)}</strong>
                 </div>
 
-                  {/* =================================================
-                      WHATSAPP CONFIRMATION
-                  ================================================= */}
-
-                   <div className="payment-whatsapp">
-
-                    <div className="payment-whatsapp-content">
-
-                      <strong>
-                        Sudah melakukan transfer?
-                      </strong>
-
-                      <p>
-                        {whatsappConfirmationSent
-                          ? "Konfirmasi sudah dikirim. Tetap di halaman ini, status akan berubah otomatis setelah admin mengonfirmasi."
-                          : "Konfirmasi kepada admin dan lampirkan bukti transfer melalui WhatsApp."}
-                      </p>
-
-                    </div>
-
-
-                    <button
-                      type="button"
-                      className="payment-whatsapp-button"
-                      onClick={handleWhatsAppConfirmation}
-                    >
-                      {whatsappConfirmationSent
-                        ? "Kirim Ulang via WhatsApp"
-                        : "Konfirmasi via WhatsApp"}
-                    </button>
-
+                {couponDiscount > 0 && (
+                  <div className="summary-row discount-row">
+                    <span className="text-emerald-600 font-semibold">Diskon Promo</span>
+                    <strong className="text-emerald-600">-{rupiah(couponDiscount)}</strong>
                   </div>
-
-                </>
                 )}
 
-
-                {/* =================================================
-                    FOOTER
-                ================================================= */}
-
-                <div className="payment-modern-footer">
-
-                  <div>
-
-                    <span>
-                      Status pembayaran
-                    </span>
-
-                    <strong>
-                      {paymentStatus.toLowerCase() === "paid"
-                        ? "PAID"
-                        : "PENDING"}
-                    </strong>
-
-                  </div>
-
-
-                  <span className="payment-footer-hint">
-                    {paymentStatus.toLowerCase() === "paid"
-                      ? "Dikonfirmasi admin"
-                      : "Belum dikonfirmasi admin"}
-                  </span>
-
+                <div className="summary-row">
+                  <span>Setelah Diskon</span>
+                  <strong>{rupiah(afterDiscount)}</strong>
                 </div>
 
-              </section>
+                <div className="summary-row">
+                  <span>PPN (11%)</span>
+                  <strong>{rupiah(ppn)}</strong>
+                </div>
 
-            )}
+                <div className="summary-divider" />
 
-          </>
+                <div className="summary-row total-row">
+                  <span>Total</span>
+                  <strong className="total-highlight-amount">{rupiah(displayTotal)}</strong>
+                </div>
+              </div>
 
-        )}
+              {/* PROMO CODE TRIGGER ("Punya kode promo? Klik disini untuk pakai") */}
+              <div className="promo-toggle-container">
+                {!couponApplied ? (
+                  <div className="promo-trigger-line">
+                    <span className="promo-green-label">Punya kode promo?</span>{" "}
+                    <button
+                      type="button"
+                      className="promo-action-link"
+                      onClick={() => setShowPromoInput(!showPromoInput)}
+                    >
+                      Klik disini untuk pakai
+                    </button>
+                  </div>
+                ) : (
+                  <div className="promo-applied-pill">
+                    <span>🎉 Promo <strong>{appliedPromo?.code || couponCode}</strong> ({appliedPromo?.label || "Diterapkan"})</span>
+                    <button
+                      type="button"
+                      className="btn-remove-promo"
+                      onClick={() => {
+                        setAppliedPromo(null);
+                        setCouponMessage("");
+                        setCouponError("");
+                        setCouponCode("");
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                )}
 
+                {/* EXPANDABLE PROMO INPUT */}
+                {showPromoInput && !couponApplied && (
+                  <div className="promo-input-expanded">
+                    <div className="voucher-input-group">
+                      <input
+                        type="text"
+                        className="voucher-input"
+                        placeholder="Masukkan kode promo"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      />
+                      <button
+                        type="button"
+                        className="btn-apply-voucher"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading}
+                      >
+                        {couponLoading ? "..." : "Pakai"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {couponError && <span className="voucher-error">{couponError}</span>}
+                {couponMessage && <span className="voucher-success">{couponMessage}</span>}
+              </div>
+
+              {/* ACTION BUTTON & CAPTCHA SECURITY */}
+              {isOrderPlaced ? (
+                <div className="order-placed-actions">
+                  {paymentStatus.toLowerCase() === "paid" ? (
+                    <div className="rounded-2xl bg-gradient-to-b from-emerald-50/90 via-teal-50/50 to-emerald-100/40 border border-emerald-300/80 p-5 text-center shadow-sm space-y-3.5">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Transaksi Terverifikasi Resmi</span>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-base font-extrabold text-slate-900 tracking-tight">
+                          Server Cloud Siap Digunakan 🚀
+                        </h4>
+                        <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                          Alokasi resource hosting NVMe dan domain Anda telah selesai dikonfigurasi &amp; aktif penuh.
+                        </p>
+                      </div>
+
+                      <div className="pt-1.5">
+                        <Link
+                          href="/dashboard/hosting"
+                          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-extrabold text-xs text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-md shadow-emerald-700/25 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 no-underline"
+                          style={{ color: "#ffffff", textDecoration: "none" }}
+                        >
+                          <span className="text-sm">⚡</span>
+                          <span className="tracking-wide">Masuk ke Dashboard Hosting →</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* KONFIRMASI PEMBAYARAN INTERAKTIF */}
+                      <div
+                        className={`payment-confirm-card ${isRobotVerified ? "verified" : ""}`}
+                        onClick={handleToggleConfirmation}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            void handleToggleConfirmation();
+                          }
+                        }}
+                      >
+                        <div className="payment-confirm-left">
+                          <div className={`payment-confirm-box ${isRobotVerified ? "checked" : ""}`}>
+                            {isRobotVerified && <span className="payment-confirm-icon">✓</span>}
+                          </div>
+                          <div className="payment-confirm-content">
+                            <strong className="payment-confirm-title">
+                              Saya telah melakukan pembayaran & siap konfirmasi
+                            </strong>
+                            <p className="payment-confirm-desc">
+                              Centang di sini jika Anda sudah mentransfer pembayaran sesuai nominal.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* WHATSAPP ACTION BUTTON (LOCKED UNTIL CONFIRMED) */}
+                      <a
+                        href={isRobotVerified ? whatsappUrl : undefined}
+                        target={isRobotVerified ? "_blank" : undefined}
+                        rel={isRobotVerified ? "noopener noreferrer" : undefined}
+                        className={`btn-checkout-primary whatsapp-btn ${!isRobotVerified ? "btn-locked-wa" : ""}`}
+                        onClick={(e) => {
+                          if (!isRobotVerified) {
+                            e.preventDefault();
+                          } else {
+                            void handleConfirmPaymentWA();
+                          }
+                        }}
+                        title={!isRobotVerified ? "Centang konfirmasi pembayaran di atas terlebih dahulu" : "Kirim struk konfirmasi ke WhatsApp"}
+                      >
+                        {isRobotVerified ? "Sudah Bayar? Konfirmasi WA →" : "🔒 Centang Konfirmasi untuk Lanjut ke WA"}
+                      </a>
+
+                      {!isRobotVerified && (
+                        <div className="captcha-helper-warning">
+                          <span>ℹ️ Centang kotak di atas jika sudah melakukan transfer agar tombol WhatsApp aktif.</span>
+                        </div>
+                      )}
+
+                      <div className="timer-countdown-box">
+                        <span className="timer-label">SELESAIKAN PEMBAYARAN DALAM</span>
+                        <strong className="timer-digits">{formattedTimeLeft}</strong>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-checkout-primary"
+                  onClick={handleCreateOrder}
+                  disabled={submitting}
+                >
+                  {submitting ? "Memproses Pesanan..." : "Bayar Sekarang →"}
+                </button>
+              )}
+
+              {/* TRUST & SECURITY BADGES */}
+              <div className="summary-trust-footer">
+                <div className="trust-item">
+                  <span>🔒</span>
+                  <span>256-Bit SSL Enkripsi Aman</span>
+                </div>
+                <div className="trust-item">
+                  <span>⚡</span>
+                  <span>Aktivasi Cepat & Garansi Layanan</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
 
-
-      {/* =====================================================
-          GLOBAL STYLE
-      ===================================================== */}
-
-      <style jsx global>{`
-
-        /* =====================================================
-           PAGE
-        ===================================================== */
-
-        .checkout-page {
+      <style jsx>{`
+        .unified-checkout-page {
           min-height: 100vh;
-          padding: 64px 24px 80px;
-          background:
-            linear-gradient(
-              180deg,
-              #fafbfc 0%,
-              #ffffff 55%,
-              #fafbfc 100%
-            );
-          color: #151a32;
+          background: #f8fafc;
+          background-image: 
+            radial-gradient(at 50% 0%, rgba(249, 115, 22, 0.05) 0px, transparent 60%),
+            radial-gradient(at 100% 100%, rgba(239, 68, 68, 0.02) 0px, transparent 50%);
+          padding: 40px 16px 80px 16px;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          color: #0f172a;
         }
 
-
-        .checkout-container {
-          width: 100%;
-          max-width: 1120px;
+        .unified-container {
+          max-width: 1180px;
           margin: 0 auto;
         }
 
-
-        /* =====================================================
-           HEADER
-        ===================================================== */
-
-        .checkout-header {
-          margin-bottom: 30px;
-        }
-
-
-        .checkout-eyebrow {
-          display: block;
-          margin-bottom: 7px;
-          color: #f7931e;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1.7px;
-        }
-
-
-        .checkout-header h1 {
-          margin: 0 0 7px;
-          color: #11143d;
-          font-size: 32px;
-          font-weight: 850;
-          letter-spacing: -1px;
-        }
-
-
-        .checkout-header p {
-          margin: 0;
-          color: #7b8491;
-          font-size: 13px;
-          line-height: 1.7;
-        }
-
-
-        /* =====================================================
-           ERROR
-        ===================================================== */
-
-        .general-error {
+        .checkout-loading-screen {
+          min-height: 100vh;
           display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 20px;
-          padding: 12px 14px;
-          background: #fff6f6;
-          border: 1px solid #fecaca;
-          border-radius: 10px;
-          color: #b91c1c;
-          font-size: 11px;
-        }
-
-
-        .general-error-icon {
-          display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 20px;
-          height: 20px;
-          flex-shrink: 0;
+          gap: 16px;
+          background: #f8fafc;
+          color: #64748b;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .checkout-spinner {
+          width: 36px;
+          height: 36px;
+          border: 3px solid #e2e8f0;
+          border-top-color: #ea580c;
           border-radius: 50%;
-          background: #fee2e2;
-          font-size: 10px;
-          font-weight: 800;
+          animation: spin 0.7s linear infinite;
         }
 
-
-        /* =====================================================
-           SUCCESS
-        ===================================================== */
-
-        .order-success-modern {
-          display: flex;
-          align-items: flex-start;
-          gap: 13px;
-          margin-bottom: 17px;
-          padding: 17px 19px;
-          background: #f0fdf8;
-          border: 1px solid #c8efdc;
-          border-radius: 13px;
-        }
-
-
-        .success-check {
+        /* SUCCESS BANNER */
+        .unified-success-banner {
           display: flex;
           align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-          flex-shrink: 0;
-          border-radius: 50%;
+          justify-content: space-between;
+          background: #f0fdf4;
+          border: 1.5px solid #bbf7d0;
+          border-radius: 16px;
+          padding: 16px 22px;
+          margin-bottom: 24px;
+          flex-wrap: wrap;
+          gap: 16px;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.06);
+        }
+
+        .banner-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+
+        .banner-icon-badge {
+          width: 34px;
+          height: 34px;
           background: #16a34a;
           color: #ffffff;
-          font-size: 14px;
-          font-weight: 800;
-        }
-
-
-        .success-content > strong {
-          display: block;
-          margin-bottom: 3px;
-          color: #047857;
-          font-size: 13px;
-          font-weight: 800;
-        }
-
-
-        .success-content > p {
-          margin: 0;
-          color: #39705c;
-          font-size: 10px;
-          line-height: 1.6;
-        }
-
-
-        .success-reference {
+          border-radius: 50%;
           display: flex;
-          flex-wrap: wrap;
-          gap: 22px;
-          margin-top: 9px;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          font-weight: 900;
+          flex-shrink: 0;
         }
 
+        .banner-title {
+          font-size: 16px;
+          color: #15803d;
+          display: block;
+        }
 
-        .success-reference > div {
+        .banner-subtitle {
+          font-size: 13px;
+          color: #166534;
+          margin: 2px 0 0 0;
+        }
+
+        .banner-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .banner-meta-pill {
+          background: #ffffff;
+          border: 1px solid #bbf7d0;
+          padding: 6px 14px;
+          border-radius: 10px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .pill-label {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+
+        .pill-val {
+          font-size: 13px;
+          color: #0f172a;
+          font-family: monospace;
+        }
+
+        /* HEADING */
+        .checkout-page-heading {
+          margin-bottom: 24px;
+        }
+
+        .heading-eyebrow {
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #ea580c;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .heading-title {
+          font-size: 28px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 4px 0;
+          letter-spacing: -0.02em;
+        }
+
+        .heading-subtitle {
+          font-size: 14px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        .checkout-error-alert {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #b91c1c;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 13.5px;
+          margin-bottom: 20px;
+        }
+
+        /* MAIN 2-COLUMN GRID */
+        .unified-grid {
+          display: grid;
+          grid-template-columns: 1fr 370px;
+          gap: 24px;
+          align-items: start;
+        }
+
+        @media (max-width: 960px) {
+          .unified-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        /* CARDS */
+        .unified-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 20px;
+          padding: 28px 26px;
+          box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
+        }
+
+        .card-eyebrow, .section-eyebrow, .summary-eyebrow {
+          font-size: 11px;
+          font-weight: 800;
+          color: #ea580c;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          display: block;
+          margin-bottom: 4px;
+        }
+
+        .card-main-title {
+          font-size: 22px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 4px 0;
+          letter-spacing: -0.02em;
+        }
+
+        .card-sub-title {
+          font-size: 13.5px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        .payment-card-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .payment-live-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        .payment-live-badge.pending {
+          background: #fff7ed;
+          border: 1px solid #ffedd5;
+          color: #c2410c;
+        }
+
+        .payment-live-badge.paid {
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+          color: #166534;
+        }
+
+        .pulse-dot {
+          width: 7px;
+          height: 7px;
+          background: #ea580c;
+          border-radius: 50%;
+          animation: pulse 1.5s infinite;
+        }
+
+        .payment-live-badge.paid .pulse-dot {
+          background: #16a34a;
+        }
+
+        /* 3 HIGHLIGHT BOXES */
+        .payment-highlights-row {
+          display: grid;
+          grid-template-columns: 1.3fr 1fr 1fr;
+          gap: 14px;
+          margin: 20px 0;
+        }
+
+        @media (max-width: 640px) {
+          .payment-highlights-row {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .highlight-box {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 16px 14px;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .highlight-box.total-box {
+          background: #fff7ed;
+          border-color: #fed7aa;
+        }
+
+        .hl-label {
+          font-size: 11px;
+          font-weight: 800;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .highlight-box.total-box .hl-label {
+          color: #c2410c;
+        }
+
+        .hl-val-price {
+          font-size: 22px;
+          font-weight: 800;
+          color: #ea580c;
+          margin: 4px 0 2px 0;
+        }
+
+        .hl-val-code {
+          font-size: 14px;
+          font-weight: 700;
+          color: #0f172a;
+          margin: 4px 0 2px 0;
+          font-family: monospace;
+        }
+
+        .hl-note {
+          font-size: 11px;
+          color: #94a3b8;
+        }
+
+        /* INFORMASI LAYANAN */
+        .service-info-section {
+          margin: 22px 0;
+        }
+
+        .service-item-box {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          padding: 16px 18px;
+          margin-top: 8px;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+
+        .service-item-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex: 1;
+        }
+
+        .service-item-right {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .service-icon-wrap {
+          width: 40px;
+          height: 40px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          flex-shrink: 0;
+        }
+
+        .service-title-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .service-name {
+          font-size: 15px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        .service-tag {
+          background: #ffedd5;
+          color: #c2410c;
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 6px;
+        }
+
+        .service-desc {
+          font-size: 12.5px;
+          color: #64748b;
+          margin: 2px 0 0 0;
+        }
+
+        .service-price {
+          font-size: 16px;
+          font-weight: 800;
+          color: #0f172a;
+        }
+
+        /* DURATION DROPDOWN SELECTOR */
+        .duration-dropdown-wrap {
           display: flex;
           flex-direction: column;
           gap: 3px;
         }
 
-
-        .success-reference span {
-          color: #699080;
-          font-size: 8px;
+        .duration-mini-label {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
         }
 
-
-        .success-reference strong {
-          color: #075e46;
-          font-size: 10px;
+        .duration-select-pill {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
         }
 
-
-        /* =====================================================
-           CHECKOUT
-        ===================================================== */
-
-        .checkout-grid {
-          display: grid;
-          grid-template-columns:
-            minmax(0, 1fr)
-            360px;
-          gap: 24px;
-          align-items: start;
-        }
-
-
-        .checkout-items,
-        .summary-card {
+        .duration-select {
+          appearance: none;
+          -webkit-appearance: none;
           background: #ffffff;
-          border: 1px solid #e8ecf1;
-          border-radius: 16px;
-          box-shadow:
-            0 10px 28px
-            rgba(17, 20, 61, 0.035);
+          border: 1.5px solid #cbd5e1;
+          color: #0f172a;
+          font-size: 13px;
+          font-weight: 700;
+          padding: 6px 28px 6px 12px;
+          border-radius: 10px;
+          cursor: pointer;
+          outline: none;
+          transition: all 0.2s ease;
         }
 
-
-        .checkout-items {
-          padding: 27px;
+        .duration-select:focus {
+          border-color: #ea580c;
+          box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
         }
 
-
-        .summary-card {
-          padding: 25px;
-        }
-
-
-        /* =====================================================
-           HEADING
-        ===================================================== */
-
-        .section-heading {
-          padding-bottom: 14px;
-          margin-bottom: 17px;
-          border-bottom: 1px solid #edf0f3;
-        }
-
-
-        .section-eyebrow {
-          display: block;
-          margin-bottom: 5px;
-          color: #f7931e;
+        .select-arrow {
+          position: absolute;
+          right: 10px;
           font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 1.2px;
+          color: #64748b;
+          pointer-events: none;
         }
 
+        /* BANK TRANSFER SECTION */
+        .bank-transfer-section {
+          margin-top: 24px;
+        }
 
-        .section-heading h2 {
+        .bank-section-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+
+        .section-title {
+          font-size: 17px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 2px 0 4px 0;
+        }
+
+        .section-desc {
+          font-size: 13px;
+          color: #64748b;
           margin: 0;
-          color: #11143d;
+        }
+
+        .bank-owner-pill {
+          background: #f1f5f9;
+          border: 1px solid #e2e8f0;
+          padding: 4px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          color: #475569;
+          display: flex;
+          gap: 6px;
+          white-space: nowrap;
+        }
+
+        .bank-owner-pill strong {
+          color: #0f172a;
+        }
+
+        .bank-rows-list {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .bank-card-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #ffffff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 16px;
+          padding: 16px 20px;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          gap: 16px;
+          position: relative;
+        }
+
+        .bank-card-row:hover {
+          border-color: #ea580c;
+          background: linear-gradient(to right, #ffffff, #fffaf5);
+          box-shadow: 0 8px 24px -4px rgba(234, 88, 12, 0.12), 0 2px 6px -1px rgba(234, 88, 12, 0.06);
+          transform: translateY(-2px);
+        }
+
+        .bank-logo-wrap {
+          width: 96px;
+          height: 52px;
+          min-width: 96px;
+          background: #ffffff;
+          border: 1.5px solid #f1f5f9;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 12px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          transition: all 0.2s ease;
+        }
+
+        .bank-card-row:hover .bank-logo-wrap {
+          border-color: #fed7aa;
+          box-shadow: 0 4px 10px rgba(234, 88, 12, 0.08);
+        }
+
+        .bank-logo-wrap img {
+          max-height: 38px;
+          max-width: 100%;
+          width: auto;
+          height: auto;
+          object-fit: contain;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.04));
+        }
+
+        .bank-info-col {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          flex: 1;
+          min-width: 170px;
+        }
+
+        .bank-col-label {
+          font-size: 11px;
+          color: #64748b;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        .bank-number {
+          font-size: 19px;
+          font-weight: 800;
+          color: #0f172a;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+          letter-spacing: 0.06em;
+          line-height: 1.2;
+        }
+
+        .bank-status-col {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 4px;
+        }
+
+        .bank-auto-check {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #059669;
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+          padding: 3px 9px;
+          border-radius: 20px;
+          box-shadow: 0 1px 2px rgba(5, 150, 105, 0.06);
+        }
+
+        .dot-green {
+          width: 6px;
+          height: 6px;
+          background: #10b981;
+          border-radius: 50%;
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+        }
+
+        .bank-owner-text {
+          font-size: 11.5px;
+          color: #64748b;
+          font-weight: 600;
+        }
+
+        .btn-copy-account {
+          background: #f8fafc;
+          border: 1.5px solid #cbd5e1;
+          color: #334155;
+          font-size: 12.5px;
+          font-weight: 800;
+          padding: 8px 16px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-copy-account:hover {
+          background: #ea580c;
+          border-color: #ea580c;
+          color: #ffffff;
+          transform: scale(1.03);
+          box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-copy-account.copied {
+          background: #059669;
+          border-color: #059669;
+          color: #ffffff;
+          transform: scale(1.03);
+          box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        }
+
+        /* NOTICES */
+        .notices-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin: 20px 0;
+        }
+
+        .notice-box {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 12.5px;
+          line-height: 1.45;
+        }
+
+        .notice-box.warning {
+          background: #fffbeb;
+          border: 1px solid #fde68a;
+          color: #92400e;
+        }
+
+        .notice-box.info {
+          background: #f0f9ff;
+          border: 1px solid #bae6fd;
+          color: #0369a1;
+        }
+
+        .notice-icon {
           font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        .notice-box p {
+          margin: 2px 0 0 0;
+          font-weight: 400;
+        }
+
+        /* WHATSAPP CTA */
+        .whatsapp-cta-box {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #fffbeb;
+          border: 1.5px solid #fde68a;
+          border-left: 5px solid #f59e0b;
+          border-radius: 14px;
+          padding: 16px 20px;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+
+        .wa-text-col {
+          flex: 1;
+          min-width: 260px;
+        }
+
+        .wa-warning-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 4px;
+        }
+
+        .wa-warning-badge .badge-warn-icon {
+          font-size: 15px;
+        }
+
+        .wa-warning-badge strong {
+          font-size: 13.5px;
+          color: #92400e;
+          font-weight: 800;
+          letter-spacing: -0.2px;
+        }
+
+        .wa-text-col p {
+          font-size: 12.5px;
+          color: #78350f;
+          line-height: 1.55;
+          margin: 0;
+        }
+
+        .wa-text-col p strong {
+          color: #92400e;
+          font-weight: 700;
+        }
+
+        .wa-text-col p em {
+          color: #b45309;
+          font-style: normal;
+          font-weight: 600;
+          background: rgba(245, 158, 11, 0.12);
+          padding: 1px 4px;
+          border-radius: 4px;
+        }
+
+        .btn-whatsapp-action {
+          background: #16a34a;
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 700;
+          padding: 11px 18px;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .btn-whatsapp-action:hover {
+          background: #15803d;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(22, 163, 74, 0.35);
+        }
+
+        /* PRE-ORDER REVIEW ITEMS */
+        .order-review-card .review-items-list {
+          margin-top: 18px;
+        }
+
+        .review-item-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 18px 20px;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 14px;
+          gap: 14px;
+          flex-wrap: wrap;
+        }
+
+        .item-info-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          flex: 1;
+        }
+
+        .item-action-right {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+
+        .item-type-icon {
+          width: 40px;
+          height: 40px;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+        }
+
+        .item-name-badge {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .item-name-badge strong {
+          font-size: 16px;
+          color: #0f172a;
+        }
+
+        .item-tag {
+          background: #ffedd5;
+          color: #c2410c;
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2px 8px;
+          border-radius: 6px;
+        }
+
+        .item-sub-specs {
+          font-size: 12.5px;
+          color: #64748b;
+          margin: 2px 0 0 0;
+        }
+
+        .item-price-val {
+          font-size: 17px;
+          color: #0f172a;
           font-weight: 800;
         }
 
+        /* RIGHT COLUMN / ORDER SUMMARY */
+        .order-summary-card {
+          position: sticky;
+          top: 24px;
+        }
 
-        /* =====================================================
-           ITEM
-        ===================================================== */
+        .summary-title {
+          font-size: 20px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 16px 0;
+        }
 
-        .checkout-item-list {
+        /* PROMO CODE TOGGLE */
+        .promo-toggle-container {
+          margin: 16px 0;
+          padding-top: 14px;
+          border-top: 1px solid #f1f5f9;
+        }
+
+        .promo-trigger-line {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+        }
+
+        .promo-green-label {
+          color: #16a34a;
+          font-weight: 700;
+        }
+
+        .promo-action-link {
+          background: none;
+          border: none;
+          color: #ea580c;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: underline;
+          padding: 0;
+        }
+
+        .promo-action-link:hover {
+          color: #c2410c;
+        }
+
+        .promo-applied-pill {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f0fdf4;
+          border: 1px solid #86efac;
+          padding: 8px 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          color: #166534;
+        }
+
+        .btn-remove-promo {
+          background: none;
+          border: none;
+          color: #ef4444;
+          font-size: 11.5px;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: underline;
+        }
+
+        .promo-input-expanded {
+          margin-top: 10px;
+        }
+
+        .voucher-input-group {
+          display: flex;
+          gap: 8px;
+        }
+
+        .voucher-input {
+          flex: 1;
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 8px 12px;
+          font-size: 13px;
+          color: #0f172a;
+          outline: none;
+          font-weight: 600;
+        }
+
+        .voucher-input:focus {
+          border-color: #ea580c;
+          background: #ffffff;
+        }
+
+        .btn-apply-voucher {
+          background: #ea580c;
+          color: #ffffff;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+
+        .btn-apply-voucher:hover:not(:disabled) {
+          background: #c2410c;
+        }
+
+        .btn-apply-voucher:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .voucher-error {
+          font-size: 11.5px;
+          color: #ef4444;
+          margin-top: 4px;
+          display: block;
+        }
+
+        .voucher-success {
+          font-size: 11.5px;
+          color: #16a34a;
+          margin-top: 4px;
+          display: block;
+          font-weight: 600;
+        }
+
+        /* BREAKDOWN */
+        .summary-breakdown {
           display: flex;
           flex-direction: column;
           gap: 10px;
         }
-
-
-        .item-card {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 20px;
-          padding: 15px 17px;
-          background: #fafbfc;
-          border: 1px solid #edf0f3;
-          border-radius: 10px;
-        }
-
-
-        .item-information h3 {
-          margin: 0 0 4px;
-          color: #11143d;
-          font-size: 13px;
-          font-weight: 750;
-        }
-
-
-        .item-information span {
-          display: inline-block;
-          padding: 3px 7px;
-          background: #ecfdf5;
-          border-radius: 999px;
-          color: #047857;
-          font-size: 8px;
-          font-weight: 800;
-          text-transform: uppercase;
-        }
-
-
-        .item-card > strong {
-          color: #11143d;
-          font-size: 13px;
-          white-space: nowrap;
-        }
-
-
-        .empty-checkout {
-          padding: 25px;
-          text-align: center;
-          color: #94a3b8;
-          font-size: 11px;
-        }
-
-
-        /* =====================================================
-           COUPON
-        ===================================================== */
-
-        .coupon-box {
-          margin-bottom: 20px;
-          padding-bottom: 18px;
-          border-bottom: 1px solid #edf0f3;
-        }
-
-
-        .coupon-box label {
-          display: block;
-          margin-bottom: 7px;
-          color: #11143d;
-          font-size: 10px;
-          font-weight: 750;
-        }
-
-
-        .coupon-input-row {
-          display: flex;
-          gap: 7px;
-        }
-
-
-        .coupon-input-row input {
-          flex: 1;
-          min-width: 0;
-          height: 40px;
-          padding: 0 11px;
-          border: 1px solid #dfe4ea;
-          border-radius: 8px;
-          background: #ffffff;
-          color: #11143d;
-          font-size: 11px;
-          outline: none;
-        }
-
-
-        .coupon-input-row input:focus {
-          border-color: #f7931e;
-        }
-
-
-        .coupon-input-row button {
-          height: 40px;
-          padding: 0 13px;
-          border: none;
-          border-radius: 8px;
-          background: #f7931e;
-          color: #ffffff;
-          font-size: 10px;
-          font-weight: 750;
-          cursor: pointer;
-        }
-
-
-        .coupon-input-row button:disabled {
-          background: #cbd5e1;
-          cursor: not-allowed;
-        }
-
-
-        .coupon-input-row .remove-coupon-btn {
-          background: #dc2626;
-        }
-
-
-        .coupon-error {
-          margin-top: 7px;
-          color: #dc2626;
-          font-size: 9px;
-        }
-
-
-        .coupon-success {
-          margin-top: 7px;
-          padding: 7px 9px;
-          background: #ecfdf5;
-          border: 1px solid #bbf7d0;
-          border-radius: 7px;
-          color: #047857;
-          font-size: 9px;
-        }
-
-
-        /* =====================================================
-           SUMMARY
-        ===================================================== */
 
         .summary-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 14px;
-          margin-bottom: 12px;
-          color: #667085;
-          font-size: 11px;
+          font-size: 13.5px;
+          color: #475569;
         }
-
 
         .summary-row strong {
-          color: #11143d;
+          color: #0f172a;
         }
 
-
-        .discount-row strong {
-          color: #16a34a;
+        .summary-row.discount-row {
+          background: #f0fdf4;
+          padding: 4px 8px;
+          border-radius: 6px;
         }
-
 
         .summary-divider {
           height: 1px;
-          margin: 18px 0;
-          background: #edf0f3;
+          background: #e2e8f0;
+          margin: 6px 0;
         }
-
 
         .total-row {
-          margin-bottom: 20px;
-          color: #11143d;
-          font-size: 12px;
-          font-weight: 750;
-        }
-
-
-        .total-row strong {
-          color: #f7931e;
-          font-size: 19px;
-          font-weight: 850;
-        }
-
-
-        /* =====================================================
-           BUTTON
-        ===================================================== */
-
-        .checkout-btn {
-          width: 100%;
-          height: 44px;
-          border: none;
-          border-radius: 9px;
-          background: #f7931e;
-          color: #ffffff;
-          font-size: 11px;
-          font-weight: 800;
-          cursor: pointer;
-          transition:
-            background 0.2s ease,
-            transform 0.15s ease;
-        }
-
-
-        .checkout-btn:hover {
-          background: #e9820c;
-          transform: translateY(-1px);
-        }
-
-
-        .checkout-btn:disabled {
-          background: #cbd5e1;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-
-        .payment-note {
-          margin: 9px 0 0;
-          color: #94a3b8;
-          font-size: 9px;
-          line-height: 1.6;
-        }
-
-
-        /* =====================================================
-           PAYMENT
-        ===================================================== */
-
-        .payment-modern {
-          width: 100%;
-          padding: 30px 32px;
-          background: #ffffff;
-          border: 1px solid #e7ebf0;
-          border-radius: 19px;
-          box-shadow:
-            0 14px 38px
-            rgba(17, 20, 61, 0.045);
-        }
-
-
-        .payment-modern-top {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 25px;
-          padding-bottom: 23px;
-          border-bottom: 1px solid #edf0f3;
-        }
-
-
-        .payment-eyebrow {
-          display: block;
-          margin-bottom: 7px;
-          color: #f7931e;
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 1.6px;
-        }
-
-
-        .payment-modern-top h2 {
-          margin: 0 0 6px;
-          color: #11143d;
-          font-size: 24px;
-          font-weight: 850;
-          letter-spacing: -0.6px;
-        }
-
-
-        .payment-modern-top p {
-          margin: 0;
-          color: #7c8592;
-          font-size: 11px;
-          line-height: 1.7;
-        }
-
-
-        .payment-status-pill {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-          padding: 8px 12px;
-          background: #fff8ef;
-          border: 1px solid #f7dfc4;
-          border-radius: 999px;
-          color: #c66b17;
-          font-size: 9px;
+          font-size: 16px;
           font-weight: 700;
-          white-space: nowrap;
+          color: #0f172a;
         }
 
-
-        .payment-status-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #f7931e;
+        .total-highlight-amount {
+          font-size: 22px;
+          font-weight: 900;
+          color: #ea580c;
         }
 
-
-        /* =====================================================
-           PAYMENT SUMMARY
-        ===================================================== */
-
-        .payment-summary {
-          display: grid;
-          grid-template-columns: 1.1fr 1fr;
-          gap: 15px;
-          margin-top: 22px;
-        }
-
-
-        .payment-summary-main {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          min-height: 103px;
-          padding: 19px 21px;
-          background: #fffaf4;
-          border: 1px solid #f5dcc0;
-          border-radius: 13px;
-        }
-
-
-        .payment-summary-main span {
-          margin-bottom: 5px;
-          color: #966131;
-          font-size: 9px;
-        }
-
-
-        .payment-summary-main strong {
-          color: #f7931e;
-          font-size: 28px;
-          font-weight: 850;
-          letter-spacing: -0.6px;
-        }
-
-
-        .payment-summary-meta {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-
-        .payment-summary-meta > div {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          padding: 14px;
-          background: #fafbfc;
-          border: 1px solid #edf0f3;
-          border-radius: 10px;
-        }
-
-
-        .payment-summary-meta span {
-          margin-bottom: 5px;
-          color: #929ba7;
-          font-size: 8px;
-        }
-
-
-        .payment-summary-meta strong {
-          color: #11143d;
-          font-size: 10px;
-          line-height: 1.5;
-          word-break: break-word;
-        }
-
-
-        /* =====================================================
-           BANK
-        ===================================================== */
-
-        .payment-bank-area {
-          margin-top: 27px;
-        }
-
-
-        .payment-bank-title {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          gap: 20px;
-          margin-bottom: 13px;
-        }
-
-
-        .payment-bank-title h3 {
-          margin: 0 0 4px;
-          color: #11143d;
+        /* BUTTONS */
+        .btn-checkout-primary {
+          width: 100%;
+          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          color: #ffffff;
+          border: none;
+          padding: 13px 20px;
+          border-radius: 12px;
           font-size: 15px;
           font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 6px 20px rgba(234, 88, 12, 0.35);
+          margin-top: 14px;
+          text-align: center;
+          display: inline-block;
+          text-decoration: none;
         }
 
-
-        .payment-bank-title p {
-          margin: 0;
-          color: #89929e;
-          font-size: 9px;
+        .btn-checkout-primary:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(234, 88, 12, 0.45);
         }
 
-
-        .payment-bank-title > span {
-          color: #667085;
-          font-size: 10px;
-          white-space: nowrap;
+        .btn-checkout-primary:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          box-shadow: none;
         }
 
-
-        /* =====================================================
-           BANK LIST
-        ===================================================== */
-
-        .payment-bank-list {
-          overflow: hidden;
-          border: 1px solid #e7ebf0;
-          border-radius: 13px;
+        .btn-checkout-primary.whatsapp-btn {
+          background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+          box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
         }
 
+        .btn-checkout-primary.whatsapp-btn:hover {
+          box-shadow: 0 8px 24px rgba(22, 163, 74, 0.45);
+        }
 
-        .payment-bank-row {
-          display: grid;
-          grid-template-columns:
-            105px
-            minmax(0, 1fr)
-            85px;
-          align-items: center;
-          gap: 18px;
-          min-height: 76px;
-          padding: 12px 17px;
+        /* LOCKED STATE WHEN CAPTCHA NOT CHECKED */
+        .btn-checkout-primary.whatsapp-btn.btn-locked-wa {
+          background: #cbd5e1 !important;
+          color: #64748b !important;
+          cursor: not-allowed !important;
+          box-shadow: none !important;
+          transform: none !important;
+          opacity: 0.85;
+        }
+
+        /* PAYMENT CONFIRMATION CARD */
+        .payment-confirm-card {
+          margin-top: 14px;
+          background: #f8fafc;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 12px;
+          padding: 12px 14px;
+          cursor: pointer;
+          user-select: none;
+          transition: all 0.2s ease;
+        }
+
+        .payment-confirm-card:hover {
           background: #ffffff;
-          border-bottom: 1px solid #edf0f3;
-          transition:
-            background 0.2s ease;
+          border-color: #94a3b8;
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
         }
 
-
-        .payment-bank-row:last-child {
-          border-bottom: none;
+        .payment-confirm-card.verified {
+          background: #f0fdf4;
+          border-color: #86efac;
+          box-shadow: 0 3px 10px rgba(22, 163, 74, 0.08);
         }
 
-
-        .payment-bank-row:hover {
-          background: #fcfcfd;
-        }
-
-
-        .bank-brand {
-          color: #11143d;
-          font-size: 14px;
-          font-weight: 850;
-        }
-
-
-        .bank-account-info {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-
-        .bank-account-info span {
-          color: #929ba7;
-          font-size: 8px;
-          text-transform: uppercase;
-          letter-spacing: 0.7px;
-        }
-
-
-        .bank-account-info strong {
-          color: #11143d;
-          font-size: 16px;
-          font-weight: 800;
-          letter-spacing: 0.15px;
-          word-break: break-word;
-        }
-
-
-        .bank-owner {
-          text-align: right;
-          color: #667085;
-          font-size: 10px;
-        }
-
-
-        /* =====================================================
-           NOTICE
-        ===================================================== */
-
-        .payment-modern-note {
+        .payment-confirm-left {
           display: flex;
           align-items: flex-start;
-          gap: 10px;
-          margin-top: 18px;
-          padding: 14px 15px;
-          background: #f8fafc;
-          border-radius: 10px;
+          gap: 12px;
         }
 
-
-        .payment-note-icon {
+        .payment-confirm-box {
+          width: 24px;
+          height: 24px;
+          border: 2px solid #94a3b8;
+          border-radius: 6px;
+          background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 20px;
-          height: 20px;
+          transition: all 0.2s ease;
           flex-shrink: 0;
-          border-radius: 50%;
-          background: #e2e8f0;
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 800;
+          margin-top: 1px;
         }
 
+        .payment-confirm-card:hover .payment-confirm-box:not(.checked) {
+          border-color: #64748b;
+        }
 
-        .payment-modern-note strong {
+        .payment-confirm-box.checked {
+          background: #16a34a;
+          border-color: #16a34a;
+          box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+        }
+
+        .payment-confirm-icon {
+          color: #ffffff;
+          font-size: 15px;
+          font-weight: 900;
+          line-height: 1;
+        }
+
+        .payment-confirm-content {
+          flex: 1;
+        }
+
+        .payment-confirm-title {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #1e293b;
           display: block;
-          margin-bottom: 3px;
-          color: #11143d;
-          font-size: 10px;
+          line-height: 1.4;
+          letter-spacing: -0.2px;
         }
 
+        .payment-confirm-card.verified .payment-confirm-title {
+          color: #15803d;
+        }
 
-        .payment-modern-note p {
-          margin: 0;
+        .payment-confirm-desc {
+          font-size: 11.5px;
           color: #64748b;
-          font-size: 10px;
-          line-height: 1.6;
+          margin: 2px 0 0 0;
+          line-height: 1.4;
         }
 
-
-        /* =====================================================
-           FOOTER
-        ===================================================== */
-
-        .payment-modern-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 18px;
-          margin-top: 17px;
-          padding-top: 16px;
-          border-top: 1px solid #edf0f3;
+        .payment-confirm-card.verified .payment-confirm-desc {
+          color: #166534;
         }
 
+        .captcha-helper-warning {
+          margin-top: 8px;
+          font-size: 11.5px;
+          color: #b45309;
+          background: #fffbeb;
+          border: 1px solid #fef3c7;
+          padding: 6px 10px;
+          border-radius: 8px;
+          text-align: center;
+          line-height: 1.4;
+        }
 
-        .payment-modern-footer > div {
+        .timer-countdown-box {
+          margin-top: 12px;
+          background: #fff7ed;
+          border: 1px dashed #fed7aa;
+          padding: 10px;
+          border-radius: 10px;
+          text-align: center;
+        }
+
+        .timer-label {
+          font-size: 10.5px;
+          font-weight: 800;
+          color: #c2410c;
+          display: block;
+          letter-spacing: 0.04em;
+        }
+
+        .timer-digits {
+          font-size: 18px;
+          font-weight: 900;
+          color: #ea580c;
+          font-family: monospace;
+          letter-spacing: 0.05em;
+        }
+
+        /* TRUST FOOTER */
+        .summary-trust-footer {
+          margin-top: 18px;
+          padding-top: 14px;
+          border-top: 1px solid #f1f5f9;
           display: flex;
-          align-items: center;
+          flex-direction: column;
           gap: 8px;
         }
 
-
-        .payment-modern-footer > div span {
-          color: #8d96a1;
-          font-size: 9px;
+        .trust-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 11.5px;
+          color: #64748b;
+          font-weight: 500;
         }
 
-
-        .payment-modern-footer strong {
-          padding: 5px 9px;
-          background: #fff8ef;
-          border-radius: 999px;
-          color: #c56a18;
-          font-size: 9px;
-          font-weight: 800;
-          text-transform: uppercase;
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.4;
+            transform: scale(0.85);
+          }
         }
 
-
-        .payment-footer-hint {
-          color: #a0a8b3;
-          font-size: 9px;
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
-
-
-        /* =====================================================
-           MOBILE
-        ===================================================== */
-
-        @media (max-width: 768px) {
-
-          .checkout-page {
-            padding:
-              42px 16px
-              65px;
-          }
-
-
-          .checkout-header h1 {
-            font-size: 27px;
-          }
-
-
-          .checkout-grid {
-            grid-template-columns: 1fr;
-          }
-
-
-          .checkout-items,
-          .summary-card {
-            padding: 21px;
-          }
-
-
-          .payment-modern {
-            padding: 21px 18px;
-            border-radius: 16px;
-          }
-
-
-          .payment-modern-top {
-            flex-direction: column;
-          }
-
-
-          .payment-status-pill {
-            align-self: flex-start;
-          }
-
-
-          .payment-summary {
-            grid-template-columns: 1fr;
-          }
-
-
-          .payment-summary-meta {
-            grid-template-columns: 1fr 1fr;
-          }
-
-
-          .payment-bank-title {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-
-          .payment-bank-row {
-            grid-template-columns: 1fr;
-            gap: 6px;
-            min-height: auto;
-            padding: 15px;
-          }
-
-
-          .bank-owner {
-            text-align: left;
-          }
-
-
-          .payment-modern-footer {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-
-          .order-success-modern {
-            padding: 15px;
-          }
-
-
-          .success-reference {
-            gap: 14px;
-          }
-
-        }
-
       `}</style>
-
     </main>
   );
 }

@@ -660,152 +660,171 @@ export default function CartPage() {
 
       {/* SIDEBAR */}
 
+      {/* SIDEBAR */}
       <aside
-        className={`dashboard-sidebar ${
+        className={`dash-sidebar ${
           sidebarOpen ? "sidebar-open" : ""
         }`}
       >
-
-        <div className="dashboard-sidebar-top">
-
-          <Link
-            href="/"
-            className="dashboard-brand"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <img
-              src="/logo.png"
-              alt="HostingWeb"
-            />
+        <div className="dash-sidebar-header">
+          <Link href="/" className="dash-brand-logo" onClick={() => setSidebarOpen(false)}>
+            <img src="/logo.png" alt="hostingwebid" />
           </Link>
-
           <button
-            className="dashboard-sidebar-close"
+            type="button"
+            className="dash-sidebar-close"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Tutup menu"
           >
-            ×
+            ✕
           </button>
-
         </div>
 
-        <nav className="dashboard-nav">
+        <div className="dash-sidebar-body">
+          <div className="dash-nav-section">
+            <span className="dash-nav-heading">UTAMA</span>
+            <Link href="/dashboard" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  </svg>
+                </span>
+                <span>Dashboard</span>
+              </div>
+            </Link>
 
-          <div className="dashboard-nav-label">
-            UTAMA
+            <Link href="/dashboard/hosting" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                    <line x1="6" y1="6" x2="6.01" y2="6" />
+                    <line x1="6" y1="18" x2="6.01" y2="18" />
+                  </svg>
+                </span>
+                <span>Hosting Saya</span>
+              </div>
+            </Link>
+
+            <Link href="/dashboard/domain" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                  </svg>
+                </span>
+                <span>Domain Saya</span>
+              </div>
+            </Link>
           </div>
 
-          <Link
-            href="/dashboard"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ⌂
-            </span>
+          <div className="dash-nav-section">
+            <span className="dash-nav-heading">TRANSAKSI &amp; BILLING</span>
+            <Link href="/dashboard/invoices" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                </span>
+                <span>Tagihan / Invoice</span>
+              </div>
+            </Link>
 
-            <span>Dashboard</span>
-          </Link>
-
-          <Link
-            href="/dashboard/hosting"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◫
-            </span>
-
-            <span>Hosting Saya</span>
-          </Link>
-
-          <Link
-            href="/dashboard/domain"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◉
-            </span>
-
-            <span>Domain Saya</span>
-          </Link>
-
-          <div className="dashboard-nav-label">
-            TRANSAKSI
+            <Link href="/dashboard/orders" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  </svg>
+                </span>
+                <span>Riwayat Pesanan</span>
+              </div>
+            </Link>
           </div>
 
-          <Link
-            href="/dashboard/orders"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              🛒
-            </span>
+          <div className="dash-nav-section">
+            <span className="dash-nav-heading">AKUN &amp; PREFERENSI</span>
+            <Link href="/dashboard/profile" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </span>
+                <span>Profil Saya</span>
+              </div>
+            </Link>
 
-            <span>Pesanan</span>
-          </Link>
-
-          <Link
-            href="/dashboard/invoices"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ▤
-            </span>
-
-            <span>Invoice</span>
-          </Link>
-
-          <div className="dashboard-nav-label">
-            AKUN
+            <Link href="/dashboard/security" className="dash-nav-link" onClick={() => setSidebarOpen(false)}>
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </span>
+                <span>Keamanan &amp; 2FA</span>
+              </div>
+              <span className="dash-badge-pill-success">Aktif</span>
+            </Link>
           </div>
 
-          <Link
-            href="/dashboard/profile"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◯
-            </span>
-
-            <span>Profil Saya</span>
-          </Link>
-
-        </nav>
-
-        <div className="dashboard-sidebar-bottom">
-
-          <div className="dashboard-sidebar-support">
-
-            <div className="support-icon">
-              ?
+          <div className="dash-sidebar-help">
+            <div className="dash-help-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.07L2.1 21.9l5.01-1.28A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.6 0-3.1-.45-4.39-1.22l-.31-.19-2.97.76.79-2.9-.2-.32A7.95 7.95 0 0 1 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8-3.59 8-8 8z" />
+              </svg>
             </div>
-
-            <div>
-              <strong>
-                Butuh bantuan?
-              </strong>
-
-              <span>
-                Hubungi support kami.
-              </span>
+            <div className="dash-help-content">
+              <h5>Butuh bantuan teknis?</h5>
+              <p>Tim support siap 24/7 untuk Anda.</p>
+              <a
+                href="https://wa.me/6281234567890"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="dash-help-link"
+              >
+                Hubungi via WhatsApp →
+              </a>
             </div>
-
           </div>
+        </div>
 
+        <div className="dash-sidebar-user">
+          <div className="dash-user-profile-left">
+            <div className="dash-avatar-square">{userName.charAt(0).toUpperCase()}</div>
+            <div className="dash-user-info-text">
+              <span className="dash-user-info-name">{userName}</span>
+              <span className="dash-user-info-email">{userEmail}</span>
+            </div>
+          </div>
           <button
-            className="dashboard-logout"
+            type="button"
+            className="dash-logout-btn"
             onClick={handleLogout}
+            title="Logout Akun"
+            aria-label="Logout"
           >
-            <span>↪</span>
-            Keluar
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
           </button>
-
         </div>
-
       </aside>
 
       {/* MAIN */}

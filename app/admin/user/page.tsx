@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import AdminSidebar from "../components/AdminSidebar";
 
 type User = {
   id: number;
@@ -437,10 +438,12 @@ export default function AdminUserPage() {
     <div
       className={
         darkMode
-          ? "min-h-screen bg-[#0f172a] text-white transition-colors duration-300"
-          : "min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300"
+          ? "min-h-screen bg-[#0f172a] text-white transition-colors duration-300 flex"
+          : "min-h-screen bg-[#f8fafc] text-slate-900 transition-colors duration-300 flex"
       }
     >
+      <AdminSidebar currentPath="/admin/user" darkMode={darkMode} />
+      <div className="flex-1 min-w-0" style={{ marginLeft: "275px" }}>
       {/* =================================================
           TOP NAVBAR
       ================================================= */}
@@ -1127,6 +1130,7 @@ export default function AdminUserPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

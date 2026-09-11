@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AdminSidebar from "../components/AdminSidebar";
 
 type Coupon = {
   id: number;
@@ -658,130 +659,7 @@ export default function AdminCouponPage() {
             SIDEBAR
         ====================================================== */}
 
-        <aside className="hidden lg:flex w-[245px] shrink-0 bg-white border-r border-slate-200 flex-col">
-
-          {/* LOGO */}
-
-          <div className="h-[95px] px-6 flex items-center border-b border-slate-100">
-            <img
-              src="/logo.png"
-              alt="HostingWebID"
-              className="w-[175px] h-auto object-contain"
-            />
-          </div>
-
-          {/* MENU */}
-
-          <nav className="flex-1 p-4">
-
-            <div className="px-3 pt-3 pb-4 text-[11px] font-bold tracking-[0.18em] text-slate-400">
-              MENU UTAMA
-            </div>
-
-            <Link
-              href="/admin"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ⌂
-              </span>
-              Dashboard
-            </Link>
-
-            <Link
-              href="/admin/hosting"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ▣
-              </span>
-              Hosting
-            </Link>
-
-            <Link
-              href="/admin/domain"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ◎
-              </span>
-              Domain
-            </Link>
-
-            <Link
-              href="/admin/coupon"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-md shadow-orange-200"
-            >
-              <span className="w-6 text-center font-bold">
-                %
-              </span>
-              Coupon
-            </Link>
-
-            <Link
-              href="/admin/user"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ♟
-              </span>
-              User
-            </Link>
-
-            <Link
-              href="/admin/order"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ▣
-              </span>
-              Pesanan
-            </Link>
-
-            <Link
-              href="/admin/invoice"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ▤
-              </span>
-              Invoice
-            </Link>
-
-            <Link
-              href="/admin/payment"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition"
-            >
-              <span className="w-6 text-center">
-                ▣
-              </span>
-              Payment
-            </Link>
-          </nav>
-
-          {/* BOTTOM */}
-
-          <div className="p-4 border-t border-slate-100">
-
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition"
-            >
-              <span>←</span>
-              Dashboard User
-            </Link>
-
-            <button
-              type="button"
-              onClick={logout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-red-50 hover:text-red-600 transition"
-            >
-              <span>↪</span>
-              Keluar
-            </button>
-
-          </div>
-        </aside>
+        <AdminSidebar currentPath="/admin/coupon" onLogout={logout} />
 
         {/* =====================================================
             CONTENT

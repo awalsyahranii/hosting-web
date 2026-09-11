@@ -3,6 +3,7 @@
     import { useEffect, useMemo, useState } from "react";
     import { useRouter } from "next/navigation";
     import Link from "next/link";
+    import AdminSidebar from "./components/AdminSidebar";
 
     /* ========================import=================================
     TYPE USER
@@ -1041,126 +1042,12 @@
             SIDEBAR
         ================================================= */}
 
-        <aside className="admin-sidebar">
-
-            <div className="admin-logo">
-
-            <img
-                src="/logo.png"
-                alt="HostingWebID"
-            />
-
-            </div>
-
-
-            <nav className="admin-nav">
-
-            <div className="admin-nav-title">
-                MENU UTAMA
-            </div>
-
-
-            <Link
-                href="/admin"
-                className="admin-nav-item active"
-            >
-                <span>⌂</span>
-                Dashboard
-            </Link>
-
-
-            <Link
-                href="/admin/hosting"
-                className="admin-nav-item"
-            >
-                <span>▣</span>
-                Hosting
-            </Link>
-
-
-            <Link
-                href="/admin/domain"
-                className="admin-nav-item"
-            >
-                <span>◎</span>
-                Domain
-            </Link>
-
-
-            <Link
-                href="/admin/coupon"
-                className="admin-nav-item"
-            >
-                <span>%</span>
-                Coupon
-            </Link>
-
-
-            <Link
-                href="/admin/user"
-                className="admin-nav-item"
-            >
-                <span>♟</span>
-                User
-            </Link>
-
-
-            <Link
-                href="/admin/order"
-                className="admin-nav-item"
-            >
-                <span>▣</span>
-                Pesanan
-            </Link>
-
-
-            <Link
-                href="/admin/invoice"
-                className="admin-nav-item"
-            >
-                <span>▤</span>
-                Invoice
-            </Link>
-
-
-            <Link
-                href="/admin/payment"
-                className="admin-nav-item"
-            >
-                <span>▣</span>
-                Payment
-                {pendingPaymentCount > 0 && (
-                    <strong className="admin-menu-badge">
-                    {pendingPaymentCount}
-                    </strong>
-                )}
-            </Link>
-
-            </nav>
-
-
-            <div className="admin-sidebar-bottom">
-
-            <Link
-                href="/dashboard"
-                className="admin-nav-item"
-            >
-                <span>←</span>
-                Dashboard User
-            </Link>
-
-
-            <button
-                className="admin-logout"
-                onClick={logout}
-            >
-                <span>↪</span>
-                Keluar
-            </button>
-
-            </div>
-
-        </aside>
+        <AdminSidebar
+          currentPath="/admin"
+          pendingPaymentCount={pendingPaymentCount}
+          darkMode={darkMode}
+          onLogout={logout}
+        />
 
 
         {/* =================================================

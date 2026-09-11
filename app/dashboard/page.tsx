@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getExpiryInfo } from "@/app/lib/expiryHelper";
 
 type User = {
+  id?: number;
   name: string;
   email: string;
-  password?: string;
+  role?: string;
 };
 
 type UserService = {
@@ -17,7 +20,7 @@ type UserService = {
   service_status: string;
   start_date: string | null;
   expiry_date: string | null;
-  order_number: string;
+  order_number?: string;
 };
 
 type InvoiceSummary = {
@@ -29,154 +32,75 @@ type InvoiceSummary = {
   due_date?: string;
 };
 
-const orders = [
-  {
-    id: "#ORD-20260817-001",
-    package: "Paket Bisnis Pro",
-    date: "17 Agustus 2026",
-    amount: "Rp 1.500.000",
-    status: "Berhasil",
-  },
-  {
-    id: "#ORD-20260810-002",
-    package: "Paket Starter Website",
-    date: "10 Agustus 2026",
-    amount: "Rp 750.000",
-    status: "Berhasil",
-  },
-];
-
-// Invoices state will be defined inside the component instead of globally
-
-type DashboardNotification = {
-  id: number | string;
-  icon: string;
-  title: string;
-  description: string;
-  time: string;
-  unread: boolean;
-  href?: string;
-};
-
-const notifications: DashboardNotification[] = [
-  {
-    id: 1,
-    icon: "🔔",
-    title: "Selamat datang di HostingWeb",
-    description: "Akun Anda berhasil login.",
-    time: "Baru saja",
-    unread: true,
-  },
-  {
-    id: 2,
-    icon: "📄",
-    title: "Invoice terbaru",
-    description: "#INV-20260817-001 telah tersedia.",
-    time: "17 Agustus 2026",
-    unread: true,
-  },
-  {
-    id: 3,
-    icon: "✓",
-    title: "Pembayaran berhasil",
-    description: "Pembayaran Paket Bisnis Pro berhasil.",
-    time: "17 Agustus 2026",
-    unread: false,
-  },
-];
-
 export default function DashboardPage() {
+  const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [invoices, setInvoices] = useState<InvoiceSummary[]>([]);
   const [userServices, setUserServices] = useState<UserService[]>([]);
-  const [currentTime] = useState(() => Date.now());
-
-  const [notificationOpen, setNotificationOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-
-  const [notificationCount, setNotificationCount] = useState(
-    notifications.filter((item) => item.unread).length
-  );
-
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
-  const cartRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const savedUser =
-      localStorage.getItem("hostingwebid_user");
-
-    if (!savedUser) {
-      window.location.href = "/login?redirect=/dashboard";
-      return;
-    }
-
-    try {
-      const parsedUser = JSON.parse(savedUser);
-      setTimeout(() => setUser(parsedUser), 0);
-    } catch {
-      localStorage.removeItem("hostingwebid_user");
-      localStorage.removeItem("hostingweb_auth");
-
-      window.location.href =
-        "/login?redirect=/dashboard";
-
-      return;
-    }
-  }, []);
-
-  async function fetchInvoices() {
-    try {
-      const response = await fetch(
-        "http://localhost/hosting_webid/api/v1/invoice/index.php",
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-      const result = await response.json();
-      if (response.ok && result.status === "success") {
-        const loadedInvoices: InvoiceSummary[] = result.data || [];
-        setInvoices(loadedInvoices);
-        setNotificationCount(
-          notifications.filter((item) => item.unread).length +
-            loadedInvoices.filter(
-              (invoice) => invoice.status.toLowerCase() === "paid"
-            ).length
-        );
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data invoice:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchUserServices() {
-    try {
-      const response = await fetch(
-        "http://localhost/hosting_webid/api/v1/service/index.php",
-        { method: "GET", credentials: "include" }
-      );
-      const result = await response.json();
-      if (response.ok && result.status === "success") {
-        setUserServices(result.data || []);
-      }
-    } catch (error) {
-      console.error("Gagal mengambil data service:", error);
-    }
-  }
 
   useEffect(() => {
     const savedUser = localStorage.getItem("hostingwebid_user");
-    if (!savedUser) return;
-    setTimeout(() => {
-      void fetchInvoices();
-      void fetchUserServices();
-    }, 0);
+    if (!savedUser) {
+      router.push("/login?redirect=/dashboard");
+      return;
+    }
+    try {
+      setUser(JSON.parse(savedUser));
+    } catch {
+      localStorage.removeItem("hostingwebid_user");
+      router.push("/login?redirect=/dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  const [hostings, setHostings] = useState<any[]>([]);
+  const [domains, setDomains] = useState<any[]>([]);
+  const [ordersCount, setOrdersCount] = useState(0);
+
+  useEffect(() => {
+    async function fetchInvoices() {
+      try {
+        const response = await fetch(
+          "http://localhost/hosting_webid/api/v1/invoice/index.php",
+          { method: "GET", credentials: "include" }
+        );
+        const result = await response.json().catch(() => null);
+        if (response.ok && result?.status === "success") {
+          setInvoices(result.data || []);
+        }
+      } catch (error) {
+        console.error("Gagal load invoice:", error);
+      }
+    }
+
+    async function fetchServices() {
+      try {
+        const [resHosting, resDomain, resOrder] = await Promise.all([
+          fetch("http://localhost/hosting_webid/api/v1/service/index.php?type=hosting", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("http://localhost/hosting_webid/api/v1/service/index.php?type=domain", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("http://localhost/hosting_webid/api/v1/dashboardusers/order/index.php", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+        ]);
+
+        if (resHosting?.status === "success" && Array.isArray(resHosting.data)) {
+          setHostings(resHosting.data);
+        }
+        if (resDomain?.status === "success" && Array.isArray(resDomain.data)) {
+          setDomains(resDomain.data);
+        }
+        if (resOrder?.status === "success") {
+          const list = resOrder.data?.orders || (Array.isArray(resOrder.data) ? resOrder.data : []);
+          setOrdersCount(list.length);
+        }
+      } catch (error) {
+        console.error("Gagal load services:", error);
+      }
+    }
+
+    void fetchInvoices();
+    void fetchServices();
   }, []);
 
   function rupiah(value: string | number) {
@@ -184,13 +108,14 @@ export default function DashboardPage() {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
-    }).format(Number(value));
+    }).format(Number(value) || 0);
   }
 
-  function formatDate(dateStr: string) {
-    if (!dateStr) return "-";
+  function formatDate(dateStr: string | null) {
+    if (!dateStr) return "Belum aktif";
     try {
-      const date = new Date(dateStr);
+      const date = new Date(dateStr.replace(" ", "T"));
+      if (isNaN(date.getTime())) return dateStr;
       return new Intl.DateTimeFormat("id-ID", {
         day: "numeric",
         month: "long",
@@ -201,1215 +126,496 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node;
-
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(target)
-      ) {
-        setNotificationOpen(false);
-      }
-
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(target)
-      ) {
-        setProfileOpen(false);
-      }
-
-      if (
-        cartRef.current &&
-        !cartRef.current.contains(target)
-      ) {
-        setCartOpen(false);
-      }
-    }
-
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-
-    return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
-    };
-  }, []);
-
-  const closeAllDropdowns = () => {
-    setNotificationOpen(false);
-    setProfileOpen(false);
-    setCartOpen(false);
-  };
-
-  const handleNotificationToggle = () => {
-    setNotificationOpen((value) => !value);
-    setProfileOpen(false);
-    setCartOpen(false);
-  };
-
-  const handleProfileToggle = () => {
-    setProfileOpen((value) => !value);
-    setNotificationOpen(false);
-    setCartOpen(false);
-  };
-
-  const handleCartToggle = () => {
-    setCartOpen((value) => !value);
-    setNotificationOpen(false);
-    setProfileOpen(false);
-  };
-
-  const handleReadNotifications = () => {
-    setNotificationCount(0);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("hostingwebid_user");
-    localStorage.removeItem("hostingweb_auth");
-
-    window.location.href = "/";
-  };
-
-  if (loading) {
-    return (
-      <main className="dashboard-loading">
-        <div className="dashboard-loading-box">
-          <div className="dashboard-spinner" />
-          <p>Memuat dashboard...</p>
-        </div>
-      </main>
-    );
-  }
-
-  const userName = user?.name || "User";
-  const userEmail = user?.email || "";
-
-  function remainingDays(expiryDate: string | null) {
-    if (!expiryDate) return null;
-    const expiry = new Date(expiryDate.replace(" ", "T")).getTime();
-    if (Number.isNaN(expiry)) return null;
-    return Math.ceil((expiry - currentTime) / 86400000);
-  }
-
-  function serviceStatus(status: string) {
-    if (status.toLowerCase() === "active") return "Aktif";
-    if (status.toLowerCase() === "expired") return "Expired";
+  function getStatusLabel(status: string) {
+    const s = (status || "").toLowerCase();
+    if (s === "active" || s === "aktif") return "Aktif";
+    if (s === "expired") return "Expired";
     return "Menunggu";
   }
 
-  const hostingServices = userServices
-    .filter((service) => service.service_category === "website")
-    .map((service) => ({
-      id: service.id,
-      domain: service.domain_name,
-      package: "Layanan Website",
-      storage: service.billing_period,
-      status: serviceStatus(service.service_status),
-      expiry: service.expiry_date ? formatDate(service.expiry_date) : "Belum aktif",
-    }));
-
-  const domains = userServices.map((service) => ({
-    id: service.id,
-    domain: service.domain_name,
-    status: serviceStatus(service.service_status),
-    expiry: service.expiry_date ? formatDate(service.expiry_date) : "Belum aktif",
-  }));
-
-  const expiringServices = userServices.filter((service) => {
-    const days = remainingDays(service.expiry_date);
-    return service.service_status.toLowerCase() === "active" && days !== null && days <= 7;
+  const hostingList = hostings.length > 0 ? hostings : userServices.filter(s => {
+    const cat = (s.service_category || "").toLowerCase();
+    const dom = (s.domain_name || "").toLowerCase();
+    return cat.includes("hosting") || cat.includes("paket") || dom.includes("hosting") || dom.includes("paket");
   });
 
-  const dashboardNotifications: DashboardNotification[] = [
-    ...notifications,
-    ...invoices
-      .filter((invoice) => invoice.status.toLowerCase() === "paid")
-      .slice(0, 5)
-      .map((invoice) => ({
-        id: `invoice-${invoice.id}`,
-        icon: "▤",
-        title: "Invoice pembayaran tersedia",
-        description: `${invoice.invoice_number} telah dibuat dan berstatus lunas.`,
-        time: formatDate(invoice.created_at),
-        unread: true,
-        href: `/dashboard/invoices?id=${invoice.id}`,
-      })),
-  ];
+  const domainList = domains.length > 0 ? domains : userServices.filter(s => {
+    const cat = (s.service_category || "").toLowerCase();
+    const dom = (s.domain_name || "").toLowerCase();
+    return (cat.includes("domain") || dom.includes(".")) && !cat.includes("hosting");
+  });
+
+  const hostingCount = hostingList.length;
+  const domainCount = domainList.length;
+
+  const unpaidInvoices = invoices.filter(
+    (inv) => inv.status?.toLowerCase() !== "paid"
+  );
+  const unpaidCount = unpaidInvoices.length;
+
+  const unpaidTotalAmount = unpaidInvoices.reduce(
+    (sum, inv) => sum + (Number(inv.total) || 0),
+    0
+  );
+
+  const totalOrdersCount = ordersCount || invoices.length;
+
+  const expiringServices = [...hostingList, ...domainList].filter(item => {
+    const exp = getExpiryInfo(item.expiry_date);
+    return exp.isExpiringSoon || exp.isExpired;
+  });
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center text-sm font-semibold text-slate-500">
+        Memuat data dashboard...
+      </div>
+    );
+  }
+
+  const userName = user?.name || "Member";
 
   return (
-    <main className="dashboard-page">
-
-      {/* MOBILE OVERLAY */}
-
-      {sidebarOpen && (
-        <button
-          className="dashboard-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Tutup menu"
-        />
-      )}
-
-      {/* SIDEBAR */}
-
-      <aside
-        className={`dashboard-sidebar ${
-          sidebarOpen ? "sidebar-open" : ""
-        }`}
-      >
-        <div className="dashboard-sidebar-top">
-
-          <Link
-            href="/"
-            className="dashboard-brand"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <img
-              src="/logo.png"
-              alt="HostingWeb"
-            />
-          </Link>
-
-          <button
-            className="dashboard-sidebar-close"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Tutup menu"
-          >
-            ×
-          </button>
-
-        </div>
-
-        <nav className="dashboard-nav">
-
-          <div className="dashboard-nav-label">
-            UTAMA
+    <>
+      {/* WARNING BANNER JIKA ADA LAYANAN KEDALUWARSA / SISA <= 7 HARI */}
+      {expiringServices.length > 0 && (
+        <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-transparent border-l-4 border-amber-500 p-4 rounded-xl bg-amber-50 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm mb-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-0.5">⚠️</span>
+            <div>
+              <h4 className="font-bold text-sm text-amber-950">
+                Peringatan Perpanjangan Layanan ({expiringServices.length} Layanan Perlu Perhatian)
+              </h4>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Ada hosting atau domain Anda yang akan berakhir dalam 7 hari atau sudah kedaluwarsa. Perpanjang sekarang agar website dan email Anda tidak offline.
+              </p>
+            </div>
           </div>
-
-          <Link
-            href="/dashboard"
-            className="dashboard-nav-item active"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ⌂
-            </span>
-            <span>Dashboard</span>
-          </Link>
-
-          <Link
-            href="/dashboard/hosting"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◫
-            </span>
-            <span>Hosting Saya</span>
-          </Link>
-
-          <Link
-            href="/dashboard/domain"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◉
-            </span>
-            <span>Domain Saya</span>
-          </Link>
-
-          <div className="dashboard-nav-label">
-            TRANSAKSI
-          </div>
-
-          <Link
-            href="/dashboard/orders"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              🛒
-            </span>
-            <span>Pesanan</span>
-          </Link>
-
           <Link
             href="/dashboard/invoices"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
+            className="whitespace-nowrap px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow transition"
           >
-            <span className="dashboard-nav-icon">
-              ▤
-            </span>
-            <span>Invoice</span>
+            Perpanjang Sekarang →
           </Link>
-
-          <div className="dashboard-nav-label">
-            AKUN
-          </div>
-
-          <Link
-            href="/dashboard/profile"
-            className="dashboard-nav-item"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <span className="dashboard-nav-icon">
-              ◯
-            </span>
-            <span>Profil Saya</span>
-          </Link>
-
-        </nav>
-
-        <div className="dashboard-sidebar-bottom">
-
-          <div className="dashboard-sidebar-support">
-            <div className="support-icon">
-              ?
-            </div>
-
-            <div>
-              <strong>
-                Butuh bantuan?
-              </strong>
-
-              <span>
-                Hubungi support kami.
-              </span>
-            </div>
-          </div>
-
-          <button
-            className="dashboard-logout"
-            onClick={handleLogout}
-          >
-            <span>↪</span>
-            Keluar
-          </button>
-
         </div>
-      </aside>
+      )}
 
-      {/* MAIN */}
+      {/* HERO WELCOME BANNER */}
+      <div className="dash-hero-banner">
+        <div className="dash-hero-content">
+          <div className="dash-hero-pill">
+            <span>SELAMAT DATANG</span>
+            <span>👑</span>
+          </div>
+          <h2 className="dash-hero-title">Halo, {userName}!</h2>
+          <p className="dash-hero-desc">
+            Kelola {hostingCount} hosting aktif, {domainCount} domain terdaftar,
+            dan tagihan layanan website Anda dengan lancar dari satu tempat
+            terpadu.
+          </p>
+        </div>
 
-      <div className="dashboard-main">
+        <div className="dash-hero-actions">
+          <Link href="/#pricing" className="dash-hero-btn-white">
+            + Order Hosting Baru
+          </Link>
+          <Link href="/#domain" className="dash-hero-btn-trans">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span>Cari Domain</span>
+          </Link>
+        </div>
+      </div>
 
-        {/* TOPBAR */}
-
-        <header className="dashboard-topbar">
-
-          <div className="dashboard-topbar-left">
-
-            <button
-              className="dashboard-mobile-menu"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Buka menu"
-            >
-              ☰
-            </button>
-
-            <div>
-              <span className="dashboard-page-label">
-                DASHBOARD
-              </span>
-
-              <h1>
-                Overview
-              </h1>
+      {/* =========================================================
+          STATS 4 CARDS GRID
+      ========================================================= */}
+      <div className="dash-stats-grid">
+        {/* STAT 1: HOSTING AKTIF */}
+        <div className="dash-stat-card">
+          <div className="dash-stat-top">
+            <div className="dash-stat-icon-box peach">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
             </div>
+            <Link href="/dashboard/hosting" className="dash-stat-link">
+              Lihat →
+            </Link>
+          </div>
+          <span className="dash-stat-label">HOSTING AKTIF</span>
+          <div className="dash-stat-value-row">
+            <span className="dash-stat-number">{hostingCount}</span>
+            <span className="dash-stat-badge green">
+              {hostingCount > 0 ? "Semua online" : "Belum ada"}
+            </span>
+          </div>
+          <p className="dash-stat-footer-text">Cyber IDC Jakarta Tier-3</p>
+        </div>
 
+        {/* STAT 2: DOMAIN AKTIF */}
+        <div className="dash-stat-card">
+          <div className="dash-stat-top">
+            <div className="dash-stat-icon-box yellow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </div>
+            <Link href="/dashboard/domain" className="dash-stat-link">
+              Lihat →
+            </Link>
+          </div>
+          <span className="dash-stat-label">DOMAIN AKTIF</span>
+          <div className="dash-stat-value-row">
+            <span className="dash-stat-number">{domainCount}</span>
+            <span className="dash-stat-badge yellow">
+              {domainCount > 0 ? "Terhubung" : "Belum ada"}
+            </span>
+          </div>
+          <p className="dash-stat-footer-text">
+            Auto Renew aktif ({domainCount})
+          </p>
+        </div>
+
+        {/* STAT 3: TOTAL PESANAN */}
+        <div className="dash-stat-card">
+          <div className="dash-stat-top">
+            <div className="dash-stat-icon-box blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+            </div>
+            <Link href="/dashboard/orders" className="dash-stat-link">
+              Lihat →
+            </Link>
+          </div>
+          <span className="dash-stat-label">TOTAL PESANAN</span>
+          <div className="dash-stat-value-row">
+            <span className="dash-stat-number">{totalOrdersCount}</span>
+            <span className="dash-stat-badge blue">Tahun 2026</span>
+          </div>
+          <p className="dash-stat-footer-text">Semua riwayat transaksimu</p>
+        </div>
+
+        {/* STAT 4: INVOICE BELUM BAYAR */}
+        <div
+          className={`dash-stat-card ${
+            unpaidCount > 0 ? "stat-alert" : ""
+          }`}
+        >
+          <div className="dash-stat-top">
+            <div className="dash-stat-icon-box red">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+            </div>
+            <Link href="/dashboard/invoices" className="dash-stat-link red">
+              Bayar →
+            </Link>
+          </div>
+          <span className="dash-stat-label">INVOICE BELUM BAYAR</span>
+          <div className="dash-stat-value-row">
+            <span className="dash-stat-number">{unpaidCount}</span>
+            <span
+              className={`dash-stat-badge ${
+                unpaidCount > 0 ? "red" : "green"
+              }`}
+            >
+              {unpaidCount > 0 ? "Perlu Tindakan" : "Lunas Semua"}
+            </span>
+          </div>
+          <p className="dash-stat-footer-text">
+            <strong>Total: {rupiah(unpaidTotalAmount)}</strong>
+          </p>
+        </div>
+      </div>
+
+      {/* =========================================================
+          QUICK ACTION SECTION
+      ========================================================= */}
+      <div className="dash-quick-section">
+        <div className="dash-section-meta">
+          <span className="dash-section-pretitle">QUICK ACTION</span>
+          <h3 className="dash-section-title">Apa yang ingin kamu lakukan?</h3>
+        </div>
+
+        <div className="dash-quick-grid">
+          <Link href="/#pricing" className="dash-quick-card">
+            <div className="dash-quick-card-left">
+              <div className="dash-quick-icon-box orange">+</div>
+              <div className="dash-quick-text">
+                <h4>Beli Hosting Baru</h4>
+                <p>Pilih paket cloud NVMe super cepat</p>
+              </div>
+            </div>
+            <span className="dash-quick-arrow">→</span>
+          </Link>
+
+          <Link href="/#domain" className="dash-quick-card">
+            <div className="dash-quick-card-left">
+              <div className="dash-quick-icon-box yellow">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <div className="dash-quick-text">
+                <h4>Kelola Domain</h4>
+                <p>Atur DNS record &amp; nameserver</p>
+              </div>
+            </div>
+            <span className="dash-quick-arrow">→</span>
+          </Link>
+
+          <Link href="/dashboard/profile" className="dash-quick-card">
+            <div className="dash-quick-card-left">
+              <div className="dash-quick-icon-box pink">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div className="dash-quick-text">
+                <h4>Profil Saya</h4>
+                <p>Kelola info akun &amp; billing Anda</p>
+              </div>
+            </div>
+            <span className="dash-quick-arrow">→</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* =========================================================
+          TWO-COLUMN TABLES (HOSTING SAYA & DOMAIN SAYA)
+      ========================================================= */}
+      <div className="dash-tables-grid">
+        {/* COLUMN 1: HOSTING SAYA */}
+        <div className="dash-table-card">
+          <div className="dash-table-header">
+            <div className="dash-table-title-group">
+              <span className="dash-table-pretitle">HOSTING SAYA</span>
+              <h3 className="dash-table-title">Layanan Aktif</h3>
+            </div>
+            <Link href="/dashboard/hosting" className="dash-table-view-all">
+              Lihat semua →
+            </Link>
           </div>
 
-          <div className="dashboard-topbar-right">
-
-            {/* NOTIFICATION */}
-
-            <div
-              className="dashboard-header-dropdown"
-              ref={notificationRef}
-            >
-
-              <button
-                className="dashboard-notification"
-                onClick={handleNotificationToggle}
-                aria-label="Notifikasi"
-                aria-expanded={notificationOpen}
-              >
-                🔔
-
-                {notificationCount > 0 && (
-                  <span className="notification-badge">
-                    {notificationCount > 9
-                      ? "9+"
-                      : notificationCount}
-                  </span>
-                )}
-
-              </button>
-
-              {notificationOpen && (
-                <div className="dashboard-dropdown notification-dropdown">
-
-                  <div className="dropdown-header">
-
-                    <div>
-                      <strong>
-                        Notifikasi
-                      </strong>
-
-                      <span>
-                        {notificationCount} belum dibaca
-                      </span>
-                    </div>
-
-                    {notificationCount > 0 && (
-                      <button
-                        type="button"
-                        onClick={
-                          handleReadNotifications
-                        }
-                      >
-                        Tandai dibaca
-                      </button>
-                    )}
-
-                  </div>
-
-                  <div className="notification-list">
-
-                    {dashboardNotifications.map(
-                      (notification) => (
-                        <Link
-                          className={`notification-item ${
-                            notification.unread
-                              ? "unread"
-                              : ""
-                          }`}
-                          key={notification.id}
-                          href={notification.href || "/dashboard"}
-                          onClick={closeAllDropdowns}
-                        >
-
-                          <div className="notification-icon">
-                            {notification.icon}
-                          </div>
-
-                          <div className="notification-content">
-
-                            <strong>
-                              {notification.title}
-                            </strong>
-
-                            <p>
-                              {
-                                notification.description
-                              }
-                            </p>
-
-                            <small>
-                              {notification.time}
-                            </small>
-
-                          </div>
-
-                        </Link>
-                      )
-                    )}
-
-                  </div>
-
-                  <Link
-                    href="/dashboard"
-                    className="dropdown-footer-link"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    Lihat semua notifikasi →
-                  </Link>
-
-                </div>
-              )}
-
-            </div>
-
-            {/* PROFILE */}
-
-            <div
-              className="dashboard-header-dropdown"
-              ref={profileRef}
-            >
-
-              <button
-                className="dashboard-profile-trigger"
-                onClick={handleProfileToggle}
-                aria-expanded={profileOpen}
-              >
-
-                <div className="dashboard-avatar">
-                  {userName
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-
-                <div className="dashboard-user-info">
-                  <strong>
-                    Hello, {userName}!
-                  </strong>
-
-                  <span>
-                    {userEmail}
-                  </span>
-                </div>
-
-                <span className="profile-chevron">
-                  ▼
-                </span>
-
-              </button>
-
-              {profileOpen && (
-                <div className="dashboard-dropdown profile-dropdown">
-
-                  <div className="profile-dropdown-user">
-
-                    <div className="profile-large-avatar">
-                      {userName
-                        .charAt(0)
-                        .toUpperCase()}
-                    </div>
-
-                    <div>
-                      <strong>
-                        {userName}
-                      </strong>
-
-                      <span>
-                        {userEmail}
-                      </span>
-                    </div>
-
-                  </div>
-
-                  <div className="dropdown-divider" />
-
-                  <Link
-                    href="/dashboard/profile"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    <span>◯</span>
-                    Edit Account Details
-                  </Link>
-
-                  <Link
-                    href="/dashboard/profile"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    <span>♙</span>
-                    Contacts / Sub-Accounts
-                  </Link>
-
-                  <Link
-                    href="/dashboard/profile"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    <span>🔑</span>
-                    Change Password
-                  </Link>
-
-                  <Link
-                    href="/dashboard/profile"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    <span>🛡</span>
-                    Security Settings
-                  </Link>
-
-                  <Link
-                    href="/dashboard/profile"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    <span>✉</span>
-                    Email History
-                  </Link>
-
-                  <div className="dropdown-divider" />
-
-                  <button
-                    className="dropdown-logout"
-                    onClick={handleLogout}
-                  >
-                    <span>↪</span>
-                    Logout
-                  </button>
-
-                </div>
-              )}
-
-            </div>
-
-            {/* CART */}
-
-            <div
-              className="dashboard-header-dropdown"
-              ref={cartRef}
-            >
-
-              <button
-                className="dashboard-cart"
-                onClick={handleCartToggle}
-                aria-label="Keranjang"
-                aria-expanded={cartOpen}
-              >
-                🛒
-
-                <span className="cart-badge">
-                  0
-                </span>
-              </button>
-
-              {cartOpen && (
-                <div className="dashboard-dropdown cart-dropdown">
-
-                  <div className="dropdown-header">
-                    <div>
-                      <strong>
-                        Keranjang
-                      </strong>
-
-                      <span>
-                        0 produk
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="cart-empty">
-
-                    <div className="cart-empty-icon">
-                      🛒
-                    </div>
-
-                    <strong>
-                      Keranjang masih kosong
-                    </strong>
-
-                    <p>
-                      Belum ada produk atau layanan
-                      yang ditambahkan.
-                    </p>
-
-                  </div>
-
-                  <Link
-                    href="/cart"
-                    className="cart-button"
-                    onClick={
-                      closeAllDropdowns
-                    }
-                  >
-                    Lihat Keranjang
-                  </Link>
-
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
-        </header>
-
-        {/* CONTENT */}
-
-        <div className="dashboard-content">
-
-          {expiringServices.length > 0 && (
-            <div className="service-expiry-warning">
-              <strong>Perhatian: layanan segera berakhir</strong>
-              <span>
-                {expiringServices.map((service) => `${service.domain_name} (${remainingDays(service.expiry_date)} hari)`).join(", ")}
-              </span>
-            </div>
-          )}
-
-          {/* WELCOME */}
-
-          <section className="dashboard-welcome-card">
-
-            <div className="dashboard-welcome-content">
-
-              <span>
-                SELAMAT DATANG 👋
-              </span>
-
-              <h2>
-                Halo, {userName}!
-              </h2>
-
-              <p>
-                Kelola hosting, domain, pesanan,
-                dan layanan website kamu dari
-                satu tempat.
-              </p>
-
-            </div>
-
-            <div className="dashboard-welcome-decoration">
-              <div />
-              <div />
-              <div />
-            </div>
-
-          </section>
-
-          {/* STATISTICS */}
-
-          <section className="dashboard-stats">
-
-            <div className="dashboard-stat-card">
-
-              <div className="dashboard-stat-icon hosting">
-                ◫
-              </div>
-
-              <div className="dashboard-stat-content">
-                <span>Hosting Aktif</span>
-
-                <strong>
-                  {hostingServices.length}
-                </strong>
-              </div>
-
-              <Link href="/dashboard/hosting">
-                Lihat →
-              </Link>
-
-            </div>
-
-            <div className="dashboard-stat-card">
-
-              <div className="dashboard-stat-icon domain">
-                ◉
-              </div>
-
-              <div className="dashboard-stat-content">
-                <span>Domain Aktif</span>
-
-                <strong>
-                  {domains.length}
-                </strong>
-              </div>
-
-              <Link href="/dashboard/domain">
-                Lihat →
-              </Link>
-
-            </div>
-
-            <div className="dashboard-stat-card">
-
-              <div className="dashboard-stat-icon order">
-                🛒
-              </div>
-
-              <div className="dashboard-stat-content">
-                <span>Total Pesanan</span>
-
-                <strong>
-                  {orders.length}
-                </strong>
-              </div>
-
-              <Link href="/dashboard/orders">
-                Lihat →
-              </Link>
-
-            </div>
-
-            <div className="dashboard-stat-card">
-
-              <div className="dashboard-stat-icon invoice">
-                ▤
-              </div>
-
-              <div className="dashboard-stat-content">
-                <span>Invoice</span>
-
-                <strong>
-                  {invoices.length}
-                </strong>
-              </div>
-
-              <Link href="/dashboard/invoices">
-                Lihat →
-              </Link>
-
-            </div>
-
-          </section>
-
-          {/* QUICK ACTION */}
-
-          <section className="dashboard-section">
-
-            <div className="dashboard-section-heading">
-
-              <div>
-                <span>
-                  QUICK ACTION
-                </span>
-
-                <h2>
-                  Apa yang ingin kamu lakukan?
-                </h2>
-              </div>
-
-            </div>
-
-            <div className="dashboard-actions">
-
-              <Link
-                href="/#pricing"
-                className="dashboard-action-card"
-              >
-                <div className="dashboard-action-icon">
-                  +
-                </div>
-
-                <div>
-                  <strong>
-                    Beli Hosting
-                  </strong>
-
-                  <span>
-                    Pilih paket hosting baru
-                  </span>
-                </div>
-
-                <b>→</b>
-              </Link>
-
-              <Link
-                href="/dashboard/domain"
-                className="dashboard-action-card"
-              >
-                <div className="dashboard-action-icon">
-                  ◉
-                </div>
-
-                <div>
-                  <strong>
-                    Kelola Domain
-                  </strong>
-
-                  <span>
-                    Lihat domain kamu
-                  </span>
-                </div>
-
-                <b>→</b>
-              </Link>
-
-              <Link
-                href="/dashboard/profile"
-                className="dashboard-action-card"
-              >
-                <div className="dashboard-action-icon">
-                  ◯
-                </div>
-
-                <div>
-                  <strong>
-                    Profil Saya
-                  </strong>
-
-                  <span>
-                    Kelola informasi akun
-                  </span>
-                </div>
-
-                <b>→</b>
-              </Link>
-
-            </div>
-
-          </section>
-
-          {/* HOSTING + DOMAIN */}
-
-          <section className="dashboard-two-column">
-
-            <div className="dashboard-panel">
-
-              <div className="dashboard-panel-heading">
-
-                <div>
-                  <span>
-                    HOSTING SAYA
-                  </span>
-
-                  <h2>
-                    Layanan aktif
-                  </h2>
-                </div>
-
-                <Link href="/dashboard/hosting">
-                  Lihat semua →
-                </Link>
-
-              </div>
-
-              {hostingServices.length > 0 ? (
-                <div className="service-list">
-
-                  {hostingServices.map(
-                    (service) => (
-                      <div
-                        className="service-item"
-                        key={service.id}
-                      >
-
-                        <div className="service-icon hosting-service">
-                          ◫
-                        </div>
-
-                        <div className="service-info">
-
-                          <strong>
-                            {service.domain}
-                          </strong>
-
-                          <span>
-                            {service.package}
-                          </span>
-
-                          <small>
-                            {service.storage}
-                          </small>
-
-                        </div>
-
-                        <div className="service-status">
-                          <span>●</span>
-                          {service.status}
-                        </div>
-
-                      </div>
-                    )
-                  )}
-
-                </div>
-              ) : (
-                <div className="dashboard-empty">
-
-                  <div>◫</div>
-
-                  <h3>
-                    Belum ada hosting
-                  </h3>
-
-                  <p>
-                    Kamu belum memiliki layanan
-                    hosting.
-                  </p>
-
-                  <Link href="/#pricing">
-                    Pilih Paket Hosting
-                  </Link>
-
-                </div>
-              )}
-
-            </div>
-
-            <div className="dashboard-panel">
-
-              <div className="dashboard-panel-heading">
-
-                <div>
-                  <span>
-                    DOMAIN SAYA
-                  </span>
-
-                  <h2>
-                    Domain aktif
-                  </h2>
-                </div>
-
-                <Link href="/dashboard/domain">
-                  Lihat semua →
-                </Link>
-
-              </div>
-
-              {domains.length > 0 ? (
-                <div className="service-list">
-
-                  {domains.map(
-                    (domain) => (
-                      <div
-                        className="service-item"
-                        key={domain.id}
-                      >
-
-                        <div className="service-icon domain-service">
-                          ◉
-                        </div>
-
-                        <div className="service-info">
-
-                          <strong>
-                            {domain.domain}
-                          </strong>
-
-                          <span>
-                            Domain .com
-                          </span>
-
-                          <small>
-                            Berakhir{" "}
-                            {domain.expiry}
-                          </small>
-
-                        </div>
-
-                        <div className="service-status">
-                          <span>●</span>
-                          {domain.status}
-                        </div>
-
-                      </div>
-                    )
-                  )}
-
-                </div>
-              ) : (
-                <div className="dashboard-empty">
-
-                  <div>◉</div>
-
-                  <h3>
-                    Belum ada domain
-                  </h3>
-
-                  <p>
-                    Kamu belum memiliki domain.
-                  </p>
-
-                  <Link href="/#pricing">
-                    Cari Domain
-                  </Link>
-
-                </div>
-              )}
-
-            </div>
-
-          </section>
-
-          {/* RECENT ORDERS */}
-
-          <section className="dashboard-panel dashboard-orders-panel">
-
-            <div className="dashboard-panel-heading">
-
-              <div>
-                <span>
-                  TRANSAKSI
-                </span>
-
-                <h2>
-                  Pesanan terbaru
-                </h2>
-              </div>
-
-              <Link href="/dashboard/orders">
-                Lihat semua →
-              </Link>
-
-            </div>
-
-            <div className="dashboard-table-wrapper">
-
-              <table className="dashboard-table">
-
-                <thead>
-                  <tr>
-                    <th>ORDER</th>
-                    <th>PAKET</th>
-                    <th>TANGGAL</th>
-                    <th>TOTAL</th>
-                    <th>STATUS</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-
-                  {orders.map((order) => (
-                    <tr key={order.id}>
-
-                      <td>
-                        <strong>
-                          {order.id}
-                        </strong>
-                      </td>
-
-                      <td>
-                        {order.package}
-                      </td>
-
-                      <td>
-                        {order.date}
-                      </td>
-
-                      <td>
-                        <strong>
-                          {order.amount}
-                        </strong>
-                      </td>
-
-                      <td>
-                        <span className="order-status success">
-                          ● {order.status}
-                        </span>
-                      </td>
-
-                    </tr>
-                  ))}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
-          </section>
-
-          {/* INVOICE */}
-
-          <section className="dashboard-panel dashboard-invoice-panel">
-
-            <div className="dashboard-panel-heading">
-
-              <div>
-                <span>
-                  PEMBAYARAN
-                </span>
-
-                <h2>
-                  Invoice terbaru
-                </h2>
-              </div>
-
-              <Link href="/dashboard/invoices">
-                Lihat semua →
-              </Link>
-
-            </div>
-
-            {invoices.length === 0 ? (
-              <p style={{ fontSize: "11px", color: "#888", padding: "10px 0" }}>Belum ada invoice baru.</p>
-            ) : (
-              invoices.slice(0, 5).map((invoice) => {
-                const isPaid = invoice.status.toLowerCase() === "paid" || invoice.status.toLowerCase() === "lunas";
+          <div className="dash-services-list">
+            {hostingList.length > 0 ? (
+              hostingList.slice(0, 5).map((item) => {
+                const exp = getExpiryInfo(item.expiry_date);
                 return (
-                  <div
-                    className="invoice-item"
-                    key={invoice.id}
-                  >
-                    <div className="invoice-left">
-                      <div className="invoice-icon">
-                        ▤
+                  <div key={item.id} className="dash-service-item">
+                    <div className="dash-service-left">
+                      <div className="dash-service-icon-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                          <line x1="6" y1="6" x2="6.01" y2="6" />
+                          <line x1="6" y1="18" x2="6.01" y2="18" />
+                        </svg>
                       </div>
-                      <div>
-                        <strong>
-                          {invoice.invoice_number}
-                        </strong>
-                        <span>
-                          Registrasi Domain / Hosting
+                      <div className="dash-service-info">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="dash-service-name">
+                            {item.domain_name}
+                          </span>
+                          {exp.isExpired && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-100 text-rose-700">
+                              ⛔ Expired
+                            </span>
+                          )}
+                          {exp.isExpiringSoon && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 animate-pulse">
+                              ⚠️ {exp.statusText}
+                            </span>
+                          )}
+                        </div>
+                        <span className="dash-service-sub">
+                          {item.service_category || "Cloud Hosting"} • Berakhir: {exp.formattedDate}
                         </span>
                       </div>
                     </div>
 
-                    <div className="invoice-middle">
-                      <span>
-                        {formatDate(invoice.created_at)}
+                    <div className="dash-service-right">
+                      <span
+                        className={`dash-service-status-pill ${
+                          getStatusLabel(item.service_status) === "Aktif"
+                            ? "active"
+                            : "pending"
+                        }`}
+                      >
+                        ● {getStatusLabel(item.service_status)}
                       </span>
-                      <strong>
-                        {rupiah(invoice.total)}
-                      </strong>
-                    </div>
-
-                    <div className="invoice-right">
-                      <span className={`invoice-status ${isPaid ? "paid" : "unpaid"}`} style={{ color: isPaid ? "#12a34a" : "#b45309" }}>
-                        {isPaid ? "✓ Lunas" : "• Belum Bayar"}
-                      </span>
-                      <Link href={`/dashboard/invoices?id=${invoice.id}`}>
-                        <button type="button">
-                          Lihat
-                        </button>
+                      <Link
+                        href={
+                          exp.isExpiringSoon || exp.isExpired
+                            ? "/dashboard/invoices"
+                            : getStatusLabel(item.service_status) === "Aktif"
+                            ? `/dashboard/hosting`
+                            : "/dashboard/invoices"
+                        }
+                        className={`dash-service-action-btn ${
+                          exp.isExpiringSoon || exp.isExpired
+                            ? "pay"
+                            : getStatusLabel(item.service_status) === "Aktif"
+                            ? ""
+                            : "pay"
+                        }`}
+                      >
+                        {exp.isExpiringSoon || exp.isExpired
+                          ? "Perpanjang"
+                          : getStatusLabel(item.service_status) === "Aktif"
+                          ? "cPanel"
+                          : "Bayar"}
                       </Link>
                     </div>
                   </div>
                 );
               })
+            ) : (
+              <div className="dash-empty-state">
+                <div className="dash-empty-icon">📦</div>
+                <h4>Belum Ada Layanan Hosting</h4>
+                <p>Anda belum memiliki layanan hosting aktif.</p>
+                <Link href="/#pricing" className="dash-empty-action-btn">
+                  + Order Hosting Sekarang
+                </Link>
+              </div>
             )}
+          </div>
 
-          </section>
-
+          <div className="dash-table-footer">
+            <span>
+              Menampilkan {Math.min(hostingList.length, 5)} dari{" "}
+              {hostingCount} Hosting
+            </span>
+            <Link href="/dashboard/hosting" className="dash-table-footer-link">
+              Kelola Semua Hosting →
+            </Link>
+          </div>
         </div>
 
+        {/* COLUMN 2: DOMAIN SAYA */}
+        <div className="dash-table-card">
+          <div className="dash-table-header">
+            <div className="dash-table-title-group">
+              <span className="dash-table-pretitle">DOMAIN SAYA</span>
+              <h3 className="dash-table-title">Domain Terdaftar</h3>
+            </div>
+            <Link href="/dashboard/domain" className="dash-table-view-all">
+              Lihat semua →
+            </Link>
+          </div>
+
+          <div className="dash-services-list">
+            {domainList.length > 0 ? (
+              domainList.slice(0, 5).map((item) => {
+                const exp = getExpiryInfo(item.expiry_date);
+                return (
+                  <div key={item.id} className="dash-service-item">
+                    <div className="dash-service-left">
+                      <div className="dash-service-icon-box yellow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="2" y1="12" x2="22" y2="12" />
+                          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                        </svg>
+                      </div>
+                      <div className="dash-service-info">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="dash-service-name">
+                            {item.domain_name}
+                          </span>
+                          {exp.isExpired && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-100 text-rose-700">
+                              ⛔ Expired
+                            </span>
+                          )}
+                          {exp.isExpiringSoon && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 animate-pulse">
+                              ⚠️ {exp.statusText}
+                            </span>
+                          )}
+                        </div>
+                        <span className="dash-service-sub">
+                          Berakhir: {exp.formattedDate}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="dash-service-right">
+                      <span
+                        className={`dash-service-status-pill ${
+                          getStatusLabel(item.service_status) === "Aktif"
+                            ? "active"
+                            : "pending"
+                        }`}
+                      >
+                        ● {getStatusLabel(item.service_status)}
+                      </span>
+                      <Link
+                        href={
+                          exp.isExpiringSoon || exp.isExpired
+                            ? "/dashboard/invoices"
+                            : getStatusLabel(item.service_status) === "Aktif"
+                            ? `/dashboard/domain`
+                            : "/dashboard/invoices"
+                        }
+                        className={`dash-service-action-btn ${
+                          exp.isExpiringSoon || exp.isExpired
+                            ? "pay"
+                            : getStatusLabel(item.service_status) === "Aktif"
+                            ? ""
+                            : "pay"
+                        }`}
+                      >
+                        {exp.isExpiringSoon || exp.isExpired
+                          ? "Perpanjang"
+                          : getStatusLabel(item.service_status) === "Aktif"
+                          ? "Atur DNS"
+                          : "Selesaikan"}
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="dash-empty-state">
+                <div className="dash-empty-icon">🌐</div>
+                <h4>Belum Ada Domain Terdaftar</h4>
+                <p>Daftarkan nama domain bisnis Anda sekarang.</p>
+                <Link href="/#domain" className="dash-empty-action-btn">
+                  🔍 Cari Domain Baru
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="dash-table-footer">
+            <span>
+              Menampilkan {Math.min(domainList.length, 5)} dari{" "}
+              {domainCount} Domain
+            </span>
+            <Link href="/dashboard/domain" className="dash-table-footer-link">
+              Kelola Semua Domain →
+            </Link>
+          </div>
+        </div>
       </div>
-
-      {/* MOBILE BOTTOM NAV */}
-
-      <nav className="dashboard-mobile-nav">
-
-        <Link
-          href="/dashboard"
-          className="mobile-nav-active"
-        >
-          <span>⌂</span>
-          Dashboard
-        </Link>
-
-        <Link href="/dashboard/hosting">
-          <span>◫</span>
-          Hosting
-        </Link>
-
-        <Link href="/dashboard/domain">
-          <span>◉</span>
-          Domain
-        </Link>
-
-        <Link href="/dashboard/orders">
-          <span>🛒</span>
-          Pesanan
-        </Link>
-
-        <Link href="/dashboard/profile">
-          <span>◯</span>
-          Profil
-        </Link>
-
-      </nav>
-
-    </main>
+    </>
   );
 }
