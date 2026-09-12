@@ -35,8 +35,8 @@ export default function OrdersPage() {
         }
 
         const url = userId 
-          ? `http://localhost/hosting_webid/api/v1/dashboardusers/order/index.php?user_id=${userId}`
-          : "http://localhost/hosting_webid/api/v1/dashboardusers/order/index.php";
+          ? `/api/backend/dashboardusers/order/index.php?user_id=${userId}`
+          : "/api/backend/dashboardusers/order/index.php";
 
         const response = await fetch(url, { method: "GET", credentials: "include" });
         const result = await response.json().catch(() => null);
@@ -45,7 +45,7 @@ export default function OrdersPage() {
           setOrders(list);
         } else {
           // Fallback to invoice endpoint if order endpoint is empty
-          const resInv = await fetch("http://localhost/hosting_webid/api/v1/invoice/index.php", {
+          const resInv = await fetch("/api/backend/invoice/index.php", {
             method: "GET",
             credentials: "include",
           });

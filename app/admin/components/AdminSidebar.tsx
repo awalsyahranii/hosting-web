@@ -30,7 +30,7 @@ export default function AdminSidebar({
     async function fetchPendingPayments() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/payment/index.php",
+          "/api/backend/admin/payment/index.php",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);
@@ -275,6 +275,21 @@ export default function AdminSidebar({
           </span>
           <span className="admin-nav-text">Coupon</span>
           {isCurrent("/admin/coupon") && <span className="admin-nav-dot" />}
+        </Link>
+
+        {/* 10. Manajemen Artikel & Blog */}
+        <Link
+          href="/admin/articles"
+          className={`admin-nav-item ${isCurrent("/admin/articles") ? "active" : ""}`}
+        >
+          <span className="admin-nav-svg-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </span>
+          <span className="admin-nav-text">Artikel &amp; Blog</span>
+          {isCurrent("/admin/articles") && <span className="admin-nav-dot" />}
         </Link>
 
         {/* =========================================================

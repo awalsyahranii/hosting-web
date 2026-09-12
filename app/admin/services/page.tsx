@@ -249,7 +249,7 @@ export default function AdminServicesPage() {
 
         // 1. Fetch from order report
         const resReport = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/order/report.php",
+          "/api/backend/admin/order/report.php",
           { method: "GET", credentials: "include" }
         ).catch(() => null);
         const jsonReport = resReport ? await resReport.json().catch(() => null) : null;
@@ -257,7 +257,7 @@ export default function AdminServicesPage() {
 
         // 2. Fetch from payments to include newly created / pending / confirmed orders
         const resPayment = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/payment/index.php",
+          "/api/backend/admin/payment/index.php",
           { method: "GET", credentials: "include" }
         ).catch(() => null);
         const jsonPayment = resPayment ? await resPayment.json().catch(() => null) : null;

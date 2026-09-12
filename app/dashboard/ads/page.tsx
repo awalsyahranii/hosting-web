@@ -55,7 +55,7 @@ export default function DashboardAdsPage() {
     async function fetchUserAds() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/service/index.php",
+          "/api/backend/service/index.php",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);

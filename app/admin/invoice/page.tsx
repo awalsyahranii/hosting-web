@@ -48,7 +48,7 @@ export default function AdminInvoicePage() {
       try {
         setLoading(true);
         const res = await fetch(
-          "http://localhost/hosting_webid/api/v1/invoice/index.php",
+          "/api/backend/invoice/index.php",
           { method: "GET", credentials: "include" }
         );
         const json = await res.json().catch(() => null);

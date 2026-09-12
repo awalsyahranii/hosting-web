@@ -748,6 +748,18 @@ export default function Home() {
     broadcastBannerBg?: string;
   } | null>(null);
 
+  const [homeArticles, setHomeArticles] = useState<Array<{
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string;
+    thumbnail: string;
+    category: string;
+    author: string;
+    views: number;
+    created_at: string;
+  }>>([]);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem("hostingweb_system_settings");
@@ -757,6 +769,16 @@ export default function Home() {
     } catch {
       // ignore
     }
+
+    // Fetch 6 latest articles for Homepage
+    fetch("/api/backend/article/index.php?limit=6")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.status === "success" && json.data?.articles) {
+          setHomeArticles(json.data.articles);
+        }
+      })
+      .catch((err) => console.error("Gagal memuat artikel beranda:", err));
   }, []);
 
   const handleBuyAds = (pkg: GoogleAdsPackage) => {
@@ -814,7 +836,7 @@ export default function Home() {
 
     try {
       const response = await fetch(
-        "http://localhost/hosting_webid/api/v1/domain/batch_check.php",
+        "/api/backend/domain/batch_check.php",
         {
           method: "POST",
 
@@ -926,6 +948,7 @@ export default function Home() {
       <Link href="/#portfolio">Portfolio</Link>
       <Link href="/#google-ads">Google Ads</Link>
       <Link href="/#features">Fitur</Link>
+      <Link href="/blog">Blog</Link>
       <Link href="/#faq">FAQ</Link>
     </nav>
 
@@ -1011,6 +1034,13 @@ export default function Home() {
         onClick={() => setMobileMenuOpen(false)}
       >
         Fitur
+      </Link>
+
+      <Link
+        href="/blog"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        Blog &amp; Artikel
       </Link>
 
       <Link
@@ -2948,6 +2978,172 @@ export default function Home() {
       </section>
 
       {/* =====================================================
+          6 ARTIKEL / BLOG TERBARU SECTION
+      ===================================================== */}
+      <section className="py-20 bg-gradient-to-b from-slate-50 via-white to-orange-50/30 border-t border-slate-200/70" id="blog">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* SECTION HEADER */}
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold shadow-xs">
+              <span>📝</span>
+              <span>PUSAT EDUKASI &amp; ARTIKEL PILIHAN</span>
+            </div>
+
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-snug">
+              Wawasan &amp; Panduan <span className="text-orange-600">Terbaru Seputar Website</span>
+            </h2>
+
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              Pelajari tips optimasi SEO, keamanan server, panduan domain, dan strategi digital marketing terkini untuk memaksimalkan potensi bisnis online Anda.
+            </p>
+          </div>
+
+          {/* 6 ARTICLES GRID */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {(homeArticles.length > 0
+              ? homeArticles
+              : [
+                  {
+                    id: 1,
+                    title: "Panduan Lengkap Memilih Paket Web Hosting Terbaik untuk Pemula di 2026",
+                    slug: "panduan-lengkap-memilih-paket-web-hosting-terbaik-untuk-pemula",
+                    excerpt: "Pelajari faktor-faktor krusial sebelum membeli hosting agar performa website Anda selalu optimal, cepat diakses di bawah 1 detik, dan aman dari downtime.",
+                    thumbnail: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800",
+                    category: "Web Hosting",
+                    author: "Tim HostingWeb ID",
+                    views: 45,
+                    created_at: "2026-09-12",
+                  },
+                  {
+                    id: 2,
+                    title: "7 Tips Jitu Optimasi SEO On-Page Agar Website Tembus Halaman 1 Google",
+                    slug: "7-tips-jitu-optimasi-seo-on-page-agar-website-muncul-di-halaman-1-google",
+                    excerpt: "Strategi praktis meningkatkan peringkat website di mesin pencari Google untuk mendatangkan ribuan pengunjung organik potensial setiap hari.",
+                    thumbnail: "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=800",
+                    category: "Tips SEO",
+                    author: "Tim SEO Specialist",
+                    views: 32,
+                    created_at: "2026-09-12",
+                  },
+                  {
+                    id: 3,
+                    title: "Mengapa Setiap Bisnis & UMKM Wajib Memiliki Website Resmi di Era Digital",
+                    slug: "mengapa-setiap-bisnis-dan-umkm-wajib-memiliki-website-resmi-di-era-digital",
+                    excerpt: "Ketahui alasan utama mengapa website resmi dapat melipatgandakan omset, membangun kepercayaan pelanggan, dan memperluas pasar bisnis Anda.",
+                    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
+                    category: "Bisnis & Digital",
+                    author: "Tim Bisnis Digital",
+                    views: 68,
+                    created_at: "2026-09-12",
+                  },
+                  {
+                    id: 4,
+                    title: "Perbedaan Domain .COM, .ID, dan .CO.ID: Mana yang Paling Tepat untuk Anda?",
+                    slug: "perbedaan-domain-com-id-dan-co-id-mana-yang-paling-tepat",
+                    excerpt: "Panduan menentukan ekstensi domain yang tepat untuk branding bisnis, legalitas perusahaan, serta performa SEO lokal di Indonesia.",
+                    thumbnail: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800",
+                    category: "Domain & DNS",
+                    author: "Domain Registrar Team",
+                    views: 29,
+                    created_at: "2026-09-12",
+                  },
+                  {
+                    id: 5,
+                    title: "Langkah-Langkah Mengamankan Website WordPress dari Serangan Hacker & Malware",
+                    slug: "langkah-langkah-mengamankan-website-wordpress-dari-serangan-hacker-dan-malware",
+                    excerpt: "Pelajari checklist keamanan WordPress esensial untuk mencegah deface, brute-force attack, malware injection, dan kebocoran data sensitif.",
+                    thumbnail: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800",
+                    category: "Keamanan Web",
+                    author: "Security Analyst",
+                    views: 51,
+                    created_at: "2026-09-12",
+                  },
+                  {
+                    id: 6,
+                    title: "Cara Meningkatkan Penjualan dengan Google Ads Search & Iklan Klik Tertarget",
+                    slug: "cara-meningkatkan-penjualan-dengan-google-ads-search-dan-iklan-klik-tertarget",
+                    excerpt: "Strategi beriklan di Google Ads agar setiap rupiah anggaran iklan menghasilkan leads potensial dan konversi penjualan WhatsApp yang tinggi.",
+                    thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
+                    category: "Google Ads",
+                    author: "Tim Digital Marketing",
+                    views: 40,
+                    created_at: "2026-09-12",
+                  },
+                ]
+            ).map((art) => (
+              <article
+                key={art.id}
+                className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  {/* THUMBNAIL */}
+                  <div className="relative h-48 overflow-hidden bg-slate-100">
+                    <img
+                      src={art.thumbnail || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800"}
+                      alt={art.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold border backdrop-blur-md bg-white/95 text-slate-800 border-slate-200 shadow-xs">
+                        {art.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* CONTENT */}
+                  <div className="p-5 sm:p-6 space-y-2.5">
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                      <span>📅 {art.created_at.slice(0, 10)}</span>
+                      <span>•</span>
+                      <span>⏱️ 3 mnt baca</span>
+                    </div>
+
+                    <Link href={`/blog/${art.slug}`}>
+                      <h3 className="text-base font-extrabold text-slate-900 group-hover:text-orange-600 transition leading-snug line-clamp-2">
+                        {art.title}
+                      </h3>
+                    </Link>
+
+                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      {art.excerpt}
+                    </p>
+                  </div>
+                </div>
+
+                {/* FOOTER */}
+                <div className="p-5 sm:p-6 pt-0 flex items-center justify-between border-t border-slate-50 mt-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white font-bold text-[10px] flex items-center justify-center">
+                      {art.author.charAt(0)}
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-700">{art.author}</span>
+                  </div>
+
+                  <Link
+                    href={`/blog/${art.slug}`}
+                    className="text-xs font-bold text-orange-600 hover:text-orange-700 transition inline-flex items-center gap-1 group-hover:translate-x-0.5"
+                  >
+                    Baca Artikel →
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* VIEW ALL BLOG BUTTON */}
+          <div className="text-center mt-12">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs sm:text-sm border border-slate-300/80 shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span>📚 Lihat Semua Artikel &amp; Panduan di Blog</span>
+              <span className="text-orange-600 font-extrabold">→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =====================================================
           CTA BANNER SECTION
       ===================================================== */}
       <section className="cta-section">
@@ -3212,12 +3408,12 @@ export default function Home() {
                 <span className="title-bar" /> INFORMASI
               </h3>
               <ul className="footer-nav-links">
-                <li><a href="#">Affiliasi</a></li>
+                <li><Link href="/blog">Blog &amp; Panduan Artikel</Link></li>
                 <li><a href="/checkout">Konfirmasi Pembayaran</a></li>
                 <li><a href="#about">Tentang Kami</a></li>
-                <li><a href="#">PKL</a></li>
-                <li><a href="#">Legalitas Perusahaan</a></li>
                 <li><a href="#portfolio">Portofolio Proyek</a></li>
+                <li><a href="#">Affiliasi</a></li>
+                <li><a href="#">Legalitas Perusahaan</a></li>
               </ul>
             </div>
 

@@ -24,7 +24,7 @@ type ApiResponse = {
 };
 
 const USER_API =
-  "http://localhost/hosting_webid/api/v1/admin/user";
+  "/api/backend/admin/user";
 
 export default function AdminUserPage() {
   const [users, setUsers] = useState<User[]>([]);

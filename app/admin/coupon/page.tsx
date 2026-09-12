@@ -31,7 +31,7 @@ type User = {
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost/hosting_webid/api/v1";
+  "/api/backend";
 
 export default function AdminCouponPage() {
   const router = useRouter();

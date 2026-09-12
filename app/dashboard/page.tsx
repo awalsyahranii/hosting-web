@@ -64,7 +64,7 @@ export default function DashboardPage() {
     async function fetchInvoices() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/invoice/index.php",
+          "/api/backend/invoice/index.php",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);
@@ -79,9 +79,9 @@ export default function DashboardPage() {
     async function fetchServices() {
       try {
         const [resHosting, resDomain, resOrder] = await Promise.all([
-          fetch("http://localhost/hosting_webid/api/v1/service/index.php?type=hosting", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
-          fetch("http://localhost/hosting_webid/api/v1/service/index.php?type=domain", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
-          fetch("http://localhost/hosting_webid/api/v1/dashboardusers/order/index.php", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/service/index.php?type=hosting", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/service/index.php?type=domain", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/dashboardusers/order/index.php", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
         ]);
 
         if (resHosting?.status === "success" && Array.isArray(resHosting.data)) {

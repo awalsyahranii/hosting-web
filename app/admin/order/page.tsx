@@ -49,14 +49,14 @@ export default function AdminOrderPage() {
         setLoading(true);
 
         const resReport = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/order/report.php",
+          "/api/backend/admin/order/report.php",
           { method: "GET", credentials: "include" }
         );
         const jsonReport = await resReport.json().catch(() => null);
         const rawServices: any[] = jsonReport?.data?.services || [];
 
         const resPayment = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/payment/index.php",
+          "/api/backend/admin/payment/index.php",
           { method: "GET", credentials: "include" }
         );
         const jsonPayment = await resPayment.json().catch(() => null);

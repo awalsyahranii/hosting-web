@@ -53,7 +53,7 @@ type User = {
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost/hosting_webid/api/v1";
+  "/api/backend";
 const PAYMENT_API = `${API_BASE}/admin/payment/index.php`;
 const CONFIRM_API = `${API_BASE}/admin/payment/confirm.php`;
 
@@ -240,7 +240,7 @@ export default function AdminPaymentPage() {
       const apiPayments = extractPayments(result.data);
 
       const resReport = await fetch(
-        "http://localhost/hosting_webid/api/v1/admin/order/report.php",
+        "/api/backend/admin/order/report.php",
         { credentials: "include" }
       ).catch(() => null);
       const jsonReport = resReport ? await resReport.json().catch(() => null) : null;

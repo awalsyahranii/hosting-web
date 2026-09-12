@@ -26,7 +26,7 @@ export default function DomainPage() {
     async function fetchDomains() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/service/index.php?type=domain",
+          "/api/backend/service/index.php?type=domain",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);

@@ -219,13 +219,13 @@
     ========================================================= */
 
     const DASHBOARD_API =
-    "http://localhost/hosting_webid/api/v1/admin/dashboard/index.php";
+    "/api/backend/admin/dashboard/index.php";
 
     const SERVICE_SUMMARY_API =
-    "http://localhost/hosting_webid/api/v1/admin/order/summary.php";
+    "/api/backend/admin/order/summary.php";
 
     const PAYMENT_API =
-    "http://localhost/hosting_webid/api/v1/admin/payment/index.php";
+    "/api/backend/admin/payment/index.php";
 
     export default function AdminPage() {
 
@@ -482,7 +482,7 @@
                 }
 
                 const response = await fetch(
-                    `http://localhost/hosting_webid/api/v1/admin/order/report.php${
+                    `/api/backend/admin/order/report.php${
                         params.toString()
                             ? `?${params.toString()}`
                             : ""

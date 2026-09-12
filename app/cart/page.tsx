@@ -230,7 +230,7 @@ export default function CartPage() {
 
         const response =
           await fetch(
-            "http://localhost/hosting_webid/api/v1/checkout/index.php",
+            "/api/backend/checkout/index.php",
             {
               method: "GET",
 
@@ -402,7 +402,7 @@ export default function CartPage() {
     const handleLogout = async () => {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/auth/logout.php",
+          "/api/backend/auth/logout.php",
           {
             method: "POST",
             credentials: "include",
@@ -546,7 +546,7 @@ export default function CartPage() {
 
         const response =
           await fetch(
-            "http://localhost/hosting_webid/api/v1/coupon/validate.php",
+            "/api/backend/coupon/validate.php",
             {
               method: "POST",
 

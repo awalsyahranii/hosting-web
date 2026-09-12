@@ -40,7 +40,7 @@ function LoginForm() {
 
     try {
       const response = await fetch(
-        "http://localhost/hosting_webid/api/v1/auth/login.php",
+        "/api/backend/auth/login.php",
         {
           method: "POST",
           headers: {

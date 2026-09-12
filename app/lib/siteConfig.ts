@@ -10,7 +10,7 @@ export const SITE_CONFIG = {
   email: "admin@hostingwebid.com",
   workingHours: "Senin - Sabtu Pkl. 08.00 - 17.00 WIB",
   address: "Kota Makassar - Sulawesi Selatan 90245",
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost/hosting_webid/api/v1",
+  apiUrl: process.env.NEXT_PUBLIC_API_URL || "/api/backend",
 };
 
 /**

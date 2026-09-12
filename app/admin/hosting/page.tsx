@@ -51,7 +51,7 @@ export default function AdminHostingPage() {
         setLoading(true);
 
         const res = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/hosting/index.php",
+          "/api/backend/admin/hosting/index.php",
           { method: "GET", credentials: "include" }
         );
         const json = await res.json().catch(() => null);
@@ -97,7 +97,7 @@ export default function AdminHostingPage() {
 
         // Fallback to order report API
         const resReport = await fetch(
-          "http://localhost/hosting_webid/api/v1/admin/order/report.php",
+          "/api/backend/admin/order/report.php",
           { method: "GET", credentials: "include" }
         );
         const jsonReport = await resReport.json().catch(() => null);
@@ -141,7 +141,7 @@ export default function AdminHostingPage() {
     );
 
     try {
-      await fetch("http://localhost/hosting_webid/api/v1/admin/hosting/toggle-status.php", {
+      await fetch("/api/backend/admin/hosting/toggle-status.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: nextStatus }),

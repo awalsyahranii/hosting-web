@@ -37,7 +37,7 @@ export default function HostingPage() {
     async function fetchServices() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/service/index.php?type=hosting",
+          "/api/backend/service/index.php?type=hosting",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);

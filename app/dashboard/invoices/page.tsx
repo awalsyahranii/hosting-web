@@ -56,7 +56,7 @@ function InvoicesContent() {
     async function fetchInvoices() {
       try {
         const response = await fetch(
-          "http://localhost/hosting_webid/api/v1/invoice/index.php",
+          "/api/backend/invoice/index.php",
           { method: "GET", credentials: "include" }
         );
         const result = await response.json().catch(() => null);
@@ -88,7 +88,7 @@ function InvoicesContent() {
     try {
       setDetailLoading(true);
       const response = await fetch(
-        `http://localhost/hosting_webid/api/v1/invoice/index.php?invoice_id=${invoiceId}`,
+        `/api/backend/invoice/index.php?invoice_id=${invoiceId}`,
         { method: "GET", credentials: "include" }
       );
       const result = await response.json().catch(() => null);

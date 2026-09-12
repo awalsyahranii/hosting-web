@@ -100,10 +100,10 @@ type SavedCheckoutPayment = {
    APIs & CONSTANTS
 ========================================================= */
 
-const CHECKOUT_API = "http://localhost/hosting_webid/api/v1/checkout/index.php";
-const COUPON_VALIDATE_API = "http://localhost/hosting_webid/api/v1/coupon/validate.php";
-const ORDER_CREATE_API = "http://localhost/hosting_webid/api/v1/order/create.php";
-const PAYMENT_API = "http://localhost/hosting_webid/api/v1/payment/index.php";
+const CHECKOUT_API = "/api/backend/checkout/index.php";
+const COUPON_VALIDATE_API = "/api/backend/coupon/validate.php";
+const ORDER_CREATE_API = "/api/backend/order/create.php";
+const PAYMENT_API = "/api/backend/payment/index.php";
 
 const HOSTING_PACKAGES: Record<
   string,
