@@ -89,7 +89,11 @@ function LoginForm() {
       // REDIRECTION LOGIC:
       if (redirectParam) {
         router.push(redirectParam);
-      } else if (backendUser.role === "admin") {
+      } else if (
+        backendUser.role === "admin" ||
+        backendUser.role === "super_admin" ||
+        backendUser.role === "superadmin"
+      ) {
         router.push("/admin");
       } else {
         router.push("/dashboard");

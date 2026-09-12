@@ -84,7 +84,7 @@ export default function AdminCouponPage() {
     try {
       const parsed = JSON.parse(savedUser);
 
-      if (parsed.role !== "admin") {
+      if (parsed.role !== "admin" && parsed.role !== "super_admin" && parsed.role !== "superadmin") {
         router.push("/dashboard");
         return;
       }

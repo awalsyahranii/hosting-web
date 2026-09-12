@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
 
@@ -739,6 +739,26 @@ export default function Home() {
   // Google Ads Filter
   const [adsFilter, setAdsFilter] = useState<"all" | "pemula" | "bisnis">("all");
 
+  const [systemSettings, setSystemSettings] = useState<{
+    maintenanceMode?: boolean;
+    maintenanceNotice?: string;
+    broadcastBannerActive?: boolean;
+    broadcastBannerText?: string;
+    broadcastBannerLink?: string;
+    broadcastBannerBg?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hostingweb_system_settings");
+      if (saved) {
+        setSystemSettings(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleBuyAds = (pkg: GoogleAdsPackage) => {
     const targetUrl = `/checkout?ads=${encodeURIComponent(pkg.id)}`;
     const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
@@ -856,10 +876,38 @@ export default function Home() {
 
   return (
     <main>
-{/* =====================================================
-    NAVBAR
-===================================================== */}
-<header className="navbar">
+      {/* =====================================================
+          SUPER ADMIN LIVE BROADCAST PROMO BANNER
+      ===================================================== */}
+      {systemSettings?.broadcastBannerActive !== false && (
+        <aside
+          className="broadcast-top-banner"
+          style={{
+            background:
+              systemSettings?.broadcastBannerBg ||
+              "linear-gradient(90deg, #ea580c 0%, #f97316 50%, #ea580c 100%)",
+          }}
+        >
+          <div className="container flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold text-white text-center">
+            <span>
+              {systemSettings?.broadcastBannerText ||
+                "🔥 DISKON SPESIAL HARI INI: Dapatkan Diskon s/d 80% untuk Cloud Hosting & Gratis Domain .COM!"}
+            </span>
+            <a
+              href={systemSettings?.broadcastBannerLink || "#pricing"}
+              className="underline font-black hover:opacity-90 ml-1 inline-flex items-center gap-0.5"
+            >
+              <span>Klaim Sekarang</span>
+              <span>&rarr;</span>
+            </a>
+          </div>
+        </aside>
+      )}
+
+      {/* =====================================================
+          NAVBAR
+      ===================================================== */}
+      <header className="navbar">
   <div className="container nav-inner">
 
     {/* LOGO */}

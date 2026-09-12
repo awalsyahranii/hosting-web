@@ -7,7 +7,7 @@ type User = {
   id: number;
   username: string;
   email: string;
-  role: "admin" | "user";
+  role: "super_admin" | "admin" | "user" | string;
   created_at?: string;
   updated_at?: string;
 };
@@ -45,7 +45,7 @@ export default function AdminUserPage() {
     username: "",
     email: "",
     password: "",
-    role: "user" as "admin" | "user",
+    role: "user" as "super_admin" | "admin" | "user" | string,
   });
 
   // =====================================================
@@ -141,6 +141,14 @@ export default function AdminUserPage() {
 
   const totalUsers = users.length;
 
+  const totalSuperAdmin = useMemo(
+    () =>
+      users.filter(
+        (user) => user.role === "super_admin" || user.role === "superadmin"
+      ).length,
+    [users]
+  );
+
   const totalAdmin = useMemo(
     () =>
       users.filter(
@@ -152,7 +160,7 @@ export default function AdminUserPage() {
   const totalRegularUser = useMemo(
     () =>
       users.filter(
-        (user) => user.role === "user"
+        (user) => user.role === "user" || (!user.role || (user.role !== "admin" && user.role !== "super_admin" && user.role !== "superadmin"))
       ).length,
     [users]
   );
@@ -406,6 +414,43 @@ export default function AdminUserPage() {
   };
 
   // =====================================================
+  // SUPER ADMIN IMPERSONATION
+  // =====================================================
+
+  const handleDirectImpersonate = (user: User) => {
+    if (
+      !confirm(
+        `👑 [Super Admin] Apakah Anda ingin masuk dan mengontrol dashboard dari sudut pandang user "${user.username}" (${user.email})?`
+      )
+    ) {
+      return;
+    }
+
+    const tempImpersonateUser = {
+      id: user.id,
+      name: user.username,
+      email: user.email,
+      role: user.role,
+      impersonatedBy: "superadmin",
+    };
+
+    localStorage.setItem(
+      "hostingwebid_user",
+      JSON.stringify(tempImpersonateUser)
+    );
+    localStorage.setItem(
+      "hostingweb_auth",
+      JSON.stringify({
+        loggedIn: true,
+        email: user.email,
+        impersonated: true,
+      })
+    );
+
+    window.location.href = "/dashboard";
+  };
+
+  // =====================================================
   // FORMAT DATE
   // =====================================================
 
@@ -578,23 +623,23 @@ export default function AdminUserPage() {
 
           <StatCard
             darkMode={darkMode}
-            title="ADMIN"
+            title="SUPER ADMIN"
+            value={totalSuperAdmin}
+            icon="👑"
+          />
+
+          <StatCard
+            darkMode={darkMode}
+            title="ADMIN BIASA"
             value={totalAdmin}
             icon="🛡"
           />
 
           <StatCard
             darkMode={darkMode}
-            title="USER"
+            title="USER / KLIEN"
             value={totalRegularUser}
             icon="👤"
-          />
-
-          <StatCard
-            darkMode={darkMode}
-            title="HASIL PENCARIAN"
-            value={users.length}
-            icon="🔎"
           />
         </div>
 
@@ -868,12 +913,16 @@ export default function AdminUserPage() {
                       </td>
 
                       <td className="px-6 py-5">
-                        {user.role === "admin" ? (
+                        {user.role === "super_admin" || user.role === "superadmin" ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 text-xs font-black text-white shadow-sm">
+                            👑 SUPER ADMIN
+                          </span>
+                        ) : user.role === "admin" ? (
                           <span className="inline-flex rounded-full bg-purple-100 px-3 py-1 text-xs font-bold text-purple-700">
                             ADMIN
                           </span>
                         ) : (
-                          <span className="inline-flex rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700">
+                          <span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
                             USER
                           </span>
                         )}
@@ -894,7 +943,18 @@ export default function AdminUserPage() {
                       </td>
 
                       <td className="px-6 py-5">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end items-center gap-2">
+                          {user.role !== "super_admin" && user.role !== "superadmin" && (
+                            <button
+                              type="button"
+                              title="Masuk dan kontrol dashboard dari sudut pandang user ini"
+                              onClick={() => handleDirectImpersonate(user)}
+                              className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 text-xs font-black text-amber-500 hover:bg-amber-500 hover:text-slate-950 transition flex items-center gap-1"
+                            >
+                              <span>👑</span> Masuk Akun
+                            </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={() =>
@@ -1084,11 +1144,15 @@ export default function AdminUserPage() {
                   }
                 >
                   <option value="user">
-                    User
+                    User / Klien (Pelanggan)
                   </option>
 
                   <option value="admin">
-                    Admin
+                    Admin (Pengelola Operasional)
+                  </option>
+
+                  <option value="super_admin">
+                    👑 Super Admin (Akses Penuh Seluruh Website)
                   </option>
                 </select>
               </div>

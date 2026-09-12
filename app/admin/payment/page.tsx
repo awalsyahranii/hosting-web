@@ -217,7 +217,7 @@ export default function AdminPaymentPage() {
     }
     try {
       const parsed = JSON.parse(savedUser) as User;
-      if (parsed.role !== "admin") {
+      if (parsed.role !== "admin" && parsed.role !== "super_admin" && parsed.role !== "superadmin") {
         router.push("/dashboard");
         return;
       }

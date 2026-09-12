@@ -234,7 +234,7 @@ export default function AdminServicesPage() {
     }
     try {
       const u = JSON.parse(savedUser);
-      if (u.role !== "admin") {
+      if (u.role !== "admin" && u.role !== "super_admin" && u.role !== "superadmin") {
         router.push("/dashboard");
         return;
       }

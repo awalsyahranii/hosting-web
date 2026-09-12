@@ -51,6 +51,19 @@ export default function AdminSidebar({
     void fetchPendingPayments();
   }, [propPendingCount]);
 
+  const [currentUser, setCurrentUser] = useState<{ name?: string; role?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hostingwebid_user");
+      if (saved) {
+        setCurrentUser(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -72,8 +85,17 @@ export default function AdminSidebar({
     <aside className={`admin-sidebar ${darkMode ? "admin-dark" : ""}`}>
       {/* BRAND LOGO */}
       <div className="admin-logo">
-        <Link href="/admin" className="flex items-center gap-2">
+        <Link href="/admin" className="flex flex-col items-start gap-1">
           <img src="/logo.png" alt="HostingWebID" />
+          {currentUser?.role === "super_admin" || currentUser?.role === "superadmin" ? (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
+              👑 SUPER ADMIN
+            </span>
+          ) : (
+            <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              🛡️ ADMIN PANEL
+            </span>
+          )}
         </Link>
       </div>
 
@@ -253,6 +275,28 @@ export default function AdminSidebar({
           </span>
           <span className="admin-nav-text">Coupon</span>
           {isCurrent("/admin/coupon") && <span className="admin-nav-dot" />}
+        </Link>
+
+        {/* =========================================================
+            SECTION 5: SUPER ADMIN MASTER
+        ========================================================= */}
+        <div className="admin-nav-title font-black flex items-center gap-1 text-amber-500" style={{ marginTop: "14px" }}>
+          <span>👑</span> SUPER ADMIN
+        </div>
+
+        {/* 10. Master Control & System Hub */}
+        <Link
+          href="/admin/system"
+          className={`admin-nav-item ${isCurrent("/admin/system") ? "active" : ""}`}
+        >
+          <span className="admin-nav-svg-wrap text-amber-500">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </span>
+          <span className="admin-nav-text font-bold text-amber-500 dark:text-amber-400">Master Control</span>
+          {isCurrent("/admin/system") && <span className="admin-nav-dot" style={{ backgroundColor: "#f59e0b" }} />}
         </Link>
       </nav>
 
