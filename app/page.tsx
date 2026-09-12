@@ -1545,6 +1545,7 @@ export default function Home() {
                         }}
                         disabled={domainLoading}
                         autoComplete="off"
+                        suppressHydrationWarning
                       />
                     </div>
                   </div>
@@ -1555,6 +1556,7 @@ export default function Home() {
                       id="tldSelector"
                       defaultValue=".com"
                       className="domain-tld-select"
+                      suppressHydrationWarning
                     >
                       <option value=".id">.id</option>
                       <option value=".com">.com</option>
@@ -1575,6 +1577,7 @@ export default function Home() {
                       type="submit"
                       className="domain-search-button"
                       disabled={domainLoading}
+                      suppressHydrationWarning
                     >
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="11" cy="11" r="8"/>
@@ -1916,6 +1919,7 @@ export default function Home() {
                 placeholder="Cari nama website atau domain..."
                 value={portfolioSearch}
                 onChange={(e) => setPortfolioSearch(e.target.value)}
+                suppressHydrationWarning
               />
               {portfolioSearch && (
                 <button
