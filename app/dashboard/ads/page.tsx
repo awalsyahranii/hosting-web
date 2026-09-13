@@ -18,42 +18,15 @@ type AdsCampaign = {
   end_date: string;
 };
 
-const dummyCampaigns: AdsCampaign[] = [
-  {
-    id: 1,
-    package_name: "Paket Bisnis 30 Hari Google Ads",
-    target_keywords: "jasa pembuatan website, hosting murah indonesia, domain murah",
-    daily_budget: "Rp 100.000 / hari",
-    total_budget: "Rp 3.000.000",
-    duration: "30 Hari",
-    clicks: 1840,
-    impressions: 34200,
-    status: "Running",
-    start_date: "01 Sep 2026",
-    end_date: "30 Sep 2026",
-  },
-  {
-    id: 2,
-    package_name: "Paket Pemula 14 Hari Google Ads",
-    target_keywords: "toko online jakarta, baju muslim terlaris",
-    daily_budget: "Rp 50.000 / hari",
-    total_budget: "Rp 700.000",
-    duration: "14 Hari",
-    clicks: 650,
-    impressions: 12800,
-    status: "Completed",
-    start_date: "10 Agu 2026",
-    end_date: "24 Agu 2026",
-  },
-];
-
 export default function DashboardAdsPage() {
-  const [campaigns, setCampaigns] = useState<AdsCampaign[]>(dummyCampaigns);
+  const [campaigns, setCampaigns] = useState<AdsCampaign[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function fetchUserAds() {
       try {
+        setLoading(true);
         const response = await fetch(
           "/api/backend/service/index.php",
           { method: "GET", credentials: "include" }
@@ -87,15 +60,18 @@ export default function DashboardAdsPage() {
                 end_date: s.expiry_date || "Sesuai Durasi",
               };
             });
-            setCampaigns((prev) => {
-              const existingIds = new Set(prev.map((p) => p.id));
-              const fresh = formatted.filter((f) => !existingIds.has(f.id));
-              return [...fresh, ...prev];
-            });
+            setCampaigns(formatted);
+          } else {
+            setCampaigns([]);
           }
+        } else {
+          setCampaigns([]);
         }
       } catch (err) {
         console.error("Gagal load user ads:", err);
+        setCampaigns([]);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -208,73 +184,104 @@ export default function DashboardAdsPage() {
           </div>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {filteredCampaigns.map((camp) => {
-            const isRunning = camp.status === "Running";
-            const ctr = ((camp.clicks / camp.impressions) * 100).toFixed(1);
+        {loading ? (
+          <div className="p-12 text-center text-slate-500 text-sm">
+            <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-orange-500" />
+            Memeriksa data kampanye iklan...
+          </div>
+        ) : filteredCampaigns.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-2">📢</div>
+            <h3 className="font-bold text-slate-800 text-base">Belum Ada Kampanye Iklan Aktif</h3>
+            <p className="text-slate-500 text-xs mt-1 max-w-md mx-auto">
+              Tingkatkan pengunjung dan omset bisnis Anda dengan beriklan di halaman 1 Google Search bersama tim ahli kami.
+            </p>
+            <div className="mt-5 flex items-center justify-center gap-3">
+              <Link
+                href="/#google-ads"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition shadow-sm"
+              >
+                Pilih Paket Google Ads
+              </Link>
+              <a
+                href={getWhatsAppUrl("Halo Tim Ads HostingWeb, saya ingin bertanya tentang paket pasang iklan Google Ads.")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+              >
+                Konsultasi WhatsApp
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {filteredCampaigns.map((camp) => {
+              const isRunning = camp.status === "Running";
+              const ctr = camp.impressions > 0 ? ((camp.clicks / camp.impressions) * 100).toFixed(1) : "0.0";
 
-            return (
-              <div key={camp.id} className="p-5 hover:bg-slate-50/60 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-2 max-w-xl">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-extrabold tracking-wide uppercase">
-                      🎯 GOOGLE SEARCH
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                        isRunning
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
+              return (
+                <div key={camp.id} className="p-5 hover:bg-slate-50/60 transition flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="space-y-2 max-w-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-extrabold tracking-wide uppercase">
+                        🎯 GOOGLE SEARCH
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                          isRunning
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {isRunning ? "● SEDANG TAYANG" : "SELESAI"}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-slate-900">{camp.package_name}</h3>
+                    
+                    <p className="text-xs text-slate-600">
+                      <span className="font-semibold text-slate-700">Target Kata Kunci:</span> {camp.target_keywords}
+                    </p>
+
+                    <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
+                      <span>📅 Periode: <strong>{camp.start_date} - {camp.end_date}</strong></span>
+                      <span>💰 Dana Harian: <strong>{camp.daily_budget}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* METRICS & ACTIONS */}
+                  <div className="flex items-center gap-6 self-end lg:self-center">
+                    <div className="grid grid-cols-3 gap-3 text-center bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block">KLIK</span>
+                        <strong className="text-sm font-black text-slate-800">{camp.clicks}</strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block">IMPRESI</span>
+                        <strong className="text-sm font-black text-slate-800">
+                          {(camp.impressions / 1000).toFixed(1)}k
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 block">CTR</span>
+                        <strong className="text-sm font-black text-emerald-600">{ctr}%</strong>
+                      </div>
+                    </div>
+
+                    <a
+                      href={getWhatsAppUrl(`Halo Admin, saya ingin request update kata kunci / cek laporan iklan untuk ${camp.package_name}.`)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition shadow-sm"
                     >
-                      {isRunning ? "● SEDANG TAYANG" : "SELESAI"}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-bold text-slate-900">{camp.package_name}</h3>
-                  
-                  <p className="text-xs text-slate-600">
-                    <span className="font-semibold text-slate-700">Target Kata Kunci:</span> {camp.target_keywords}
-                  </p>
-
-                  <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
-                    <span>📅 Periode: <strong>{camp.start_date} - {camp.end_date}</strong></span>
-                    <span>💰 Dana Harian: <strong>{camp.daily_budget}</strong></span>
+                      Laporan Lengkap →
+                    </a>
                   </div>
                 </div>
-
-                {/* METRICS & ACTIONS */}
-                <div className="flex items-center gap-6 self-end lg:self-center">
-                  <div className="grid grid-cols-3 gap-3 text-center bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block">KLIK</span>
-                      <strong className="text-sm font-black text-slate-800">{camp.clicks}</strong>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block">IMPRESI</span>
-                      <strong className="text-sm font-black text-slate-800">
-                        {(camp.impressions / 1000).toFixed(1)}k
-                      </strong>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block">CTR</span>
-                      <strong className="text-sm font-black text-emerald-600">{ctr}%</strong>
-                    </div>
-                  </div>
-
-                  <a
-                    href={getWhatsAppUrl(`Halo Admin, saya ingin request update kata kunci / cek laporan iklan untuk ${camp.package_name}.`)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl text-xs font-bold transition shadow-sm"
-                  >
-                    Laporan Lengkap →
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

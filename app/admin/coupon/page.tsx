@@ -665,7 +665,7 @@ export default function AdminCouponPage() {
             CONTENT
         ====================================================== */}
 
-        <section className="flex-1 min-w-0">
+        <section className="flex-1 min-w-0" style={{ marginLeft: "275px" }}>
 
           {/* HEADER */}
 
