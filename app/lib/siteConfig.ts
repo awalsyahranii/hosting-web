@@ -5,8 +5,8 @@
 export const SITE_CONFIG = {
   name: "HostingWeb ID",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "6285333555976",
-  whatsappDisplay: process.env.NEXT_PUBLIC_WHATSAPP_DISPLAY || "085-333-555-976",
-  phone: "085-333-555-976",
+  whatsappDisplay: process.env.NEXT_PUBLIC_WHATSAPP_DISPLAY || "+62 853-3355-5976",
+  phone: "+62 853-3355-5976",
   email: "admin@hostingwebid.com",
   workingHours: "Senin - Sabtu Pkl. 08.00 - 17.00 WIB",
   address: "Kota Makassar - Sulawesi Selatan 90245",

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getWhatsAppUrl } from "../../lib/siteConfig";
+import { printOrDownloadInvoicePdf } from "@/app/lib/invoicePdf";
 
 type OrderItem = {
   id: number;
@@ -224,20 +225,54 @@ function InvoicesContent() {
                   </span>
                 </div>
 
-                <span
-                  className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    selectedInvoice.status?.toLowerCase() === "paid" ||
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const savedUser = localStorage.getItem("hostingwebid_user");
+                      let uName = "Pelanggan";
+                      let uEmail = "";
+                      if (savedUser) {
+                        try {
+                          const p = JSON.parse(savedUser);
+                          uName = p.name || p.username || "Pelanggan";
+                          uEmail = p.email || "";
+                        } catch {}
+                      }
+                      printOrDownloadInvoicePdf({
+                        invoice_number: selectedInvoice.invoice_number,
+                        order_number: selectedInvoice.order_number || selectedInvoice.order_id,
+                        created_at: selectedInvoice.created_at,
+                        due_date: selectedInvoice.due_date,
+                        status: selectedInvoice.status,
+                        username: uName,
+                        email: uEmail,
+                        total: selectedInvoice.total,
+                        subtotal: selectedInvoice.subtotal,
+                        ppn: selectedInvoice.ppn,
+                        items: selectedInvoice.items,
+                      });
+                    }}
+                    className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                  >
+                    <span>📄</span> Download PDF
+                  </button>
+
+                  <span
+                    className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+                      selectedInvoice.status?.toLowerCase() === "paid" ||
+                      selectedInvoice.status?.toLowerCase() === "lunas"
+                        ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
+                        : "bg-red-100 text-red-700 border border-red-300"
+                    }`}
+                  >
+                    ●{" "}
+                    {selectedInvoice.status?.toLowerCase() === "paid" ||
                     selectedInvoice.status?.toLowerCase() === "lunas"
-                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
-                      : "bg-red-100 text-red-700 border border-red-300"
-                  }`}
-                >
-                  ●{" "}
-                  {selectedInvoice.status?.toLowerCase() === "paid" ||
-                  selectedInvoice.status?.toLowerCase() === "lunas"
-                    ? "Lunas"
-                    : "Belum Dibayar"}
-                </span>
+                      ? "Lunas"
+                      : "Belum Dibayar"}
+                  </span>
+                </div>
               </div>
 
               {/* META INFO */}
@@ -318,8 +353,52 @@ function InvoicesContent() {
                 </div>
               </div>
 
+              {/* ACTION: DOWNLOAD OFFICIAL INVOICE PDF */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">
+                    Dokumen Tagihan Resmi:
+                  </h4>
+                  <p className="text-[11px] text-slate-500">
+                    Unduh file PDF invoice resmi untuk arsip atau bukti transaksi Anda.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const savedUser = localStorage.getItem("hostingwebid_user");
+                    let uName = "Pelanggan";
+                    let uEmail = "";
+                    if (savedUser) {
+                      try {
+                        const p = JSON.parse(savedUser);
+                        uName = p.name || p.username || "Pelanggan";
+                        uEmail = p.email || "";
+                      } catch {}
+                    }
+                    printOrDownloadInvoicePdf({
+                      invoice_number: selectedInvoice.invoice_number,
+                      order_number: selectedInvoice.order_number || selectedInvoice.order_id,
+                      created_at: selectedInvoice.created_at,
+                      due_date: selectedInvoice.due_date,
+                      status: selectedInvoice.status,
+                      username: uName,
+                      email: uEmail,
+                      total: selectedInvoice.total,
+                      subtotal: selectedInvoice.subtotal,
+                      ppn: selectedInvoice.ppn,
+                      items: selectedInvoice.items,
+                    });
+                  }}
+                  className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 whitespace-nowrap"
+                >
+                  <span>📥</span> Download PDF
+                </button>
+              </div>
+
               {/* PAYMENT INSTRUCTIONS */}
-              {selectedInvoice.status?.toLowerCase() !== "paid" && (
+              {selectedInvoice.status?.toLowerCase() !== "paid" && selectedInvoice.status?.toLowerCase() !== "lunas" && (
                 <div className="flex flex-col gap-3 p-4 bg-orange-50/70 border border-orange-200 rounded-xl">
                   <h4 className="text-xs font-bold text-orange-950">
                     Instruksi Pembayaran Transfer Bank:

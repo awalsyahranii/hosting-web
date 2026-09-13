@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
+import { printOrDownloadInvoicePdf } from "@/app/lib/invoicePdf";
 
 type Payment = {
   payment_id?: number | string;
@@ -140,6 +141,18 @@ function paymentDomain(payment: Payment) {
       return "✨ Paket Starter Website (Tahunan)";
     }
     return "☁️ Paket Cloud Hosting NVMe";
+  }
+
+  if (cat === "google_ads") {
+    if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
+      return `🎯 Google Ads: ${dom.replace(/^domain:\s*/i, "")}`;
+    }
+    if (amt >= 3000000) return "🎯 Paket Bisnis 30 Hari Google Ads";
+    if (amt >= 2000000) return "🎯 Paket Bisnis 20 Hari Google Ads";
+    if (amt >= 1500000) return "🎯 Paket Pemula / Bisnis Google Ads";
+    if (amt >= 1000000) return "🎯 Paket Google Ads (10-20 Hari)";
+    if (amt >= 700000) return "🎯 Paket Pemula 14 Hari Google Ads";
+    return "🎯 Kampanye Iklan Google Ads";
   }
 
   // Domain Category
@@ -569,11 +582,15 @@ export default function AdminPaymentPage() {
                           <small>{payment.email || "-"}</small>
                         </td>
                         <td>
-                          <strong className={cat === "hosting" ? "text-orange-600" : "text-blue-600"}>
+                          <strong className={cat === "hosting" ? "text-orange-600" : cat === "google_ads" ? "text-amber-700" : "text-blue-600"}>
                             {paymentDomain(payment)}
                           </strong>
                           <small style={{ color: "#64748b", display: "block" }}>
-                            {cat === "hosting" ? (payment.billing_period || "Paket Tahunan (12 Bulan)") : "Registrasi Domain (1 Tahun)"}
+                            {cat === "hosting"
+                              ? (payment.billing_period || "Paket Tahunan (12 Bulan)")
+                              : cat === "google_ads"
+                              ? (payment.billing_period || "Masa Aktif Kampanye Iklan")
+                              : "Registrasi Domain (1 Tahun)"}
                           </small>
                         </td>
                         <td>
@@ -648,6 +665,10 @@ export default function AdminPaymentPage() {
                     <dd>
                       {getPaymentCategory(selectedPayment) === "hosting" ? (
                         <span className="badge-category hosting">🔥 HOSTING SERVER</span>
+                      ) : getPaymentCategory(selectedPayment) === "google_ads" ? (
+                        <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
+                          🎯 GOOGLE ADS
+                        </span>
                       ) : (
                         <span className="badge-category domain">🌐 DOMAIN WEB</span>
                       )}
@@ -700,16 +721,63 @@ export default function AdminPaymentPage() {
                     </dd>
                   </div>
                 </dl>
-                {statusLabel(selectedPayment.status) === "Pending" && (
+                <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
+                  {statusLabel(selectedPayment.status) === "Pending" && (
+                    <button
+                      className="admin-payment-confirm"
+                      type="button"
+                      style={{ flex: "1 1 auto" }}
+                      onClick={confirmPayment}
+                      disabled={confirming}
+                    >
+                      {confirming ? "Memproses..." : "Konfirmasi Pembayaran"}
+                    </button>
+                  )}
                   <button
-                    className="admin-payment-confirm"
                     type="button"
-                    onClick={confirmPayment}
-                    disabled={confirming}
+                    onClick={() => {
+                      const rawAmt = Number(selectedPayment.amount ?? selectedPayment.total ?? 0);
+                      const isGoogleAds = getPaymentCategory(selectedPayment) === "google_ads";
+                      const desc = isGoogleAds
+                        ? (selectedPayment.domain_name || "Paket Bisnis 30 Hari Google Ads (Google Search Campaign)")
+                        : paymentDomain(selectedPayment);
+
+                      printOrDownloadInvoicePdf({
+                        invoice_number: selectedPayment.payment_number || `INV-${paymentId(selectedPayment)}`,
+                        order_number: selectedPayment.order_number || `ORD-${selectedPayment.order_id ?? paymentId(selectedPayment)}`,
+                        created_at: selectedPayment.payment_date || selectedPayment.created_at || new Date().toISOString(),
+                        due_date: selectedPayment.payment_date || selectedPayment.created_at || new Date().toISOString(),
+                        status: selectedPayment.status || "paid",
+                        username: paymentName(selectedPayment),
+                        email: selectedPayment.email || "-",
+                        total: rawAmt,
+                        items: [
+                          {
+                            domain_name: desc,
+                            description: "Paket Cloud Server & Infrastruktur Website",
+                            price: rawAmt,
+                          },
+                        ],
+                      });
+                    }}
+                    style={{
+                      background: "#ea580c",
+                      color: "#ffffff",
+                      border: "none",
+                      padding: "10px 18px",
+                      borderRadius: "10px",
+                      fontWeight: 800,
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      boxShadow: "0 2px 6px rgba(234, 88, 12, 0.2)",
+                    }}
                   >
-                    {confirming ? "Memproses..." : "Konfirmasi Pembayaran"}
+                    <span>📥</span> Unduh Invoice PDF
                   </button>
-                )}
+                </div>
               </>
             )}
           </section>

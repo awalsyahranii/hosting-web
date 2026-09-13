@@ -69,7 +69,12 @@ export default function DashboardPage() {
         );
         const result = await response.json().catch(() => null);
         if (response.ok && result?.status === "success") {
-          setInvoices(result.data || []);
+          const list = Array.isArray(result.data)
+            ? result.data
+            : Array.isArray(result.data?.invoices)
+            ? result.data.invoices
+            : [];
+          setInvoices(list);
         }
       } catch (error) {
         console.error("Gagal load invoice:", error);

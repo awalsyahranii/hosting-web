@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SITE_CONFIG, getWhatsAppUrl } from "../lib/siteConfig";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 interface ArticleItem {
   id: number;
@@ -86,36 +88,7 @@ export default function BlogIndexPage() {
       {/* =========================================================
           TOP NAVBAR
       ========================================================= */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="HostingWeb ID" className="h-10 w-auto object-contain" />
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-            <Link href="/" className="hover:text-orange-600 transition">Beranda</Link>
-            <Link href="/#pricing" className="hover:text-orange-600 transition">Hosting</Link>
-            <Link href="/#domain" className="hover:text-orange-600 transition">Domain</Link>
-            <Link href="/#google-ads" className="hover:text-orange-600 transition">Google Ads</Link>
-            <Link href="/blog" className="text-orange-600 font-bold">Blog &amp; Artikel</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs font-bold text-slate-700 hover:text-slate-950 px-3.5 py-2 rounded-xl transition"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/register"
-              className="px-4 py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-600/20 transition transform active:scale-95"
-            >
-              Mulai Sekarang →
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar activeMenu="blog" />
 
       {/* =========================================================
           HERO BANNER
@@ -395,17 +368,7 @@ export default function BlogIndexPage() {
       {/* =========================================================
           FOOTER
       ========================================================= */}
-      <footer className="bg-white border-t border-slate-200 py-8 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} HostingWeb ID. Solusi Hosting, Domain &amp; Website Terpercaya.</p>
-          <div className="flex gap-6 font-medium">
-            <Link href="/" className="hover:text-orange-600">Beranda</Link>
-            <Link href="/blog" className="hover:text-orange-600">Blog</Link>
-            <Link href="/#pricing" className="hover:text-orange-600">Hosting</Link>
-            <Link href="/#domain" className="hover:text-orange-600">Domain</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

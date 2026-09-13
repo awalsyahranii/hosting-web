@@ -897,7 +897,7 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <main suppressHydrationWarning>
       {/* =====================================================
           SUPER ADMIN LIVE BROADCAST PROMO BANNER
       ===================================================== */}

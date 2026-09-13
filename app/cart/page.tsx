@@ -792,7 +792,7 @@ export default function CartPage() {
               <h5>Butuh bantuan teknis?</h5>
               <p>Tim support siap 24/7 untuk Anda.</p>
               <a
-                href="https://wa.me/6281234567890"
+                href="https://wa.me/6285333555976"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="dash-help-link"
