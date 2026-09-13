@@ -265,13 +265,13 @@ export default function CartPage() {
 
         if (
           response.status === 401 ||
-          response.status === 403
+          response.status === 403 ||
+          (result && result.status !== "success" && result.message?.toLowerCase().includes("login"))
         ) {
-
-          router.replace("/admin");
-
+          localStorage.removeItem("hostingwebid_user");
+          localStorage.removeItem("hostingweb_auth");
+          router.replace("/login?redirect=/cart");
           return;
-
         }
 
 
@@ -1341,11 +1341,16 @@ export default function CartPage() {
                 </div>
 
 
-                {/* CHECKOUT BUTTON */}
-
                 <button
                   className="cart-checkout-button"
-                  onClick={() => router.push("/checkout")}
+                  onClick={() => {
+                    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+                    if (!savedUser) {
+                      router.push("/login?redirect=/checkout");
+                    } else {
+                      router.push("/checkout");
+                    }
+                  }}
                   disabled={
                     checkoutLoading ||
                     !checkout ||

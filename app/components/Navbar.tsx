@@ -38,6 +38,9 @@ export default function Navbar({ activeMenu }: NavbarProps) {
             <Link href="/#google-ads" className={activeMenu === "google-ads" ? "active" : ""}>
               Google Ads
             </Link>
+            <Link href="/seo" className={activeMenu === "seo" ? "active" : ""}>
+              SEO
+            </Link>
             <Link href="/#features" className={activeMenu === "features" ? "active" : ""}>
               Fitur
             </Link>
@@ -51,15 +54,6 @@ export default function Navbar({ activeMenu }: NavbarProps) {
 
           {/* DESKTOP ACTIONS */}
           <div className="nav-actions">
-            <a
-              href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya seputar layanan web hosting.")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="nav-contact"
-            >
-              Hubungi Kami
-            </a>
-
             <Link href="/login" className="nav-login">
               Masuk
             </Link>
@@ -83,61 +77,53 @@ export default function Navbar({ activeMenu }: NavbarProps) {
         </div>
 
         {/* MOBILE / TABLET MENU DRAWER */}
-        <div className={`mobile-nav-panel ${mobileMenuOpen ? "open" : ""}`}>
-          <div className="container mobile-nav-inner">
-            <nav className="mobile-nav-links">
-              <Link href="/#pricing" onClick={() => setMobileMenuOpen(false)}>
-                Hosting
-              </Link>
-              <Link href="/#domain" onClick={() => setMobileMenuOpen(false)}>
-                Domain
-              </Link>
-              <Link href="/#portfolio" onClick={() => setMobileMenuOpen(false)}>
-                Portfolio
-              </Link>
-              <Link href="/#google-ads" onClick={() => setMobileMenuOpen(false)}>
-                Google Ads
-              </Link>
-              <Link href="/#features" onClick={() => setMobileMenuOpen(false)}>
-                Fitur
-              </Link>
-              <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>
-                Blog &amp; Panduan
-              </Link>
-              <Link href="/#faq" onClick={() => setMobileMenuOpen(false)}>
-                FAQ
-              </Link>
-            </nav>
+        {mobileMenuOpen && (
+          <div className="mobile-menu">
+            <Link href="/#pricing" onClick={() => setMobileMenuOpen(false)}>
+              Hosting
+            </Link>
+            <Link href="/#domain" onClick={() => setMobileMenuOpen(false)}>
+              Domain
+            </Link>
+            <Link href="/#portfolio" onClick={() => setMobileMenuOpen(false)}>
+              Portfolio
+            </Link>
+            <Link href="/#google-ads" onClick={() => setMobileMenuOpen(false)}>
+              Google Ads
+            </Link>
+            <Link href="/seo" onClick={() => setMobileMenuOpen(false)}>
+              SEO
+            </Link>
+            <Link href="/#features" onClick={() => setMobileMenuOpen(false)}>
+              Fitur
+            </Link>
+            <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>
+              Blog &amp; Panduan
+            </Link>
+            <Link href="/#faq" onClick={() => setMobileMenuOpen(false)}>
+              FAQ
+            </Link>
 
-            <div className="mobile-nav-actions">
-              <a
-                href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya.")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mobile-nav-contact"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Hubungi Kami via WhatsApp
-              </a>
+            <div className="mobile-menu-divider" />
 
-              <Link
-                href="/login"
-                className="mobile-nav-login"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Masuk ke Akun
-              </Link>
+            <Link
+              href="/login"
+              className="mobile-login"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Masuk
+            </Link>
 
-              <Link
-                href="/register"
-                className="mobile-nav-cta"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Mulai Sekarang
-              </Link>
-            </div>
+            <Link
+              href="/register"
+              className="mobile-register"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Mulai Sekarang
+              <span>→</span>
+            </Link>
           </div>
-        </div>
+        )}
       </header>
     </>
   );

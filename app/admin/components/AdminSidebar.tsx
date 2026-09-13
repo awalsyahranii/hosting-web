@@ -177,6 +177,23 @@ export default function AdminSidebar({
           {isCurrent("/admin/services") && <span className="admin-nav-dot" />}
         </Link>
 
+        {/* 5. Layanan Jasa SEO & PBN */}
+        <Link
+          href="/admin/seo"
+          className={`admin-nav-item ${isCurrent("/admin/seo") ? "active" : ""}`}
+        >
+          <span className="admin-nav-svg-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+          </span>
+          <span className="admin-nav-text">Jasa SEO</span>
+          {isCurrent("/admin/seo") && <span className="admin-nav-dot" />}
+        </Link>
+
         {/* =========================================================
             SECTION 3: TRANSAKSI & BILLING
         ========================================================= */}

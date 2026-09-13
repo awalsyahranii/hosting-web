@@ -73,59 +73,101 @@ function paymentName(payment: Payment) {
 /**
  * Accurately determines if payment is for Hosting, Domain, or Google Ads.
  */
-function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ads" {
+function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ads" | "seo" | "website" {
   const cat = (payment.service_category || "").toLowerCase();
-  const dom = (payment.domain_name || payment.domain || (payment as any).domains || "").toLowerCase();
+  const dom = (
+    payment.domain_name ||
+    payment.domain ||
+    (payment as any).domains ||
+    (payment as any).package_name ||
+    ""
+  ).toLowerCase();
   const amt = Number(payment.amount ?? payment.total ?? 0);
 
+  // 1. Explicit Google Ads keywords
   if (
     cat.includes("ads") ||
     cat.includes("iklan") ||
     cat.includes("google") ||
-    dom.includes("google ads") ||
-    dom.includes("paket pemula") ||
-    dom.includes("paket bisnis 10") ||
-    dom.includes("paket bisnis 15") ||
-    dom.includes("paket bisnis 30")
+    dom.includes("google") ||
+    dom.includes("ads") ||
+    dom.includes("iklan") ||
+    dom.includes("pemula") ||
+    dom.includes("bisnis") ||
+    dom.includes("search ads") ||
+    dom.includes("campaign") ||
+    amt === 777000 ||
+    amt === 1110000 ||
+    amt === 1665000 ||
+    amt === 3330000
   ) {
     return "google_ads";
   }
 
-  if (cat === "hosting" || cat.includes("hosting")) return "hosting";
-  if (cat === "website" || cat === "domain" || cat.includes("domain")) return "domain";
+  // 2. Explicit SEO keywords
+  if (cat.includes("seo") || dom.includes("seo") || dom.includes("backlink") || dom.includes("pbn")) {
+    return "seo";
+  }
 
-  // If explicit hosting keywords in service description
+  // 3. Explicit Website keywords
+  if (cat.includes("website") || dom.includes("jasa pembuatan website") || dom.includes("pembuatan website") || dom.includes("desain web") || dom.includes("custom desain")) {
+    return "website";
+  }
+
+  // 4. Explicit Domain keywords
   if (
-    dom.includes("cloud hosting") ||
-    dom.includes("paket hosting") ||
-    dom.includes("hosting starter") ||
-    dom.includes("hosting bisnis") ||
-    dom.includes("hosting enterprise") ||
-    dom.includes("bisnis pro") ||
-    dom.includes("starter website") ||
-    dom.includes("elite enterprise") ||
+    cat === "domain" ||
+    dom.includes("pendaftaran domain") ||
+    dom.includes("registrasi domain") ||
+    (dom.startsWith("domain:") && !dom.includes("hosting") && !dom.includes("website") && !dom.includes("server"))
+  ) {
+    return "domain";
+  }
+
+  // 5. Explicit Hosting keywords
+  if (
+    cat === "hosting" ||
+    cat.includes("hosting") ||
+    dom.includes("hosting") ||
     dom.includes("cpanel") ||
     dom.includes("nvme") ||
     dom.includes("server") ||
-    dom.includes("hosting") ||
-    dom.includes("paket")
+    dom.includes("starter") ||
+    dom.includes("business-pro") ||
+    dom.includes("elite-enterprise")
   ) {
     return "hosting";
   }
 
-  // Hosting packages are >= Rp 300.000
-  if (amt >= 300000) {
-    return "hosting";
+  // 6. Default classification
+  if (amt <= 300000 && (dom.endsWith(".com") || dom.endsWith(".id") || dom.endsWith(".my.id") || dom.endsWith(".co.id"))) {
+    return "domain";
   }
 
-  // Domain registration purchases (< Rp 300.000)
-  return "domain";
+  return "hosting";
 }
 
 function paymentDomain(payment: Payment) {
-  const dom = payment.domain_name ?? payment.domain ?? (payment as any).domains ?? payment.items?.map((item) => item.domain_name).filter(Boolean).join(", ");
+  const dom =
+    payment.domain_name ??
+    payment.domain ??
+    (payment as any).domains ??
+    (payment as any).package_name ??
+    payment.items?.map((item) => item.domain_name).filter(Boolean).join(", ");
   const cat = getPaymentCategory(payment);
   const amt = Number(payment.amount ?? payment.total ?? 0);
+
+  if (cat === "google_ads") {
+    if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
+      return `🎯 ${dom.replace(/^domain:\s*/i, "")}`;
+    }
+    if (amt >= 3000000) return "🎯 Paket Bisnis 30 Hari Google Ads";
+    if (amt >= 2000000) return "🎯 Paket Bisnis 20 Hari Google Ads";
+    if (amt >= 1500000) return "🎯 Paket Pemula 30 Hari / Bisnis 15 Hari Google Ads";
+    if (amt >= 1000000) return "🎯 Paket Pemula 20 Hari / Bisnis 10 Hari Google Ads";
+    if (amt >= 700000) return "🎯 Paket Pemula 14 Hari Google Ads";
+    return "🎯 Kampanye Iklan Google Ads";
+  }
 
   if (cat === "hosting") {
     if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
@@ -141,18 +183,6 @@ function paymentDomain(payment: Payment) {
       return "✨ Paket Starter Website (Tahunan)";
     }
     return "☁️ Paket Cloud Hosting NVMe";
-  }
-
-  if (cat === "google_ads") {
-    if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
-      return `🎯 Google Ads: ${dom.replace(/^domain:\s*/i, "")}`;
-    }
-    if (amt >= 3000000) return "🎯 Paket Bisnis 30 Hari Google Ads";
-    if (amt >= 2000000) return "🎯 Paket Bisnis 20 Hari Google Ads";
-    if (amt >= 1500000) return "🎯 Paket Pemula / Bisnis Google Ads";
-    if (amt >= 1000000) return "🎯 Paket Google Ads (10-20 Hari)";
-    if (amt >= 700000) return "🎯 Paket Pemula 14 Hari Google Ads";
-    return "🎯 Kampanye Iklan Google Ads";
   }
 
   // Domain Category
@@ -213,12 +243,14 @@ export default function AdminPaymentPage() {
   const [user, setUser] = useState<User | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain" | "google_ads">("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain" | "google_ads" | "seo" | "website">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -272,17 +304,89 @@ export default function AdminPaymentPage() {
         const ordRef = p.order_number || String(p.order_id || "");
         const matchedService = serviceMap.get(ordRef);
 
-        const domainName = p.domain_name || p.domain || matchedService?.domain_name || matchedService?.domain;
+        const domainName =
+          p.domain_name ||
+          p.domain ||
+          (p as any).package_name ||
+          matchedService?.domain_name ||
+          matchedService?.domain;
+        const serviceCategory = p.service_category || matchedService?.service_category;
         const billing = p.billing_period || matchedService?.billing_period;
 
         mergedList.push({
           ...p,
           domain_name: domainName,
           domain: domainName,
+          service_category: serviceCategory,
           billing_period: billing,
         });
         seenPaymentNumbers.add(pNum);
+        if (ordRef) seenPaymentNumbers.add(ordRef);
       });
+
+      // Also merge any services from report that may not have direct payment row
+      services.forEach((s: any) => {
+        const ordNum = s.order_number || (s.order_id ? `ORD-${s.order_id}` : "");
+        const payNum = s.payment_number || (ordNum ? `PAY-${ordNum}` : `PAY-SRV-${s.id}`);
+        if (!seenPaymentNumbers.has(payNum) && (!ordNum || !seenPaymentNumbers.has(ordNum))) {
+          const isPaid =
+            (s.service_status || "").toLowerCase() === "active" ||
+            (s.order_status || "").toLowerCase() === "completed" ||
+            (s.status || "").toLowerCase() === "paid";
+          mergedList.push({
+            id: s.id,
+            payment_id: s.id,
+            payment_number: payNum,
+            order_id: s.order_id,
+            order_number: ordNum,
+            username: s.username || s.user_name || "Pelanggan",
+            email: s.email || "-",
+            domain_name: s.domain_name || s.domain || s.package_name,
+            service_category: s.service_category,
+            amount: s.order_total || s.price || 0,
+            status: isPaid ? "paid" : "pending",
+            created_at: s.created_at || s.start_date || s.order_date,
+            billing_period: s.billing_period,
+          });
+          seenPaymentNumbers.add(payNum);
+          if (ordNum) seenPaymentNumbers.add(ordNum);
+        }
+      });
+
+      // Also merge user orders endpoint so all active/pending orders appear
+      try {
+        const resUserOrders = await fetch(
+          "/api/backend/dashboardusers/order/index.php",
+          { credentials: "include" }
+        ).catch(() => null);
+        const jsonUserOrders = resUserOrders ? await resUserOrders.json().catch(() => null) : null;
+        const userOrders: any[] = jsonUserOrders?.data?.orders || (Array.isArray(jsonUserOrders?.data) ? jsonUserOrders.data : []);
+
+        userOrders.forEach((o: any) => {
+          const ordNum = o.order_number || (o.id ? `ORD-${o.id}` : "");
+          const payNum = o.payment_number || `PAY-${ordNum}`;
+          if (!seenPaymentNumbers.has(payNum) && (!ordNum || !seenPaymentNumbers.has(ordNum))) {
+            const isPaid = ["paid", "lunas", "completed", "success", "aktif", "active"].includes((o.status || "").toLowerCase());
+            const realId = Number(o.id || o.order_id || o.payment_id || 0);
+            mergedList.push({
+              id: realId,
+              payment_id: realId,
+              payment_number: payNum,
+              order_id: o.id || o.order_id,
+              order_number: ordNum,
+              username: o.username || o.user_name || "Pelanggan",
+              email: o.email || "-",
+              domain_name: o.domain_name || o.package_name || "Layanan HostingWeb",
+              service_category: o.service_category || (String(o.package_name || "").toLowerCase().includes("ads") ? "google_ads" : undefined),
+              amount: o.total || o.price || 0,
+              status: isPaid ? "paid" : "pending",
+              created_at: o.created_at,
+            });
+            seenPaymentNumbers.add(payNum);
+            if (ordNum) seenPaymentNumbers.add(ordNum);
+          }
+        });
+      } catch {}
 
       setPayments(mergedList);
     } catch (err) {
@@ -308,6 +412,8 @@ export default function AdminPaymentPage() {
   const hostingCount = payments.filter((p) => getPaymentCategory(p) === "hosting").length;
   const domainCount = payments.filter((p) => getPaymentCategory(p) === "domain").length;
   const adsCount = payments.filter((p) => getPaymentCategory(p) === "google_ads").length;
+  const seoCount = payments.filter((p) => getPaymentCategory(p) === "seo").length;
+  const websiteCount = payments.filter((p) => getPaymentCategory(p) === "website").length;
   const pendingCount = payments.filter((p) => statusLabel(p.status) === "Pending").length;
   const paidCount = payments.filter((p) => statusLabel(p.status) === "Paid").length;
 
@@ -361,12 +467,8 @@ export default function AdminPaymentPage() {
         credentials: "include",
         headers: { Accept: "application/json" },
       });
-      const result = await readResponse(response);
-      const detail = result.data && !Array.isArray(result.data) && "payment" in result.data
-        ? result.data.payment
-        : result.data && !Array.isArray(result.data) && "payment_id" in result.data
-          ? result.data
-          : payment;
+      const result = await response.json().catch(() => null);
+      const detail = result?.data?.payment || result?.data;
       setSelectedPayment(detail || payment);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memuat detail payment.");
@@ -396,6 +498,127 @@ export default function AdminPaymentPage() {
       setError(err instanceof Error ? err.message : "Gagal mengonfirmasi pembayaran.");
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const handleDeletePayment = async (paymentToDelete: Payment) => {
+    try {
+      setDeleting(true);
+      setError("");
+      setNotice("");
+
+      const targetId = paymentId(paymentToDelete);
+      const targetPaymentNum = paymentToDelete.payment_number;
+      const targetOrderId = paymentToDelete.order_id;
+      const targetOrderNum = paymentToDelete.order_number;
+
+      // 1. Attempt backend deletion across all order & payment endpoints
+      const deleteRequests = [
+        fetch(`${API_BASE}/admin/payment/delete.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            payment_id: targetId,
+            id: targetId,
+            payment_number: targetPaymentNum,
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+          }),
+        }).catch(() => null),
+        fetch(`${API_BASE}/admin/order/delete.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            id: targetOrderId || targetId,
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+          }),
+        }).catch(() => null),
+        fetch(`${API_BASE}/dashboardusers/order/delete.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            id: targetOrderId || targetId,
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+          }),
+        }).catch(() => null),
+        fetch(`${API_BASE}/order/delete.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            id: targetOrderId || targetId,
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+          }),
+        }).catch(() => null),
+        fetch(`${API_BASE}/invoice/delete.php`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+            payment_number: targetPaymentNum,
+          }),
+        }).catch(() => null),
+      ];
+
+      await Promise.allSettled(deleteRequests);
+
+      // 2. Synchronize deleted list in localStorage for real-time user dashboard removal
+      try {
+        const deletedOrders: string[] = JSON.parse(localStorage.getItem("hostingweb_deleted_orders") || "[]");
+        if (targetOrderNum) deletedOrders.push(String(targetOrderNum).trim().toLowerCase());
+        if (targetOrderId) deletedOrders.push(String(targetOrderId).trim().toLowerCase());
+        if (targetPaymentNum) deletedOrders.push(String(targetPaymentNum).trim().toLowerCase());
+        if (targetId) deletedOrders.push(String(targetId).trim().toLowerCase());
+        localStorage.setItem("hostingweb_deleted_orders", JSON.stringify(Array.from(new Set(deletedOrders))));
+
+        // Clean active checkout payment cache if matching
+        const cachedPay = localStorage.getItem("hostingweb_checkout_payment");
+        if (cachedPay) {
+          const p = JSON.parse(cachedPay);
+          if (
+            p.orderNumber === targetOrderNum ||
+            p.paymentNumber === targetPaymentNum ||
+            p.orderId === targetOrderId ||
+            p.paymentId === targetId
+          ) {
+            localStorage.removeItem("hostingweb_checkout_payment");
+          }
+        }
+        window.dispatchEvent(new Event("storage"));
+      } catch {}
+
+      // 3. Remove immediately from admin payments state
+      setPayments((prev) =>
+        prev.filter((p) => {
+          const pId = paymentId(p);
+          if (targetId && pId === targetId) return false;
+          if (targetPaymentNum && p.payment_number === targetPaymentNum) return false;
+          if (targetOrderNum && p.order_number === targetOrderNum) return false;
+          return true;
+        })
+      );
+
+      if (
+        selectedPayment &&
+        (paymentId(selectedPayment) === targetId ||
+          (targetPaymentNum && selectedPayment.payment_number === targetPaymentNum))
+      ) {
+        setSelectedPayment(null);
+      }
+      setDeleteTarget(null);
+      setNotice(`Data pembayaran ${targetPaymentNum || `ID #${targetId}`} berhasil dihapus.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menghapus data pembayaran.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -441,7 +664,7 @@ export default function AdminPaymentPage() {
         <div className="admin-payment-toolbar">
           <div>
             <h2>Daftar Pembayaran</h2>
-            <p>Pilih filter layanan di bawah untuk melihat pembayaran hosting atau domain.</p>
+            <p>Pilih filter layanan di bawah untuk melihat pembayaran hosting, domain, iklan, atau website.</p>
             {pendingPaymentCount > 0 && (
               <strong className="admin-payment-alert">
                 {pendingPaymentCount} payment dari user menunggu diproses
@@ -456,7 +679,7 @@ export default function AdminPaymentPage() {
         {/* CATEGORY & STATUS FILTER TABS */}
         <div className="admin-filter-bar">
           {/* CATEGORY PILLS */}
-          <div className="admin-filter-pills">
+          <div className="admin-filter-pills flex flex-wrap gap-2">
             <button
               type="button"
               className={`filter-pill ${categoryFilter === "all" ? "active" : ""}`}
@@ -470,7 +693,7 @@ export default function AdminPaymentPage() {
               className={`filter-pill hosting ${categoryFilter === "hosting" ? "active" : ""}`}
               onClick={() => setCategoryFilter("hosting")}
             >
-              <span>🔥 Payment Hosting</span>
+              <span>🔥 Hosting</span>
               <span className="pill-badge">{hostingCount}</span>
             </button>
             <button
@@ -478,7 +701,7 @@ export default function AdminPaymentPage() {
               className={`filter-pill domain ${categoryFilter === "domain" ? "active" : ""}`}
               onClick={() => setCategoryFilter("domain")}
             >
-              <span>🌐 Payment Domain</span>
+              <span>🌐 Domain</span>
               <span className="pill-badge">{domainCount}</span>
             </button>
             <button
@@ -493,6 +716,32 @@ export default function AdminPaymentPage() {
             >
               <span>🎯 Google Ads</span>
               <span className="pill-badge" style={{ background: "#ea580c", color: "#fff" }}>{adsCount}</span>
+            </button>
+            <button
+              type="button"
+              className={`filter-pill ${categoryFilter === "seo" ? "active" : ""}`}
+              style={{
+                borderColor: categoryFilter === "seo" ? "#7c3aed" : undefined,
+                background: categoryFilter === "seo" ? "#f5f3ff" : undefined,
+                color: categoryFilter === "seo" ? "#6d28d9" : undefined,
+              }}
+              onClick={() => setCategoryFilter("seo")}
+            >
+              <span>🚀 Jasa SEO</span>
+              <span className="pill-badge" style={{ background: "#7c3aed", color: "#fff" }}>{seoCount}</span>
+            </button>
+            <button
+              type="button"
+              className={`filter-pill ${categoryFilter === "website" ? "active" : ""}`}
+              style={{
+                borderColor: categoryFilter === "website" ? "#16a34a" : undefined,
+                background: categoryFilter === "website" ? "#f0fdf4" : undefined,
+                color: categoryFilter === "website" ? "#15803d" : undefined,
+              }}
+              onClick={() => setCategoryFilter("website")}
+            >
+              <span>💻 Website</span>
+              <span className="pill-badge" style={{ background: "#16a34a", color: "#fff" }}>{websiteCount}</span>
             </button>
           </div>
 
@@ -562,6 +811,14 @@ export default function AdminPaymentPage() {
                             <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
                               🎯 GOOGLE ADS
                             </span>
+                          ) : cat === "seo" ? (
+                            <span className="badge-category" style={{ background: "#f5f3ff", color: "#6d28d9", border: "1px solid #ddd6fe" }}>
+                              🚀 JASA SEO
+                            </span>
+                          ) : cat === "website" ? (
+                            <span className="badge-category" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
+                              💻 WEBSITE
+                            </span>
                           ) : (
                             <span className="badge-category domain">
                               🌐 DOMAIN
@@ -608,14 +865,24 @@ export default function AdminPaymentPage() {
                             </span>
                           )}
                         </td>
-                        <td>
-                          <button
-                            className="admin-payment-detail"
-                            type="button"
-                            onClick={() => openDetail(payment)}
-                          >
-                            Detail
-                          </button>
+                        <td style={{ whiteSpace: "nowrap" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <button
+                              className="admin-payment-detail"
+                              type="button"
+                              onClick={() => openDetail(payment)}
+                            >
+                              Detail
+                            </button>
+                            <button
+                              className="admin-payment-delete-btn"
+                              type="button"
+                              title="Hapus data pembayaran ini"
+                              onClick={() => setDeleteTarget(payment)}
+                            >
+                              🗑️ Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -721,7 +988,7 @@ export default function AdminPaymentPage() {
                     </dd>
                   </div>
                 </dl>
-                <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap", alignItems: "center" }}>
                   {statusLabel(selectedPayment.status) === "Pending" && (
                     <button
                       className="admin-payment-confirm"
@@ -777,6 +1044,17 @@ export default function AdminPaymentPage() {
                   >
                     <span>📥</span> Unduh Invoice PDF
                   </button>
+                  <button
+                    type="button"
+                    className="admin-payment-modal-delete-btn"
+                    onClick={() => {
+                      const t = selectedPayment;
+                      setSelectedPayment(null);
+                      setDeleteTarget(t);
+                    }}
+                  >
+                    <span>🗑️</span> Hapus
+                  </button>
                 </div>
               </>
             )}
@@ -784,7 +1062,180 @@ export default function AdminPaymentPage() {
         </div>
       )}
 
+      {/* CONFIRM DELETE MODAL */}
+      {deleteTarget && (
+        <div
+          className="admin-payment-modal-backdrop"
+          role="presentation"
+          onClick={() => !deleting && setDeleteTarget(null)}
+          style={{ zIndex: 9999 }}
+        >
+          <div
+            className="admin-delete-modal-card"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="admin-delete-modal-icon">🗑️</div>
+            <h3>Hapus Data Pembayaran?</h3>
+            <p>
+              Apakah Anda yakin ingin menghapus data pembayaran{" "}
+              <strong>{deleteTarget.payment_number || `PAY-${paymentId(deleteTarget)}`}</strong>
+              {deleteTarget.order_number ? (
+                <> (Order: <strong>{deleteTarget.order_number}</strong>)</>
+              ) : null}
+              ? Data ini akan dihapus dari daftar pembayaran.
+            </p>
+            <div className="admin-delete-modal-actions">
+              <button
+                type="button"
+                className="admin-delete-cancel-btn"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className="admin-delete-confirm-btn"
+                onClick={() => handleDeletePayment(deleteTarget)}
+                disabled={deleting}
+              >
+                {deleting ? "Menghapus..." : "Ya, Hapus Data"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
+        .admin-payment-delete-btn {
+          padding: 8px 12px;
+          background: #fee2e2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .admin-payment-delete-btn:hover {
+          background: #fecaca;
+          color: #b91c1c;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(220, 38, 38, 0.15);
+        }
+
+        .admin-payment-modal-delete-btn {
+          background: #fee2e2;
+          color: #dc2626;
+          border: 1px solid #fca5a5;
+          padding: 10px 18px;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 13px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.2s ease;
+        }
+
+        .admin-payment-modal-delete-btn:hover {
+          background: #fecaca;
+          color: #b91c1c;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+        }
+
+        .admin-delete-modal-card {
+          background: #ffffff;
+          border-radius: 18px;
+          max-width: 440px;
+          width: 90%;
+          padding: 28px 24px;
+          text-align: center;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+          animation: popIn 0.2s ease-out;
+        }
+
+        .admin-delete-modal-icon {
+          font-size: 40px;
+          line-height: 1;
+          margin-bottom: 12px;
+        }
+
+        .admin-delete-modal-card h3 {
+          font-size: 18px;
+          font-weight: 800;
+          color: #0f172a;
+          margin: 0 0 8px 0;
+        }
+
+        .admin-delete-modal-card p {
+          font-size: 13.5px;
+          color: #64748b;
+          margin: 0 0 24px 0;
+          line-height: 1.5;
+        }
+
+        .admin-delete-modal-actions {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+        }
+
+        .admin-delete-cancel-btn {
+          flex: 1;
+          padding: 10px 16px;
+          border-radius: 10px;
+          background: #f1f5f9;
+          color: #475569;
+          border: 1px solid #cbd5e1;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .admin-delete-cancel-btn:hover:not(:disabled) {
+          background: #e2e8f0;
+        }
+
+        .admin-delete-confirm-btn {
+          flex: 1;
+          padding: 10px 16px;
+          border-radius: 10px;
+          background: #dc2626;
+          color: #ffffff;
+          border: none;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+          transition: all 0.15s ease;
+        }
+
+        .admin-delete-confirm-btn:hover:not(:disabled) {
+          background: #b91c1c;
+        }
+
+        @keyframes popIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
         .admin-filter-bar {
           display: flex;
           align-items: center;

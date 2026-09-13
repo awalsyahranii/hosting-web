@@ -801,6 +801,31 @@ export default function Home() {
     }
   };
 
+  const handleBuyWebsite = (item: { domain: string; packageTitle?: string; price?: string }) => {
+    const rawPrice = 750000;
+    const targetUrl = `/checkout?type=website&package=${encodeURIComponent(
+      item.packageTitle || "Jasa Pembuatan Website"
+    )}&price=${rawPrice}&domain=${encodeURIComponent(item.domain)}&new=1`;
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
+  };
+
+  const handleBuyDomain = (domainName: string, domainId: number | string = 0, price: number | string = "") => {
+    const priceQuery = price ? `&price=${encodeURIComponent(price)}` : "";
+    const idQuery = domainId ? `&domain_id=${encodeURIComponent(domainId)}` : "";
+    const targetUrl = `/checkout?domain=${encodeURIComponent(domainName)}${idQuery}${priceQuery}&new=1`;
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
+  };
+
   const scrollSlider = (id: string, offset: number) => {
     const el = document.getElementById(id);
     if (el) {
@@ -947,6 +972,7 @@ export default function Home() {
       <Link href="/#domain">Domain</Link>
       <Link href="/#portfolio">Portfolio</Link>
       <Link href="/#google-ads">Google Ads</Link>
+      <Link href="/seo">SEO</Link>
       <Link href="/#features">Fitur</Link>
       <Link href="/blog">Blog</Link>
       <Link href="/#faq">FAQ</Link>
@@ -954,15 +980,6 @@ export default function Home() {
 
     {/* DESKTOP ACTIONS */}
     <div className="nav-actions">
-      <a
-        href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya seputar layanan web hosting.")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="nav-contact"
-      >
-        Hubungi Kami
-      </a>
-
       <Link href="/login" className="nav-login">
         Masuk
       </Link>
@@ -1030,6 +1047,13 @@ export default function Home() {
       </Link>
 
       <Link
+        href="/seo"
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        SEO
+      </Link>
+
+      <Link
         href="/#features"
         onClick={() => setMobileMenuOpen(false)}
       >
@@ -1051,16 +1075,6 @@ export default function Home() {
       </Link>
 
       <div className="mobile-menu-divider" />
-
-      <a
-        href={getWhatsAppUrl("Halo Tim Support HostingWeb, saya ingin bertanya seputar layanan web hosting.")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mobile-contact"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Hubungi Kami
-      </a>
 
       <Link
         href="/login"
@@ -1836,14 +1850,19 @@ export default function Home() {
 
                           {/* ACTION BUTTONS */}
                           {item.available === true ? (
-                            <Link
-                              href={`/checkout?domain=${encodeURIComponent(
-                                item.domain
-                              )}&domain_id=${item.domain_id}&price=${item.promo_price || item.price}&new=1`}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleBuyDomain(
+                                  item.domain,
+                                  item.domain_id || 0,
+                                  item.promo_price || item.price || ""
+                                )
+                              }
                               className="domain-card-buy"
                             >
                               Beli
-                            </Link>
+                            </button>
                           ) : item.available === false ? (
                             <span className="domain-card-taken">
                               Sudah diambil
@@ -2084,12 +2103,13 @@ export default function Home() {
                             👁️ Lihat Detail
                           </a>
 
-                          <Link
-                            href={`/checkout?domain=${encodeURIComponent(item.domain)}`}
+                          <button
+                            type="button"
+                            onClick={() => handleBuyWebsite(item)}
                             className="slider-btn-order"
                           >
                             {item.orderPrice}
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -2218,12 +2238,13 @@ export default function Home() {
                             👁️ Lihat Detail
                           </a>
 
-                          <Link
-                            href={`/checkout?domain=${encodeURIComponent(item.domain)}`}
+                          <button
+                            type="button"
+                            onClick={() => handleBuyWebsite(item)}
                             className="slider-btn-order"
                           >
                             {item.orderPrice}
-                          </Link>
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -125,7 +125,7 @@ export default function Footer() {
               <ul className="footer-nav-links">
                 <li><Link href="/#portfolio">Jasa Pembuatan Website</Link></li>
                 <li><Link href="/#google-ads">Jasa Iklan Google Ads</Link></li>
-                <li><Link href="/#features">Jasa SEO</Link></li>
+                <li><Link href="/seo">Jasa SEO &amp; PBN</Link></li>
               </ul>
             </div>
 

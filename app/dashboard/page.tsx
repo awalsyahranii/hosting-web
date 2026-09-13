@@ -60,20 +60,46 @@ export default function DashboardPage() {
   const [domains, setDomains] = useState<any[]>([]);
   const [ordersCount, setOrdersCount] = useState(0);
 
+  function getDeletedSet(): Set<string> {
+    const deletedSet = new Set<string>();
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("hostingweb_deleted_orders") : null;
+      if (raw) {
+        (JSON.parse(raw) as string[]).forEach((item) => {
+          if (item) deletedSet.add(String(item).trim().toLowerCase());
+        });
+      }
+    } catch {}
+    return deletedSet;
+  }
+
   useEffect(() => {
+    let isMounted = true;
     async function fetchInvoices() {
       try {
         const response = await fetch(
           "/api/backend/invoice/index.php",
-          { method: "GET", credentials: "include" }
+          { method: "GET", credentials: "include", cache: "no-store" }
         );
         const result = await response.json().catch(() => null);
-        if (response.ok && result?.status === "success") {
-          const list = Array.isArray(result.data)
+        if (response.ok && result?.status === "success" && isMounted) {
+          const deletedSet = getDeletedSet();
+          const rawList = Array.isArray(result.data)
             ? result.data
             : Array.isArray(result.data?.invoices)
             ? result.data.invoices
             : [];
+          const list = rawList.filter((inv: any) => {
+            const num = (inv.invoice_number || "").toLowerCase();
+            const ordId = String(inv.order_id || "").toLowerCase();
+            const invId = String(inv.id || "").toLowerCase();
+            if (num && deletedSet.has(num)) return false;
+            if (ordId && deletedSet.has(ordId)) return false;
+            if (invId && deletedSet.has(invId)) return false;
+            if (deletedSet.has(`ord-${ordId}`)) return false;
+            if (deletedSet.has(`inv-${invId}`)) return false;
+            return true;
+          });
           setInvoices(list);
         }
       } catch (error) {
@@ -83,20 +109,33 @@ export default function DashboardPage() {
 
     async function fetchServices() {
       try {
+        const deletedSet = getDeletedSet();
         const [resHosting, resDomain, resOrder] = await Promise.all([
-          fetch("/api/backend/service/index.php?type=hosting", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
-          fetch("/api/backend/service/index.php?type=domain", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
-          fetch("/api/backend/dashboardusers/order/index.php", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/service/index.php?type=hosting", { method: "GET", credentials: "include", cache: "no-store" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/service/index.php?type=domain", { method: "GET", credentials: "include", cache: "no-store" }).then(r => r.json()).catch(() => null),
+          fetch("/api/backend/dashboardusers/order/index.php", { method: "GET", credentials: "include", cache: "no-store" }).then(r => r.json()).catch(() => null),
         ]);
 
-        if (resHosting?.status === "success" && Array.isArray(resHosting.data)) {
-          setHostings(resHosting.data);
+        if (resHosting?.status === "success" && Array.isArray(resHosting.data) && isMounted) {
+          setHostings(resHosting.data.filter((h: any) => {
+            const ordNum = (h.order_number || "").toLowerCase();
+            const sId = String(h.id || "").toLowerCase();
+            return !deletedSet.has(ordNum) && !deletedSet.has(sId);
+          }));
         }
-        if (resDomain?.status === "success" && Array.isArray(resDomain.data)) {
-          setDomains(resDomain.data);
+        if (resDomain?.status === "success" && Array.isArray(resDomain.data) && isMounted) {
+          setDomains(resDomain.data.filter((d: any) => {
+            const ordNum = (d.order_number || "").toLowerCase();
+            const sId = String(d.id || "").toLowerCase();
+            return !deletedSet.has(ordNum) && !deletedSet.has(sId);
+          }));
         }
-        if (resOrder?.status === "success") {
-          const list = resOrder.data?.orders || (Array.isArray(resOrder.data) ? resOrder.data : []);
+        if (resOrder?.status === "success" && isMounted) {
+          const list = (resOrder.data?.orders || (Array.isArray(resOrder.data) ? resOrder.data : [])).filter((o: any) => {
+            const ordNum = (o.order_number || "").toLowerCase();
+            const ordId = String(o.id || "").toLowerCase();
+            return !deletedSet.has(ordNum) && !deletedSet.has(ordId) && !deletedSet.has(`ord-${ordId}`);
+          });
           setOrdersCount(list.length);
         }
       } catch (error) {
@@ -106,6 +145,23 @@ export default function DashboardPage() {
 
     void fetchInvoices();
     void fetchServices();
+
+    const onStorageChange = () => {
+      void fetchInvoices();
+      void fetchServices();
+    };
+    window.addEventListener("storage", onStorageChange);
+
+    const interval = window.setInterval(() => {
+      void fetchInvoices();
+      void fetchServices();
+    }, 4000);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("storage", onStorageChange);
+      window.clearInterval(interval);
+    };
   }, []);
 
   function rupiah(value: string | number) {

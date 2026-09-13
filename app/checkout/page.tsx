@@ -192,6 +192,15 @@ const GOOGLE_ADS_PACKAGES: Record<
   },
 };
 
+const GOOGLE_ADS_CLEAN_NAMES: Record<string, string> = {
+  "pemula-14": "Google Ads Paket Pemula 14",
+  "pemula-20": "Google Ads Paket Pemula 20",
+  "pemula-30": "Google Ads Paket Pemula 30",
+  "bisnis-10": "Google Ads Paket Bisnis 10",
+  "bisnis-15": "Google Ads Paket Bisnis 15",
+  "bisnis-30": "Google Ads Paket Bisnis 30",
+};
+
 const BANK_ACCOUNTS = [
   {
     name: "BCA",
@@ -282,8 +291,13 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const orderNumberParam = searchParams.get("order_number") || "";
+  const amountParam = searchParams.get("amount") || "";
   const paketParam = searchParams.get("paket") || "";
   const adsParam = searchParams.get("ads") || "";
+  const typeParam = searchParams.get("type") || "";
+  const packageParam = searchParams.get("package") || searchParams.get("name") || "";
+  const seoParam = searchParams.get("seo") || (typeParam === "seo" ? packageParam || "Jasa SEO" : "");
   const cycleParam = searchParams.get("cycle") || "yearly";
   const domainParam = searchParams.get("domain") || "";
   const priceParam = searchParams.get("price") || "";
@@ -353,278 +367,253 @@ function CheckoutContent() {
     return `${pad(hours)} : ${pad(minutes)} : ${pad(seconds)}`;
   }, [timeLeft]);
 
+  // Lock ref to prevent any duplicate POST order creation in React render cycles
+  const orderCreationLockRef = useRef<boolean>(false);
+
   /* =========================================================
-     LOAD INITIAL CHECKOUT DATA
+     LOAD INITIAL CHECKOUT DATA (DIRECT 1-STEP CHECKOUT)
   ========================================================= */
+  const redirectToLogin = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("hostingwebid_user");
+      localStorage.removeItem("hostingweb_auth");
+      const currentPath = window.location.pathname;
+      const currentSearch = window.location.search;
+      const target = `${currentPath}${currentSearch}`;
+      router.replace(`/login?redirect=${encodeURIComponent(target)}`);
+    } else {
+      router.replace("/login?redirect=/checkout");
+    }
+  };
+
   useEffect(() => {
     async function fetchCheckout() {
+      if (orderCreationLockRef.current) return;
+
       try {
         setLoading(true);
         setError("");
 
-        const savedUser = localStorage.getItem("hostingwebid_user");
+        const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
         if (!savedUser) {
-          router.replace("/login?redirect=/checkout");
+          redirectToLogin();
           return;
         }
 
-        // 1. Google Ads package direct order from URL
-        if (adsParam && GOOGLE_ADS_PACKAGES[adsParam]) {
-          const adPkg = GOOGLE_ADS_PACKAGES[adsParam];
-          const basePrice = adPkg.price;
-          const ppnVal = Math.round(basePrice * 0.11);
-          const totalVal = basePrice + ppnVal;
+        // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
+        if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
+          orderCreationLockRef.current = true;
+          setCreatedOrderNumber(orderNumberParam);
+          const rawAmt = Number(amountParam) || 0;
+          if (rawAmt > 0) setPaymentAmount(rawAmt);
 
           setCheckout({
             items: [
               {
-                cart_id: 3001,
+                cart_id: 9999,
                 domain_id: 0,
-                domain_name: adPkg.name,
-                extension: `${adPkg.badge} • ${adPkg.specs}`,
-                price: basePrice,
+                domain_name: `Pesanan #${orderNumberParam}`,
+                extension: "Layanan HostingWeb",
+                price: rawAmt > 0 ? Math.round(rawAmt / 1.11) : 0,
               },
             ],
-            subtotal: String(basePrice),
-            ppn: String(ppnVal),
-            total: String(totalVal),
+            subtotal: String(rawAmt > 0 ? Math.round(rawAmt / 1.11) : 0),
+            ppn: String(rawAmt > 0 ? Math.round(rawAmt - Math.round(rawAmt / 1.11)) : 0),
+            total: String(rawAmt),
           });
 
-          // Auto-generate order
           try {
-            const createRes = await fetch(ORDER_CREATE_API, {
-              method: "POST",
+            const query = `order_number=${encodeURIComponent(orderNumberParam)}`;
+            const res = await fetch(`${PAYMENT_API}?${query}`, {
+              method: "GET",
               credentials: "include",
-              headers: { "Content-Type": "application/json", Accept: "application/json" },
-              body: JSON.stringify({
-                package_name: adPkg.name,
-                domain_name: domainParam || "Google Search Campaign",
-                price: basePrice,
-                duration_years: 1,
-                payment_method: "transfer",
-              }),
+              headers: { Accept: "application/json" },
+              cache: "no-store",
             });
-            const createResult = await createRes.json().catch(() => null);
-            if (createRes.ok && createResult?.status === "success" && createResult.data) {
-              const d = createResult.data;
-              setCreatedOrderId(d.order_id);
-              setCreatedOrderNumber(d.order_number);
-              setPaymentId(d.payment_id || d.order_id);
-              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
-              setPaymentAmount(Number(d.total) || totalVal);
-              setPaymentStatus("pending");
-              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+            const result = await readApiResponse<any>(res);
+            if (result.data) {
+              if (result.data.order_id) setCreatedOrderId(Number(result.data.order_id));
+              if (result.data.payment_id) setPaymentId(Number(result.data.payment_id));
+              if (result.data.payment_number) setPaymentNumber(result.data.payment_number);
+              if (result.data.amount) setPaymentAmount(Number(result.data.amount));
+              if (result.data.status) setPaymentStatus(result.data.status);
+              if (result.data.invoice_id) setInvoiceId(Number(result.data.invoice_id));
             }
-          } catch (autoErr) {
-            console.error("Auto create ads order failed:", autoErr);
+          } catch (err) {
+            console.error("Gagal load detail order_number:", err);
           }
           return;
         }
 
-        // 2. Hosting package direct order from URL
-        if (paketParam && HOSTING_PACKAGES[paketParam]) {
+        // Lock creation right before preparing payload & calling backend
+        orderCreationLockRef.current = true;
+
+        // 3. Prepare order payload
+        let orderPayload: any = null;
+        let itemName = "Layanan HostingWeb";
+        let itemExtension = "Hosting & Domain";
+        let basePrice = 150000;
+
+        if (typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))) {
+          const packageName = packageParam || "Jasa Pembuatan Website";
+          basePrice = Number(priceParam) || 750000;
+          itemName = packageName;
+          itemExtension = domainParam
+            ? `Domain: ${domainParam} • Cloud Server High Speed • Custom Desain & Free SSL`
+            : "Termasuk Domain & Cloud Server • Custom Desain & Free SSL";
+          orderPayload = {
+            package_name: packageName,
+            domain_name: domainParam || packageName,
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else if (seoParam || typeParam === "seo") {
+          const packageName = seoParam || packageParam || "Paket Jasa SEO";
+          basePrice = Number(priceParam) || 650000;
+          itemName = packageName;
+          itemExtension = domainParam ? `Target Web: ${domainParam} • Layanan SEO & PBN Backlink` : "Layanan SEO, PBN & High Authority Backlink";
+          orderPayload = {
+            package_name: packageName,
+            domain_name: domainParam || packageName,
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else if (adsParam && GOOGLE_ADS_PACKAGES[adsParam]) {
+          const adPkg = GOOGLE_ADS_PACKAGES[adsParam];
+          basePrice = adPkg.price;
+          itemName = adPkg.name;
+          itemExtension = `${adPkg.badge} • ${adPkg.specs}`;
+          const cleanBackendPkgName = GOOGLE_ADS_CLEAN_NAMES[adsParam] || "Google Ads Paket";
+          orderPayload = {
+            package_name: cleanBackendPkgName,
+            domain_name: domainParam || cleanBackendPkgName,
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else if (paketParam && HOSTING_PACKAGES[paketParam]) {
           const pkg = HOSTING_PACKAGES[paketParam];
           const isYearly = cycleParam !== "monthly";
-          const basePrice = isYearly ? pkg.yearlyPrice : pkg.monthlyPrice;
+          basePrice = isYearly ? pkg.yearlyPrice : pkg.monthlyPrice;
           const cycleLabel = isYearly ? " (Tahunan / 1 Tahun)" : " (Bulanan / 1 Bulan)";
-          const ppnVal = Math.round(basePrice * 0.11);
-          const totalVal = basePrice + ppnVal;
-
-          setCheckout({
-            items: [
-              {
-                cart_id: 1001,
-                domain_id: 0,
-                domain_name: `${pkg.name}${cycleLabel}`,
-                extension: domainParam ? `Domain: ${domainParam} • ${pkg.specs}` : pkg.specs,
-                price: basePrice,
-              },
-            ],
-            subtotal: String(basePrice),
-            ppn: String(ppnVal),
-            total: String(totalVal),
-          });
-
-          // Auto-generate order and land directly on payment instructions screen
-          try {
-            const createRes = await fetch(ORDER_CREATE_API, {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json", Accept: "application/json" },
-              body: JSON.stringify({
-                package_name: pkg.name,
-                domain_name: domainParam || null,
-                price: basePrice,
-                duration_years: 1,
-                payment_method: "transfer",
-              }),
-            });
-            const createResult = await createRes.json().catch(() => null);
-            if (createRes.ok && createResult?.status === "success" && createResult.data) {
-              const d = createResult.data;
-              setCreatedOrderId(d.order_id);
-              setCreatedOrderNumber(d.order_number);
-              setPaymentId(d.payment_id || d.order_id);
-              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
-              setPaymentAmount(Number(d.total) || totalVal);
-              setPaymentStatus("pending");
-              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
-              localStorage.setItem(
-                "hostingweb_checkout_payment",
-                JSON.stringify({
-                  paymentId: d.payment_id || d.order_id,
-                  paymentNumber: d.payment_number || `PAY-${d.order_number}`,
-                  orderId: d.order_id,
-                  orderNumber: d.order_number,
-                  amount: Number(d.total) || totalVal,
-                  itemName: `${pkg.name}${cycleLabel}`,
-                  itemSpecs: domainParam ? `Domain: ${domainParam} • ${pkg.specs}` : pkg.specs,
-                  durationYears: 1,
-                  subtotal: basePrice,
-                  ppn: ppnVal,
-                })
-              );
-            }
-          } catch (autoErr) {
-            console.error("Auto create package order failed:", autoErr);
-          }
-          return;
+          itemName = `${pkg.name}${cycleLabel}`;
+          itemExtension = domainParam ? `Domain: ${domainParam} • ${pkg.specs}` : pkg.specs;
+          orderPayload = {
+            package_name: pkg.name,
+            domain_name: domainParam || null,
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else if (domainParam) {
+          basePrice = Number(priceParam) || getDomainPriceFromExt(domainParam);
+          itemName = domainParam;
+          itemExtension = `Registrasi Domain Baru (${domainParam}) • Termasuk DNS Management & Free SSL`;
+          orderPayload = {
+            domain_name: domainParam,
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else {
+          // Default cart
+          orderPayload = {
+            payment_method: "transfer",
+            duration_years: 1,
+          };
         }
 
-        // 2. Direct domain order from Domain Search
-        if (domainParam && !paketParam) {
-          const basePrice = Number(priceParam) || getDomainPriceFromExt(domainParam);
-          const ppnVal = Math.round(basePrice * 0.11);
-          const totalVal = basePrice + ppnVal;
+        const ppnVal = Math.round(basePrice * 0.11);
+        const totalVal = basePrice + ppnVal;
+        const currentCheckoutData: CheckoutData = {
+          items: [
+            {
+              cart_id: 1001,
+              domain_id: Number(domainIdParam || 0),
+              domain_name: itemName,
+              extension: itemExtension,
+              price: basePrice,
+            },
+          ],
+          subtotal: String(basePrice),
+          ppn: String(ppnVal),
+          total: String(totalVal),
+        };
+        setCheckout(currentCheckoutData);
 
-          setCheckout({
-            items: [
-              {
-                cart_id: 2001,
-                domain_id: Number(domainIdParam || 0),
-                domain_name: domainParam,
-                extension: `Registrasi Domain Baru (${domainParam}) • Termasuk DNS Management & Free SSL`,
-                price: basePrice,
-              },
-            ],
-            subtotal: String(basePrice),
-            ppn: String(ppnVal),
-            total: String(totalVal),
-          });
-
-          // Auto-generate order and land directly on payment instructions screen
-          try {
-            const createRes = await fetch(ORDER_CREATE_API, {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json", Accept: "application/json" },
-              body: JSON.stringify({
-                domain_name: domainParam,
-                price: basePrice,
-                duration_years: 1,
-                payment_method: "transfer",
-              }),
-            });
-            const createResult = await createRes.json().catch(() => null);
-            if (createRes.ok && createResult?.status === "success" && createResult.data) {
-              const d = createResult.data;
-              setCreatedOrderId(d.order_id);
-              setCreatedOrderNumber(d.order_number);
-              setPaymentId(d.payment_id || d.order_id);
-              setPaymentNumber(d.payment_number || `PAY-${d.order_number}`);
-              setPaymentAmount(Number(d.total) || totalVal);
-              setPaymentStatus("pending");
-              setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
-              localStorage.setItem(
-                "hostingweb_checkout_payment",
-                JSON.stringify({
-                  paymentId: d.payment_id || d.order_id,
-                  paymentNumber: d.payment_number || `PAY-${d.order_number}`,
-                  orderId: d.order_id,
-                  orderNumber: d.order_number,
-                  amount: Number(d.total) || totalVal,
-                  itemName: domainParam,
-                  itemSpecs: `Registrasi Domain Baru (${domainParam})`,
-                  durationYears: 1,
-                  subtotal: basePrice,
-                  ppn: ppnVal,
-                })
-              );
-            }
-          } catch (autoErr) {
-            console.error("Auto create domain order failed:", autoErr);
-          }
-          return;
-        }
-
-        // 3. Default domain cart checkout from server API
-        const response = await fetch(CHECKOUT_API, {
-          method: "GET",
+        // 4. Create Order Immediately in Backend
+        const createRes = await fetch(ORDER_CREATE_API, {
+          method: "POST",
           credentials: "include",
-          headers: { Accept: "application/json" },
-          cache: "no-store",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(orderPayload),
         });
+        const createResult = await createRes.json().catch(() => null);
 
-        if (response.status === 401 || response.status === 403) {
-          router.replace("/login?redirect=/checkout");
+        if (
+          createRes.status === 401 ||
+          createRes.status === 403 ||
+          (createResult && createResult.status !== "success" && (
+            createResult.message?.toLowerCase().includes("login") ||
+            createResult.message?.toLowerCase().includes("auth") ||
+            createResult.code === 401
+          ))
+        ) {
+          redirectToLogin();
           return;
         }
 
-        const result = await readApiResponse<{
-          status: string;
-          code: number;
-          message: string;
-          data?: CheckoutData;
-        }>(response);
-
-        if (!response.ok || result.status !== "success") {
-          throw new Error(result.message || "Gagal mengambil data checkout.");
+        if (!createRes.ok || createResult?.status !== "success" || !createResult?.data) {
+          throw new Error(createResult?.message || "Gagal membuat pesanan di database.");
         }
 
-        setCheckout(result.data ?? null);
+        const d = createResult.data;
+        const ordId = Number(d.order_id);
+        const ordNum = String(d.order_number || (ordId ? `ORD-${ordId}` : ""));
+        const payId = Number(d.payment_id || ordId);
+        const payNum = String(d.payment_number || (ordNum ? `PAY-${ordNum}` : ""));
+        const finalTotal = Number(d.total) || totalVal;
+
+        setCreatedOrderId(ordId);
+        setCreatedOrderNumber(ordNum);
+        setPaymentId(payId);
+        setPaymentNumber(payNum);
+        setPaymentAmount(finalTotal);
+        setPaymentStatus("pending");
+        setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+
+        const savedData = {
+          orderId: ordId,
+          orderNumber: ordNum,
+          paymentId: payId,
+          paymentNumber: payNum,
+          amount: finalTotal,
+          status: "pending",
+          checkout: currentCheckoutData,
+        };
+
+        localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
+
+        if (typeof window !== "undefined" && ordNum) {
+          window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(ordNum)}&amount=${finalTotal}`);
+        }
       } catch (err) {
         console.error("Checkout Error:", err);
-        setError(err instanceof Error ? err.message : "Tidak dapat mengambil data checkout.");
+        const errMsg = err instanceof Error ? err.message : "Tidak dapat mengambil data checkout.";
+        if (errMsg.toLowerCase().includes("login") || errMsg.toLowerCase().includes("auth")) {
+          redirectToLogin();
+          return;
+        }
+        setError(errMsg);
       } finally {
         setLoading(false);
       }
     }
 
     void fetchCheckout();
-  }, [router, paketParam, cycleParam, domainParam, priceParam, domainIdParam]);
-
-  /* =========================================================
-     RECOVER SAVED PAYMENT IF PRESENT (CLEANED ON NEW ORDER)
-  ========================================================= */
-  useEffect(() => {
-    // Jika user sedang membuka checkout dengan item baru (domainParam / paketParam / new=1),
-    // hapus cache payment lama agar tidak mengunci layar
-    if (domainParam || paketParam || isNewParam) {
-      localStorage.removeItem("hostingweb_checkout_payment");
-      setPaymentId(null);
-      setPaymentNumber("");
-      setCreatedOrderId(null);
-      setCreatedOrderNumber("");
-      setPaymentStatus("pending");
-      return;
-    }
-
-    const saved = localStorage.getItem("hostingweb_checkout_payment");
-    if (!saved) return;
-    try {
-      const parsed = JSON.parse(saved) as SavedCheckoutPayment;
-      if (parsed.paymentId && parsed.paymentNumber) {
-        setPaymentId(parsed.paymentId);
-        setPaymentNumber(parsed.paymentNumber);
-        setCreatedOrderId(parsed.orderId);
-        setCreatedOrderNumber(parsed.orderNumber);
-        setPaymentAmount(parsed.amount);
-        if (parsed.durationYears) setDurationYears(parsed.durationYears);
-        setPaymentStatus("pending");
-        setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
-      }
-    } catch {}
-  }, [domainParam, paketParam, isNewParam]);
+  }, [router, orderNumberParam, amountParam, paketParam, cycleParam, domainParam, priceParam, domainIdParam, adsParam, seoParam, typeParam, packageParam, isNewParam]);
 
   /* =========================================================
      POLL PAYMENT STATUS
@@ -862,15 +851,24 @@ function CheckoutContent() {
       setSubmitting(true);
       setError("");
 
+      const packageName =
+        typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))
+          ? packageParam || "Jasa Pembuatan Website"
+          : (seoParam || typeParam === "seo")
+          ? (seoParam || packageParam || "Paket Jasa SEO")
+          : adsParam && GOOGLE_ADS_PACKAGES[adsParam]
+          ? (GOOGLE_ADS_CLEAN_NAMES[adsParam] || "Google Ads Paket")
+          : paketParam
+          ? HOSTING_PACKAGES[paketParam]?.name
+          : null;
+
       const payload = {
         coupon_code: couponApplied ? couponCode.trim() : null,
         payment_method: "transfer",
-        package_name: paketParam ? HOSTING_PACKAGES[paketParam]?.name : null,
-        billing_cycle: `${durationYears} tahun`,
+        package_name: packageName,
         duration_years: durationYears,
-        domain_name: domainParam || (checkout.items[0]?.domain_name ?? null),
+        domain_name: domainParam || (packageName ? packageName : (checkout.items[0]?.domain_name ?? null)),
         price: unitBasePrice,
-        amount: calculatedTotal,
       };
 
       const response = await fetch(ORDER_CREATE_API, {
@@ -885,21 +883,33 @@ function CheckoutContent() {
 
       const result = await readApiResponse<OrderResponse>(response);
 
-      if (!response.ok || result.status !== "success") {
-        throw new Error(result.message || "Gagal membuat pesanan.");
+      if (
+        response.status === 401 ||
+        response.status === 403 ||
+        (result && result.status !== "success" && (
+          result.message?.toLowerCase().includes("login") ||
+          result.message?.toLowerCase().includes("auth") ||
+          result.code === 401
+        ))
+      ) {
+        redirectToLogin();
+        return;
+      }
+
+      if (!response.ok || result.status !== "success" || !result.data) {
+        throw new Error(result.message || "Gagal membuat pesanan di database.");
       }
 
       const orderData = result.data;
-      const orderId = orderData?.order_id || Math.floor(1000 + Math.random() * 9000);
-      const orderNumber = orderData?.order_number || `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
+      const orderId = Number(orderData.order_id);
+      const orderNumber = String(orderData.order_number || (orderId ? `ORD-${orderId}` : ""));
 
       setCreatedOrderId(orderId);
       setCreatedOrderNumber(orderNumber);
 
-      const generatedPaymentNumber = `PAY-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(16).substring(2, 8).toUpperCase()}`;
-      const finalPaymentId = orderData?.payment_id || orderId;
-      const finalPaymentNumber = orderData?.payment_number || generatedPaymentNumber;
-      const finalAmount = orderData?.total ? Number(orderData.total) : calculatedTotal;
+      const finalPaymentId = Number(orderData.payment_id || orderId);
+      const finalPaymentNumber = String(orderData.payment_number || (orderNumber ? `PAY-${orderNumber}` : ""));
+      const finalAmount = orderData.total ? Number(orderData.total) : calculatedTotal;
 
       setPaymentId(finalPaymentId);
       setPaymentNumber(finalPaymentNumber);
@@ -925,7 +935,12 @@ function CheckoutContent() {
       setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
     } catch (err) {
       console.error("Create Order Error:", err);
-      setError(err instanceof Error ? err.message : "Tidak dapat membuat pesanan.");
+      const errMsg = err instanceof Error ? err.message : "Tidak dapat membuat pesanan.";
+      if (errMsg.toLowerCase().includes("login") || errMsg.toLowerCase().includes("auth")) {
+        redirectToLogin();
+        return;
+      }
+      setError(errMsg);
     } finally {
       setSubmitting(false);
     }
@@ -1010,43 +1025,32 @@ function CheckoutContent() {
   return (
     <main className="unified-checkout-page">
       <div className="unified-container">
-        {/* TOP SUCCESS BANNER (WHEN ORDER IS CREATED) */}
-        {isOrderPlaced && (
-          <div className="unified-success-banner">
-            <div className="banner-left">
-              <span className="banner-icon-badge">✓</span>
-              <div>
-                <strong className="banner-title">Pesanan berhasil dibuat</strong>
-                <p className="banner-subtitle">
-                  Pesanan kamu telah dibuat dan menunggu pembayaran.
-                </p>
-              </div>
-            </div>
-            <div className="banner-right">
-              <div className="banner-meta-pill">
-                <span className="pill-label">Nomor Order</span>
-                <strong className="pill-val">{createdOrderNumber || "ORD-20260911-XXXXXX"}</strong>
-              </div>
-              <div className="banner-meta-pill">
-                <span className="pill-label">Order ID</span>
-                <strong className="pill-val">#{createdOrderId || "82"}</strong>
-              </div>
+        {/* TOP SUCCESS BANNER */}
+        <div className="unified-success-banner">
+          <div className="banner-left">
+            <span className="banner-icon-badge">✓</span>
+            <div>
+              <strong className="banner-title">Pesanan berhasil dibuat</strong>
+              <p className="banner-subtitle">
+                Pesanan kamu telah dibuat dan menunggu pembayaran.
+              </p>
             </div>
           </div>
-        )}
-
-        {/* TOP BREADCRUMB / HEADING (IF NOT YET ORDERED) */}
-        {!isOrderPlaced && (
-          <div className="checkout-page-heading">
-            <div className="heading-eyebrow">CHECKOUT</div>
-            <h1 className="heading-title">Checkout HostingWeb</h1>
-            <p className="heading-subtitle">
-              Periksa pesanan sebelum melanjutkan ke pembayaran.
-            </p>
+          <div className="banner-right">
+            <div className="banner-meta-pill">
+              <span className="pill-label">Nomor Order</span>
+              <strong className="pill-val">{createdOrderNumber || "ORD-TERBARU"}</strong>
+            </div>
+            <div className="banner-meta-pill">
+              <span className="pill-label">Order ID</span>
+              <strong className="pill-val">#{createdOrderId || "1"}</strong>
+            </div>
           </div>
-        )}
+        </div>
 
-        {error && <div className="checkout-error-alert">⚠️ {error}</div>}
+        {error && !error.toLowerCase().includes("login") && (
+          <div className="checkout-error-alert">⚠️ {error}</div>
+        )}
 
         {/* MAIN 2-COLUMN GRID (UNIFIED LAYOUT) */}
         <div className="unified-grid">
@@ -1054,286 +1058,251 @@ function CheckoutContent() {
               LEFT COLUMN (65% - 68%)
           =================================================== */}
           <div className="unified-left-column">
-            {isOrderPlaced ? (
-              /* PAYMENT INSTRUCTIONS & BANK ACCOUNTS */
-              <div className="unified-card payment-instructions-card">
-                {/* PAYMENT HEADER */}
-                <div className="payment-card-header">
-                  <div>
-                    <span className="card-eyebrow">PEMBAYARAN</span>
-                    <h2 className="card-main-title">
-                      {paymentStatus.toLowerCase() === "paid"
-                        ? "Pembayaran Berhasil Diverifikasi"
-                        : "Selesaikan Pembayaran"}
-                    </h2>
-                    <p className="card-sub-title">
-                      {paymentStatus.toLowerCase() === "paid"
-                        ? "Layanan dan hosting kamu sudah aktif dan dapat digunakan."
-                        : "Transfer sesuai nominal pembayaran ke salah satu rekening berikut."}
-                    </p>
-                  </div>
-                  <div
-                    className={`payment-live-badge ${
-                      paymentStatus.toLowerCase() === "paid" ? "paid" : "pending"
-                    }`}
-                  >
-                    <span className="pulse-dot" />
+            {/* PAYMENT INSTRUCTIONS & BANK ACCOUNTS */}
+            <div className="unified-card payment-instructions-card">
+              {/* PAYMENT HEADER */}
+              <div className="payment-card-header">
+                <div>
+                  <span className="card-eyebrow">PEMBAYARAN</span>
+                  <h2 className="card-main-title">
                     {paymentStatus.toLowerCase() === "paid"
-                      ? "Pembayaran Dikonfirmasi"
-                      : "Menunggu Pembayaran"}
-                  </div>
+                      ? "Pembayaran Berhasil Diverifikasi"
+                      : "Selesaikan Pembayaran"}
+                  </h2>
+                  <p className="card-sub-title">
+                    {paymentStatus.toLowerCase() === "paid"
+                      ? "Layanan dan hosting kamu sudah aktif dan dapat digunakan."
+                      : "Transfer sesuai nominal pembayaran ke salah satu rekening berikut."}
+                  </p>
                 </div>
-
-                {/* 3 HIGHLIGHT BOXES */}
-                <div className="payment-highlights-row">
-                  <div className="highlight-box total-box">
-                    <span className="hl-label">TOTAL PEMBAYARAN</span>
-                    <strong className="hl-val-price">{rupiah(displayTotal)}</strong>
-                    <span className="hl-note">*Termasuk PPN 11%</span>
-                  </div>
-                  <div className="highlight-box">
-                    <span className="hl-label">Nomor Order</span>
-                    <strong className="hl-val-code">{createdOrderNumber}</strong>
-                    <span className="hl-note">ID #{createdOrderId}</span>
-                  </div>
-                  <div className="highlight-box">
-                    <span className="hl-label">Nomor Payment</span>
-                    <strong className="hl-val-code">{paymentNumber}</strong>
-                    <span className="hl-note">Transfer Bank Manual</span>
-                  </div>
+                <div
+                  className={`payment-live-badge ${
+                    paymentStatus.toLowerCase() === "paid" ? "paid" : "pending"
+                  }`}
+                >
+                  <span className="pulse-dot" />
+                  {paymentStatus.toLowerCase() === "paid"
+                    ? "Pembayaran Dikonfirmasi"
+                    : "Menunggu Pembayaran"}
                 </div>
+              </div>
 
-                {/* INFORMASI LAYANAN DENGAN DURASI DOMAIN */}
-                <div className="service-info-section">
-                  <span className="section-eyebrow">INFORMASI LAYANAN</span>
-                  <div className="service-item-box">
-                    <div className="service-item-left">
-                      <div className="service-icon-wrap">
-                        {paketParam ? "🔥" : "🌐"}
-                      </div>
-                      <div>
-                        <div className="service-title-row">
-                          <strong className="service-name">
-                            {primaryItem?.domain_name || "Cloud Hosting & Domain"}
-                          </strong>
-                          <span className="service-tag">
-                            {paketParam ? "Hosting" : ".com"}
-                          </span>
-                        </div>
-                        <p className="service-desc">
-                          {primaryItem?.extension || `Pendaftaran Domain ${durationYears} Tahun`}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* DURASI DROPDOWN & PRICE */}
-                    <div className="service-item-right">
-                      <div className="duration-dropdown-wrap">
-                        <label className="duration-mini-label">Durasi Domain</label>
-                        <div className="duration-select-pill">
-                          <select
-                            className="duration-select"
-                            value={durationYears}
-                            onChange={(e) => setDurationYears(Number(e.target.value))}
-                            disabled={isOrderPlaced}
-                          >
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
-                              <option key={yr} value={yr}>
-                                {yr} Tahun
-                              </option>
-                            ))}
-                          </select>
-                          <span className="select-arrow">▼</span>
-                        </div>
-                      </div>
-                      <strong className="service-price">
-                        {rupiah(subtotal)}
-                      </strong>
-                    </div>
-                  </div>
+              {/* 3 HIGHLIGHT BOXES */}
+              <div className="payment-highlights-row">
+                <div className="highlight-box total-box">
+                  <span className="hl-label">TOTAL PEMBAYARAN</span>
+                  <strong className="hl-val-price">{rupiah(displayTotal)}</strong>
+                  <span className="hl-note">*Termasuk PPN 11%</span>
                 </div>
+                <div className="highlight-box">
+                  <span className="hl-label">Nomor Order</span>
+                  <strong className="hl-val-code">{createdOrderNumber}</strong>
+                  <span className="hl-note">ID #{createdOrderId}</span>
+                </div>
+                <div className="highlight-box">
+                  <span className="hl-label">Nomor Payment</span>
+                  <strong className="hl-val-code">{paymentNumber}</strong>
+                  <span className="hl-note">Transfer Bank Manual</span>
+                </div>
+              </div>
 
-                {paymentStatus.toLowerCase() === "paid" ? (
-                  <div className="p-6 my-4 bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-200 rounded-2xl text-center space-y-4 shadow-sm animate-fade-in">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto shadow-md ring-4 ring-emerald-100">
-                      ✓
+              {/* INFORMASI LAYANAN DENGAN DURASI DOMAIN */}
+              <div className="service-info-section">
+                <span className="section-eyebrow">INFORMASI LAYANAN</span>
+                <div className="service-item-box">
+                  <div className="service-item-left">
+                    <div className="service-icon-wrap">
+                      {paketParam
+                        ? "🔥"
+                        : adsParam
+                        ? "🎯"
+                        : seoParam || typeParam === "seo"
+                        ? "🚀"
+                        : typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))
+                        ? "💻"
+                        : "🌐"}
                     </div>
                     <div>
-                      <span className="inline-block px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 mb-1.5">
-                        Admin Confirmed &amp; Live Server
-                      </span>
-                      <h3 className="text-xl font-extrabold text-slate-900">
-                        Selamat! Hosting Anda Sudah Dikonfirmasi Admin 🎉
-                      </h3>
-                      <p className="text-xs text-slate-600 mt-1.5 max-w-lg mx-auto">
-                        Infrastruktur NVMe High-Speed &amp; cPanel Anda telah dialokasikan dan aktif 100% di server, siap digunakan untuk website Anda.
+                      <div className="service-title-row">
+                        <strong className="service-name">
+                          {primaryItem?.domain_name || "Cloud Hosting & Domain"}
+                        </strong>
+                        <span className="service-tag">
+                          {paketParam
+                            ? "Hosting"
+                            : adsParam
+                            ? "Google Ads"
+                            : seoParam || typeParam === "seo"
+                            ? "SEO"
+                            : typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))
+                            ? "Website"
+                            : primaryItem?.domain_name?.includes(".")
+                            ? `.${primaryItem.domain_name.split(".").pop()}`
+                            : "Domain"}
+                        </span>
+                      </div>
+                      <p className="service-desc">
+                        {primaryItem?.extension || `Pendaftaran Domain ${durationYears} Tahun`}
                       </p>
                     </div>
+                  </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs max-w-md mx-auto pt-2 text-left">
-                      <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
-                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Status Layanan</span>
-                        <strong className="text-emerald-700 font-bold text-sm flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Aktif (Online)
-                        </strong>
-                      </div>
-                      <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
-                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Alamat IP Server</span>
-                        <strong className="text-slate-900 font-mono text-sm">103.147.154.21</strong>
+                  {/* DURASI DROPDOWN & PRICE */}
+                  <div className="service-item-right">
+                    <div className="duration-dropdown-wrap">
+                      <label className="duration-mini-label">Durasi Domain</label>
+                      <div className="duration-select-pill">
+                        <select
+                          className="duration-select"
+                          value={durationYears}
+                          onChange={(e) => setDurationYears(Number(e.target.value))}
+                        >
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
+                            <option key={yr} value={yr}>
+                              {yr} Tahun
+                            </option>
+                          ))}
+                        </select>
+                        <span className="select-arrow">▼</span>
                       </div>
                     </div>
+                    <strong className="service-price">
+                      {rupiah(subtotal)}
+                    </strong>
+                  </div>
+                </div>
+              </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                      <Link
-                        href="/dashboard/hosting"
-                        className="py-3 px-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-1.5"
-                      >
-                        🚀 Kelola Layanan Hosting Sekarang →
-                      </Link>
-                      <Link
-                        href={`/dashboard/invoices${invoiceId ? `?id=${invoiceId}` : ''}`}
-                        className="py-3 px-6 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs rounded-xl shadow-sm transition"
-                      >
-                        📄 Unduh Invoice Resmi
-                      </Link>
+              {paymentStatus.toLowerCase() === "paid" ? (
+                <div className="p-6 my-4 bg-gradient-to-b from-emerald-50/80 to-white border border-emerald-200 rounded-2xl text-center space-y-4 shadow-sm animate-fade-in">
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto shadow-md ring-4 ring-emerald-100">
+                    ✓
+                  </div>
+                  <div>
+                    <span className="inline-block px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300 mb-1.5">
+                      Admin Confirmed &amp; Live Server
+                    </span>
+                    <h3 className="text-xl font-extrabold text-slate-900">
+                      Selamat! Hosting Anda Sudah Dikonfirmasi Admin 🎉
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1.5 max-w-lg mx-auto">
+                      Infrastruktur NVMe High-Speed &amp; cPanel Anda telah dialokasikan dan aktif 100% di server, siap digunakan untuk website Anda.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs max-w-md mx-auto pt-2 text-left">
+                    <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Status Layanan</span>
+                      <strong className="text-emerald-700 font-bold text-sm flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Aktif (Online)
+                      </strong>
+                    </div>
+                    <div className="p-3.5 bg-white rounded-xl border border-emerald-200/70 shadow-sm">
+                      <span className="text-slate-400 block text-[10px] uppercase font-bold">Alamat IP Server</span>
+                      <strong className="text-slate-900 font-mono text-sm">103.147.154.21</strong>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {/* REKENING PEMBAYARAN */}
-                    <div className="bank-transfer-section">
-                      <div className="bank-section-header">
-                        <div>
-                          <span className="section-eyebrow">METODE TRANSFER</span>
-                          <h3 className="section-title">Rekening Pembayaran</h3>
-                          <p className="section-desc">
-                            Transfer sesuai nominal pembayaran ke salah satu rekening berikut:
-                          </p>
-                        </div>
-                        <div className="bank-owner-pill">
-                          <span>Atas Nama:</span>
-                          <strong>Irwanto</strong>
-                        </div>
-                      </div>
 
-                      {/* BANK ROWS */}
-                      <div className="bank-rows-list">
-                        {BANK_ACCOUNTS.map((bank) => (
-                          <div key={bank.name} className="bank-card-row">
-                            <div className="bank-logo-wrap">
-                              <img src={bank.logo} alt={bank.name} />
-                            </div>
-                            <div className="bank-info-col">
-                              <span className="bank-col-label">Nomor Rekening Bank {bank.name}</span>
-                              <strong className="bank-number">{bank.accountNumber}</strong>
-                            </div>
-                            <div className="bank-status-col">
-                              <span className="bank-auto-check">
-                                <span className="dot-green" /> {bank.status}
-                              </span>
-                              <small className="bank-owner-text">a.n {bank.owner}</small>
-                            </div>
-                            <button
-                              type="button"
-                              className={`btn-copy-account ${copiedAccount === bank.name ? "copied" : ""}`}
-                              onClick={() => handleCopyAccount(bank.accountNumber, bank.name)}
-                            >
-                              {copiedAccount === bank.name ? "✓ Tersalin" : "⧉ Salin"}
-                            </button>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                    <Link
+                      href="/dashboard/hosting"
+                      className="py-3 px-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition transform active:scale-95 flex items-center justify-center gap-1.5"
+                    >
+                      🚀 Kelola Layanan Hosting Sekarang →
+                    </Link>
+                    <Link
+                      href={`/dashboard/invoices${invoiceId ? `?id=${invoiceId}` : ''}`}
+                      className="py-3 px-6 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold text-xs rounded-xl shadow-sm transition"
+                    >
+                      📄 Unduh Invoice Resmi
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* REKENING PEMBAYARAN */}
+                  <div className="bank-transfer-section">
+                    <div className="bank-section-header">
+                      <div>
+                        <span className="section-eyebrow">METODE TRANSFER</span>
+                        <h3 className="section-title">Rekening Pembayaran</h3>
+                        <p className="section-desc">
+                          Transfer sesuai nominal pembayaran ke salah satu rekening berikut:
+                        </p>
+                      </div>
+                      <div className="bank-owner-pill">
+                        <span>Atas Nama:</span>
+                        <strong>Irwanto</strong>
+                      </div>
+                    </div>
+
+                    {/* BANK ROWS */}
+                    <div className="bank-rows-list">
+                      {BANK_ACCOUNTS.map((bank) => (
+                        <div key={bank.name} className="bank-card-row">
+                          <div className="bank-logo-wrap">
+                            <img src={bank.logo} alt={bank.name} />
                           </div>
-                        ))}
-                      </div>
+                          <div className="bank-info-col">
+                            <span className="bank-col-label">Nomor Rekening Bank {bank.name}</span>
+                            <strong className="bank-number">{bank.accountNumber}</strong>
+                          </div>
+                          <div className="bank-status-col">
+                            <span className="bank-auto-check">
+                              <span className="dot-green" /> {bank.status}
+                            </span>
+                            <small className="bank-owner-text">a.n {bank.owner}</small>
+                          </div>
+                          <button
+                            type="button"
+                            className={`btn-copy-account ${copiedAccount === bank.name ? "copied" : ""}`}
+                            onClick={() => handleCopyAccount(bank.accountNumber, bank.name)}
+                          >
+                            {copiedAccount === bank.name ? "✓ Tersalin" : "⧉ Salin"}
+                          </button>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    {/* NOTICE BOXES */}
-                    <div className="notices-wrap">
-                      <div className="notice-box warning">
-                        <span className="notice-icon">⚠️</span>
-                        <div>
-                          <strong>TRANSFER SESUAI NOMINAL TEPAT</strong>
-                          <p>
-                            Pastikan nominal transfer tepat hingga digit terakhir (<strong>{rupiah(displayTotal)}</strong>) untuk mempercepat verifikasi otomatis sistem.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="notice-box info">
-                        <span className="notice-icon">ℹ️</span>
-                        <div>
-                          <strong>PEMBAYARAN 1-GATE</strong>
-                          <p>
-                            Simpan bukti struk transfer kamu. Sistem otomatis memproses pesanan begitu dana berhasil diverifikasi oleh admin.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* DISCLAIMER & TRANSFER ACCURACY BANNER */}
-                    <div className="whatsapp-cta-box">
-                      <div className="wa-text-col">
-                        <div className="wa-warning-badge">
-                          <span className="badge-warn-icon">⚠️</span>
-                          <strong>PENTING: Cek Kembali Rekening & Nominal Transfer</strong>
-                        </div>
+                  {/* NOTICE BOXES */}
+                  <div className="notices-wrap">
+                    <div className="notice-box warning">
+                      <span className="notice-icon">⚠️</span>
+                      <div>
+                        <strong>TRANSFER SESUAI NOMINAL TEPAT</strong>
                         <p>
-                          Pastikan nomor rekening, bank tujuan, dan nominal sudah <strong>100% tepat</strong> sebelum menyelesaikan pembayaran. <em>Segala kelalaian atau kesalahan transfer ke rekening lain bukan merupakan tanggung jawab pihak admin.</em> Simpan struk resmi Anda & konfirmasikan untuk aktivasi kilat!
+                          Pastikan nominal transfer tepat hingga digit terakhir (<strong>{rupiah(displayTotal)}</strong>) untuk mempercepat verifikasi otomatis sistem.
                         </p>
                       </div>
                     </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              /* PRE-ORDER ITEM REVIEW WITH DURATION DROPDOWN */
-              <div className="unified-card order-review-card">
-                <div className="card-header-clean">
-                  <span className="card-eyebrow">ITEM</span>
-                  <h2 className="card-main-title">
-                    {paketParam ? "Paket Hosting yang Dipesan" : "Domain yang Dibeli"}
-                  </h2>
-                </div>
 
-                <div className="review-items-list">
-                  {checkout?.items.map((item) => (
-                    <div key={item.cart_id} className="review-item-row">
-                      <div className="item-info-left">
-                        <div className="item-type-icon">{paketParam ? "🔥" : "🌐"}</div>
-                        <div>
-                          <div className="item-name-badge">
-                            <strong>{item.domain_name}</strong>
-                            <span className="item-tag">{paketParam ? "Hosting" : ".com"}</span>
-                          </div>
-                          <p className="item-sub-specs">{item.extension}</p>
-                        </div>
-                      </div>
-
-                      {/* DURATION DROPDOWN SELECTOR */}
-                      <div className="item-action-right">
-                        <div className="duration-dropdown-wrap">
-                          <label className="duration-mini-label">Durasi Domain</label>
-                          <div className="duration-select-pill">
-                            <select
-                              className="duration-select"
-                              value={durationYears}
-                              onChange={(e) => setDurationYears(Number(e.target.value))}
-                            >
-                              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
-                                <option key={yr} value={yr}>
-                                  {yr} Tahun
-                                </option>
-                              ))}
-                            </select>
-                            <span className="select-arrow">▼</span>
-                          </div>
-                        </div>
-
-                        <strong className="item-price-val">{rupiah(subtotal)}</strong>
+                    <div className="notice-box info">
+                      <span className="notice-icon">ℹ️</span>
+                      <div>
+                        <strong>PEMBAYARAN 1-GATE</strong>
+                        <p>
+                          Simpan bukti struk transfer kamu. Sistem otomatis memproses pesanan begitu dana berhasil diverifikasi oleh admin.
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+                  </div>
+
+                  {/* DISCLAIMER & TRANSFER ACCURACY BANNER */}
+                  <div className="whatsapp-cta-box">
+                    <div className="wa-text-col">
+                      <div className="wa-warning-badge">
+                        <span className="badge-warn-icon">⚠️</span>
+                        <strong>PENTING: Cek Kembali Rekening & Nominal Transfer</strong>
+                      </div>
+                      <p>
+                        Pastikan nomor rekening, bank tujuan, dan nominal sudah <strong>100% tepat</strong> sebelum menyelesaikan pembayaran. <em>Segala kelalaian atau kesalahan transfer ke rekening lain bukan merupakan tanggung jawab pihak admin.</em> Simpan struk resmi Anda & konfirmasikan untuk aktivasi kilat!
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* ===================================================
@@ -1435,106 +1404,95 @@ function CheckoutContent() {
               </div>
 
               {/* ACTION BUTTON & CAPTCHA SECURITY */}
-              {isOrderPlaced ? (
-                <div className="order-placed-actions">
-                  {paymentStatus.toLowerCase() === "paid" ? (
-                    <div className="rounded-2xl bg-gradient-to-b from-emerald-50/90 via-teal-50/50 to-emerald-100/40 border border-emerald-300/80 p-5 text-center shadow-sm space-y-3.5">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span>Transaksi Terverifikasi Resmi</span>
-                      </div>
+              <div className="order-placed-actions">
+                {paymentStatus.toLowerCase() === "paid" ? (
+                  <div className="rounded-2xl bg-gradient-to-b from-emerald-50/90 via-teal-50/50 to-emerald-100/40 border border-emerald-300/80 p-5 text-center shadow-sm space-y-3.5">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-emerald-200 text-emerald-800 text-[11px] font-bold shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>Transaksi Terverifikasi Resmi</span>
+                    </div>
 
-                      <div className="space-y-1">
-                        <h4 className="text-base font-extrabold text-slate-900 tracking-tight">
-                          Server Cloud Siap Digunakan 🚀
-                        </h4>
-                        <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
-                          Alokasi resource hosting NVMe dan domain Anda telah selesai dikonfigurasi &amp; aktif penuh.
-                        </p>
-                      </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-extrabold text-slate-900 tracking-tight">
+                        Server Cloud Siap Digunakan 🚀
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                        Alokasi resource hosting NVMe dan domain Anda telah selesai dikonfigurasi &amp; aktif penuh.
+                      </p>
+                    </div>
 
-                      <div className="pt-1.5">
-                        <Link
-                          href="/dashboard/hosting"
-                          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-extrabold text-xs text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-md shadow-emerald-700/25 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 no-underline"
-                          style={{ color: "#ffffff", textDecoration: "none" }}
-                        >
-                          <span className="text-sm">⚡</span>
-                          <span className="tracking-wide">Masuk ke Dashboard Hosting →</span>
-                        </Link>
+                    <div className="pt-1.5">
+                      <Link
+                        href="/dashboard/hosting"
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-extrabold text-xs text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 shadow-md shadow-emerald-700/25 hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 no-underline"
+                        style={{ color: "#ffffff", textDecoration: "none" }}
+                      >
+                        <span className="text-sm">⚡</span>
+                        <span className="tracking-wide">Masuk ke Dashboard Hosting →</span>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* KONFIRMASI PEMBAYARAN INTERAKTIF */}
+                    <div
+                      className={`payment-confirm-card ${isRobotVerified ? "verified" : ""}`}
+                      onClick={handleToggleConfirmation}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          void handleToggleConfirmation();
+                        }
+                      }}
+                    >
+                      <div className="payment-confirm-left">
+                        <div className={`payment-confirm-box ${isRobotVerified ? "checked" : ""}`}>
+                          {isRobotVerified && <span className="payment-confirm-icon">✓</span>}
+                        </div>
+                        <div className="payment-confirm-content">
+                          <strong className="payment-confirm-title">
+                            Saya telah melakukan pembayaran & siap konfirmasi
+                          </strong>
+                          <p className="payment-confirm-desc">
+                            Centang di sini jika Anda sudah mentransfer pembayaran sesuai nominal.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      {/* KONFIRMASI PEMBAYARAN INTERAKTIF */}
-                      <div
-                        className={`payment-confirm-card ${isRobotVerified ? "verified" : ""}`}
-                        onClick={handleToggleConfirmation}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            void handleToggleConfirmation();
-                          }
-                        }}
-                      >
-                        <div className="payment-confirm-left">
-                          <div className={`payment-confirm-box ${isRobotVerified ? "checked" : ""}`}>
-                            {isRobotVerified && <span className="payment-confirm-icon">✓</span>}
-                          </div>
-                          <div className="payment-confirm-content">
-                            <strong className="payment-confirm-title">
-                              Saya telah melakukan pembayaran & siap konfirmasi
-                            </strong>
-                            <p className="payment-confirm-desc">
-                              Centang di sini jika Anda sudah mentransfer pembayaran sesuai nominal.
-                            </p>
-                          </div>
-                        </div>
+
+                    {/* WHATSAPP ACTION BUTTON (LOCKED UNTIL CONFIRMED) */}
+                    <a
+                      href={isRobotVerified ? whatsappUrl : undefined}
+                      target={isRobotVerified ? "_blank" : undefined}
+                      rel={isRobotVerified ? "noopener noreferrer" : undefined}
+                      className={`btn-checkout-primary whatsapp-btn ${!isRobotVerified ? "btn-locked-wa" : ""}`}
+                      onClick={(e) => {
+                        if (!isRobotVerified) {
+                          e.preventDefault();
+                        } else {
+                          void handleConfirmPaymentWA();
+                        }
+                      }}
+                      title={!isRobotVerified ? "Centang konfirmasi pembayaran di atas terlebih dahulu" : "Kirim struk konfirmasi ke WhatsApp"}
+                    >
+                      {isRobotVerified ? "Sudah Bayar? Konfirmasi WA →" : "🔒 Centang Konfirmasi untuk Lanjut ke WA"}
+                    </a>
+
+                    {!isRobotVerified && (
+                      <div className="captcha-helper-warning">
+                        <span>ℹ️ Centang kotak di atas jika sudah melakukan transfer agar tombol WhatsApp aktif.</span>
                       </div>
+                    )}
 
-                      {/* WHATSAPP ACTION BUTTON (LOCKED UNTIL CONFIRMED) */}
-                      <a
-                        href={isRobotVerified ? whatsappUrl : undefined}
-                        target={isRobotVerified ? "_blank" : undefined}
-                        rel={isRobotVerified ? "noopener noreferrer" : undefined}
-                        className={`btn-checkout-primary whatsapp-btn ${!isRobotVerified ? "btn-locked-wa" : ""}`}
-                        onClick={(e) => {
-                          if (!isRobotVerified) {
-                            e.preventDefault();
-                          } else {
-                            void handleConfirmPaymentWA();
-                          }
-                        }}
-                        title={!isRobotVerified ? "Centang konfirmasi pembayaran di atas terlebih dahulu" : "Kirim struk konfirmasi ke WhatsApp"}
-                      >
-                        {isRobotVerified ? "Sudah Bayar? Konfirmasi WA →" : "🔒 Centang Konfirmasi untuk Lanjut ke WA"}
-                      </a>
-
-                      {!isRobotVerified && (
-                        <div className="captcha-helper-warning">
-                          <span>ℹ️ Centang kotak di atas jika sudah melakukan transfer agar tombol WhatsApp aktif.</span>
-                        </div>
-                      )}
-
-                      <div className="timer-countdown-box">
-                        <span className="timer-label">SELESAIKAN PEMBAYARAN DALAM</span>
-                        <strong className="timer-digits">{formattedTimeLeft}</strong>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="btn-checkout-primary"
-                  onClick={handleCreateOrder}
-                  disabled={submitting}
-                >
-                  {submitting ? "Memproses Pesanan..." : "Bayar Sekarang →"}
-                </button>
-              )}
+                    <div className="timer-countdown-box">
+                      <span className="timer-label">SELESAIKAN PEMBAYARAN DALAM</span>
+                      <strong className="timer-digits">{formattedTimeLeft}</strong>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* TRUST & SECURITY BADGES */}
               <div className="summary-trust-footer">

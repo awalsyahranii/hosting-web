@@ -53,16 +53,41 @@ function InvoicesContent() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
 
+  function getDeletedSet(): Set<string> {
+    const deletedSet = new Set<string>();
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("hostingweb_deleted_orders") : null;
+      if (raw) {
+        (JSON.parse(raw) as string[]).forEach((item) => {
+          if (item) deletedSet.add(String(item).trim().toLowerCase());
+        });
+      }
+    } catch {}
+    return deletedSet;
+  }
+
   useEffect(() => {
+    let isMounted = true;
     async function fetchInvoices() {
       try {
         const response = await fetch(
           "/api/backend/invoice/index.php",
-          { method: "GET", credentials: "include" }
+          { method: "GET", credentials: "include", cache: "no-store" }
         );
         const result = await response.json().catch(() => null);
-        if (response.ok && result?.status === "success") {
-          const list: InvoiceListItem[] = result.data || [];
+        if (response.ok && result?.status === "success" && isMounted) {
+          const deletedSet = getDeletedSet();
+          const list: InvoiceListItem[] = (result.data || []).filter((inv: InvoiceListItem) => {
+            const num = (inv.invoice_number || "").toLowerCase();
+            const ordId = String(inv.order_id || "").toLowerCase();
+            const invId = String(inv.id || "").toLowerCase();
+            if (num && deletedSet.has(num)) return false;
+            if (ordId && deletedSet.has(ordId)) return false;
+            if (invId && deletedSet.has(invId)) return false;
+            if (deletedSet.has(`ord-${ordId}`)) return false;
+            if (deletedSet.has(`inv-${invId}`)) return false;
+            return true;
+          });
           setInvoices(list);
           if (list.length > 0 && !initialInvoiceId) {
             void fetchInvoiceDetail(list[0].id);
@@ -72,11 +97,26 @@ function InvoicesContent() {
         console.error("Fetch invoices error:", err);
         setError("Gagal mengambil data tagihan.");
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
 
     void fetchInvoices();
+
+    const onStorageChange = () => {
+      void fetchInvoices();
+    };
+    window.addEventListener("storage", onStorageChange);
+
+    const interval = window.setInterval(() => {
+      void fetchInvoices();
+    }, 3000);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("storage", onStorageChange);
+      window.clearInterval(interval);
+    };
   }, [initialInvoiceId]);
 
   useEffect(() => {
