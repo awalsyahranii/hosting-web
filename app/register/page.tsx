@@ -16,7 +16,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function handleRegister(e: FormEvent) {
+  async function handleRegister(e: FormEvent) {
     e.preventDefault();
 
     setError("");
@@ -38,37 +38,75 @@ export default function RegisterPage() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      const existingUser = localStorage.getItem("hostingweb_user");
+    try {
+      // 1. Send registration to backend MySQL API
+      const regRes = await fetch("/api/backend/auth/register.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username: name.trim().replace(/\s+/g, "_").toLowerCase(),
+          name: name.trim(),
+          email: email.trim(),
+          password: password,
+        }),
+      });
 
-      if (existingUser) {
-        const user = JSON.parse(existingUser);
+      const regResult = await regRes.json().catch(() => null);
 
-        if (user.email === email) {
-          setError("Email tersebut sudah terdaftar. Silakan login.");
-          setLoading(false);
-          return;
-        }
+      if (!regRes.ok || regResult?.status !== "success") {
+        const msg = regResult?.message || "Registrasi gagal, silakan coba lagi.";
+        setError(msg);
+        setLoading(false);
+        return;
       }
 
-      const user = {
-        name,
-        email,
-        password,
-      };
+      // 2. Auto-login immediately after successful registration
+      try {
+        const loginRes = await fetch("/api/backend/auth/login.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            identifier: email.trim(),
+            password: password,
+          }),
+        });
 
-      localStorage.setItem("hostingweb_user", JSON.stringify(user));
+        const loginResult = await loginRes.json().catch(() => null);
 
-      localStorage.setItem(
-        "hostingweb_auth",
-        JSON.stringify({
-          loggedIn: true,
-          email,
-        })
-      );
+        if (loginRes.ok && loginResult?.status === "success" && loginResult?.data?.user) {
+          const u = loginResult.data.user;
+          const userObj = {
+            id: u.id,
+            name: u.username || u.name || name,
+            email: u.email || email,
+            role: u.role || "user",
+          };
 
-      router.push("/dashboard");
-    }, 700);
+          localStorage.setItem("hostingwebid_user", JSON.stringify(userObj));
+          localStorage.setItem(
+            "hostingweb_auth",
+            JSON.stringify({
+              loggedIn: true,
+              email: u.email || email,
+            })
+          );
+
+          router.push("/dashboard");
+          return;
+        }
+      } catch (loginErr) {
+        console.warn("Auto-login error after registration:", loginErr);
+      }
+
+      // Fallback: Redirect to login page
+      router.push("/login");
+    } catch (err) {
+      console.error("Register network error:", err);
+      setError("Tidak dapat terhubung ke server backend.");
+      setLoading(false);
+    }
   }
 
   return (
