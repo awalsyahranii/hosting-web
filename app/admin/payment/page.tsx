@@ -52,11 +52,10 @@ type User = {
   email?: string;
 };
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "/api/backend";
+const API_BASE = "/api/backend";
 const PAYMENT_API = `${API_BASE}/admin/payment/index.php`;
 const CONFIRM_API = `${API_BASE}/admin/payment/confirm.php`;
+
 
 function paymentId(payment: Payment) {
   return Number(payment.payment_id ?? payment.id);
@@ -386,7 +385,7 @@ export default function AdminPaymentPage() {
             if (ordNum) seenPaymentNumbers.add(ordNum);
           }
         });
-      } catch {}
+      } catch { }
 
       setPayments(mergedList);
     } catch (err) {
@@ -593,7 +592,7 @@ export default function AdminPaymentPage() {
           }
         }
         window.dispatchEvent(new Event("storage"));
-      } catch {}
+      } catch { }
 
       // 3. Remove immediately from admin payments state
       setPayments((prev) =>
@@ -846,8 +845,8 @@ export default function AdminPaymentPage() {
                             {cat === "hosting"
                               ? (payment.billing_period || "Paket Tahunan (12 Bulan)")
                               : cat === "google_ads"
-                              ? (payment.billing_period || "Masa Aktif Kampanye Iklan")
-                              : "Registrasi Domain (1 Tahun)"}
+                                ? (payment.billing_period || "Masa Aktif Kampanye Iklan")
+                                : "Registrasi Domain (1 Tahun)"}
                           </small>
                         </td>
                         <td>
