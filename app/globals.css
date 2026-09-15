@@ -9399,7 +9399,7 @@ img {
    CONTENT
 ========================================= */
 
-.admin-content {
+.admin-content, .admin-main {
   margin-left: 275px;
   width: calc(100% - 275px);
   padding: 0 36px 50px;
@@ -10350,7 +10350,7 @@ img {
 
 @media (max-width: 1100px) {
 
-  .admin-content {
+  .admin-content, .admin-main {
     padding-left: 25px;
     padding-right: 25px;
   }
@@ -10376,7 +10376,7 @@ img {
     width: 190px;
   }
 
-  .admin-content {
+  .admin-content, .admin-main {
     margin-left: 190px;
     width: calc(100% - 190px);
     padding: 0 20px 40px;
@@ -10433,7 +10433,7 @@ img {
     display: none;
   }
 
-  .admin-content {
+  .admin-content, .admin-main {
     margin-left: 0;
     width: 100%;
     padding: 0 12px 85px;

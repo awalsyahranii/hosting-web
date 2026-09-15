@@ -244,12 +244,12 @@ export default function AdminSeoPage() {
   }
 
   return (
-    <div className="admin-layout">
+    <main className="admin-page">
       {/* SIDEBAR */}
       <AdminSidebar currentPath="/admin/seo" />
 
       {/* MAIN CONTENT */}
-      <main className="admin-main">
+      <section className="admin-content">
         {/* TOAST ALERT */}
         {toastMessage && (
           <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs font-bold animate-fade-in flex items-center gap-2">
@@ -530,7 +530,7 @@ export default function AdminSeoPage() {
             Reset ke Pengaturan Default
           </button>
         </div>
-      </main>
+      </section>
 
       {/* =========================================================
           MODAL: TAMBAH / EDIT PAKET SEO
@@ -775,6 +775,6 @@ export default function AdminSeoPage() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

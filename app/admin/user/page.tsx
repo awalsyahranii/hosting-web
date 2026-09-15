@@ -446,7 +446,7 @@ export default function AdminUserPage() {
       }
     >
       <AdminSidebar currentPath="/admin/user" darkMode={darkMode} />
-      <div className="flex-1 min-w-0" style={{ marginLeft: "275px" }}>
+      <div className="flex-1 min-w-0 ml-0 md:ml-[190px] lg:ml-[275px] pb-24 md:pb-10 transition-all duration-300">
         {/* =================================================
             TOP NAVBAR
         ================================================= */}
