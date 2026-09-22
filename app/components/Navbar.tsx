@@ -26,23 +26,23 @@ export default function Navbar({ activeMenu }: NavbarProps) {
 
           {/* DESKTOP NAVIGATION */}
           <nav className="nav-menu">
-            <Link href="/#pricing" className={activeMenu === "hosting" ? "active" : ""}>
-              Hosting
+            <Link href="/#pricing" className={activeMenu === "pricing" || activeMenu === "website" ? "active" : ""}>
+              Jasa Website
             </Link>
-            <Link href="/#domain" className={activeMenu === "domain" ? "active" : ""}>
-              Domain
+            <Link href="/#google-ads" className={activeMenu === "google-ads" ? "active" : ""}>
+              Google Ads
             </Link>
             <Link href="/#portfolio" className={activeMenu === "portfolio" ? "active" : ""}>
               Portfolio
             </Link>
-            <Link href="/#google-ads" className={activeMenu === "google-ads" ? "active" : ""}>
-              Google Ads
+            <Link href="/#domain" className={activeMenu === "domain" ? "active" : ""}>
+              Cek Domain
             </Link>
             <Link href="/seo" className={activeMenu === "seo" ? "active" : ""}>
               SEO
             </Link>
             <Link href="/#features" className={activeMenu === "features" ? "active" : ""}>
-              Fitur
+              Keunggulan
             </Link>
             <Link href="/blog" className={activeMenu === "blog" ? "active" : ""}>
               Blog
@@ -80,22 +80,22 @@ export default function Navbar({ activeMenu }: NavbarProps) {
         {mobileMenuOpen && (
           <div className="mobile-menu">
             <Link href="/#pricing" onClick={() => setMobileMenuOpen(false)}>
-              Hosting
+              Jasa Website
             </Link>
-            <Link href="/#domain" onClick={() => setMobileMenuOpen(false)}>
-              Domain
+            <Link href="/#google-ads" onClick={() => setMobileMenuOpen(false)}>
+              Google Ads
             </Link>
             <Link href="/#portfolio" onClick={() => setMobileMenuOpen(false)}>
               Portfolio
             </Link>
-            <Link href="/#google-ads" onClick={() => setMobileMenuOpen(false)}>
-              Google Ads
+            <Link href="/#domain" onClick={() => setMobileMenuOpen(false)}>
+              Cek Domain
             </Link>
             <Link href="/seo" onClick={() => setMobileMenuOpen(false)}>
               SEO
             </Link>
             <Link href="/#features" onClick={() => setMobileMenuOpen(false)}>
-              Fitur
+              Keunggulan
             </Link>
             <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>
               Blog &amp; Panduan

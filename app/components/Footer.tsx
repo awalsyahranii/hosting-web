@@ -20,7 +20,7 @@ export default function Footer() {
                 </Link>
               </div>
               <p className="footer-top-desc">
-                Solusi hosting, domain, dan pembuatan website murah, cepat, dan terpercaya di Indonesia. Didesain untuk memaksimalkan performa bisnis digital Anda secara terjamin.
+                Solusi profesional pembuatan website siap pakai, jasa iklan Google Ads bergaransi halaman 1, dan optimasi digital marketing terpercaya untuk melejitkan bisnis Anda.
               </p>
             </div>
 

@@ -36,7 +36,7 @@ const plans: PlanItem[] = [
     id: "starter",
     icon: "✨",
     name: "Paket Starter Website",
-    description: "Cocok untuk memulai website profesional & portofolio pribadi.",
+    description: "Cocok untuk UMKM, portofolio profil usaha & landing page bisnis pemula.",
     priceLabel: "HARGA MULAI DARI",
     originalPrice: "Rp 1.200.000",
     price: 750000,
@@ -47,19 +47,21 @@ const plans: PlanItem[] = [
     btnClass: "plan-btn-outline",
     featuresHeader: "YANG KAMU DAPATKAN:",
     features: [
-      { text: "Hosting 3GB NVMe", icon: "💻", checkColor: "teal" },
-      { text: "Termasuk Domain .com", icon: "🌐", checkColor: "teal" },
-      { text: "Website Siap Pakai", icon: "🚀", checkColor: "teal" },
-      { text: "Setting SEO On-Page", icon: "✔️", checkColor: "teal" },
-      { text: "Garansi Bebas Error", icon: "🛡️", checkColor: "teal" },
-      { text: "SSL Certificate Gratis", icon: "🔒", checkColor: "teal" },
+      { text: "Website Profesional Siap Pakai", icon: "🚀", checkColor: "teal" },
+      { text: "Termasuk Domain .com / .my.id", icon: "🌐", checkColor: "teal" },
+      { text: "Cloud Server NVMe Cepat", icon: "💻", checkColor: "teal" },
+      { text: "Desain Mobile Friendly & Responsive", icon: "📱", checkColor: "teal" },
+      { text: "Integrasi Tombol WhatsApp", icon: "💬", checkColor: "teal" },
+      { text: "Setting Dasar SEO On-Page", icon: "✔️", checkColor: "teal" },
+      { text: "SSL Certificate Keamanan Gratis", icon: "🔒", checkColor: "teal" },
+      { text: "Garansi Bebas Error & Maintenance", icon: "🛡️", checkColor: "teal" },
     ],
   },
   {
     id: "business-pro",
     icon: "🔥",
-    name: "Paket Bisnis Pro",
-    description: "Untuk bisnis yang ingin berkembang lebih cepat & penjualan optimal.",
+    name: "Paket Bisnis Pro Website",
+    description: "Untuk bisnis & toko online yang ingin berkembang pesat dan konversi penjualan tinggi.",
     popularBadge: "PALING POPULER",
     priceLabel: "REKOMENDASI TERBAIK",
     originalPrice: "Rp 2.500.000",
@@ -72,21 +74,21 @@ const plans: PlanItem[] = [
     featuresHeader: "YANG KAMU DAPATKAN:",
     featuresHeaderBadge: "ALL-IN-ONE",
     features: [
-      { text: "Hosting 10GB NVMe High Speed", icon: "💻", checkColor: "orange" },
-      { text: "Termasuk Domain .com", icon: "🌐", checkColor: "orange" },
-      { text: "Website Siap Pakai", icon: "🚀", checkColor: "orange" },
+      { text: "Website Bisnis Premium Siap Pakai", icon: "🚀", checkColor: "orange" },
+      { text: "Termasuk Domain .com Resmi", icon: "🌐", checkColor: "orange" },
+      { text: "High Speed Server NVMe Turbo", icon: "💻", checkColor: "orange" },
       { text: "FREE 30 Artikel SEO Berkualitas", icon: "📝", highlight: true, checkColor: "orange" },
-      { text: "FREE Riset Kata Kunci", icon: "🔍", highlight: true, checkColor: "orange" },
-      { text: "Setting SEO On-Page", icon: "✔️", checkColor: "orange" },
-      { text: "Garansi Bebas Error", icon: "🛡️", checkColor: "orange" },
-      { text: "LiteSpeed Turbo Cache Enabled", icon: "⚡", checkColor: "orange" },
+      { text: "FREE Riset Kata Kunci Bisnis", icon: "🔍", highlight: true, checkColor: "orange" },
+      { text: "Setup Siap Iklan Google Ads Ready", icon: "🎯", highlight: true, checkColor: "orange" },
+      { text: "Form Pemesanan & Integrasi WA", icon: "📲", checkColor: "orange" },
+      { text: "Garansi & Prioritas Support", icon: "🛡️", checkColor: "orange" },
     ],
   },
   {
     id: "elite-enterprise",
     icon: "🌟",
-    name: "Paket Elite Enterprise",
-    description: "Untuk bisnis dengan kebutuhan website dan SEO lebih tinggi.",
+    name: "Paket Elite Enterprise Website",
+    description: "Solusi terlengkap untuk perusahaan, instansi, & portal bisnis berskala besar.",
     priceLabel: "HARGA MULAI DARI",
     originalPrice: "Rp 3.500.000",
     price: 2000000,
@@ -97,14 +99,14 @@ const plans: PlanItem[] = [
     btnClass: "plan-btn-outline",
     featuresHeader: "YANG KAMU DAPATKAN:",
     features: [
-      { text: "Hosting 50GB NVMe Cloud", icon: "💻", checkColor: "teal" },
-      { text: "Termasuk Domain .com", icon: "🌐", checkColor: "teal" },
-      { text: "Website Siap Pakai", icon: "🚀", checkColor: "teal" },
-      { text: "FREE 30 Artikel SEO Berkualitas", icon: "📝", checkColor: "teal" },
-      { text: "FREE Riset Kata Kunci", icon: "🔍", checkColor: "teal" },
-      { text: "Setting SEO On-Page", icon: "✔️", checkColor: "teal" },
-      { text: "Garansi Bebas Error", icon: "🛡️", checkColor: "teal" },
-      { text: "Optimasi SEO untuk Traffic", icon: "📈", checkColor: "teal" },
+      { text: "Website Custom Multi-Halaman Eksklusif", icon: "🚀", checkColor: "teal" },
+      { text: "Termasuk Domain .com Resmi", icon: "🌐", checkColor: "teal" },
+      { text: "Cloud Server NVMe Skala Besar", icon: "💻", checkColor: "teal" },
+      { text: "FREE 30 Artikel SEO & Riset Keyword", icon: "📝", checkColor: "teal" },
+      { text: "Setup Google Ads & Conversion Tracking", icon: "🎯", checkColor: "teal" },
+      { text: "Optimasi SEO Organik Maksimal", icon: "📈", checkColor: "teal" },
+      { text: "Fitur Custom Sesuai Request", icon: "⚡", checkColor: "teal" },
+      { text: "Garansi & Pendampingan 24/7", icon: "🛡️", checkColor: "teal" },
     ],
   },
 ];
@@ -263,155 +265,160 @@ const googleAdsPackages: GoogleAdsPackage[] = [
 
 const features = [
   {
-    icon: "⚡",
-    badge: "NVMe 5x Faster",
-    theme: "yellow",
-    title: "Super Cepat",
-    description:
-      "Server menggunakan teknologi SSD NVMe untuk memberikan performa website yang cepat dan responsif.",
-    detail:
-      "Website yang cepat memberikan pengalaman yang lebih nyaman bagi pengunjung. HostingWeb menggunakan teknologi SSD NVMe untuk membantu website tetap responsif dan memiliki performa yang optimal.",
-    benefits: [
-      "Menggunakan penyimpanan SSD NVMe",
-      "Performa website lebih responsif",
-      "Loading halaman lebih cepat",
-      "Cocok untuk website bisnis dan profesional",
-    ],
-  },
-  {
-    icon: "🛡",
-    badge: "Free Wildcard SSL",
-    theme: "pink",
-    title: "Aman & Terpercaya",
-    description:
-      "SSL gratis, sistem keamanan berlapis dan backup rutin untuk menjaga website tetap aman.",
-    detail:
-      "Keamanan website merupakan hal penting. HostingWeb menyediakan SSL dan sistem keamanan berlapis untuk membantu melindungi website serta data kamu.",
-    benefits: [
-      "SSL untuk keamanan koneksi website",
-      "Sistem keamanan berlapis",
-      "Backup data secara berkala",
-      "Perlindungan tambahan untuk data website",
-    ],
-  },
-  {
     icon: "🚀",
-    badge: "1-Click Scale",
-    theme: "orange",
-    title: "Mudah Dikembangkan",
+    badge: "1-3 Hari Jadi",
+    theme: "yellow",
+    title: "Website Cepat & Siap Pakai",
     description:
-      "Paket hosting fleksibel yang bisa disesuaikan dengan pertumbuhan website dan bisnis kamu.",
+      "Website dirancang profesional dengan loading kilat NVMe, tampilan elegan, dan langsung siap menerima pembeli.",
     detail:
-      "Website dan bisnis kamu bisa terus berkembang. HostingWeb menyediakan paket yang fleksibel sehingga kebutuhan hosting dapat disesuaikan seiring pertumbuhan website.",
+      "Website yang cepat dan responsif memberikan impresi terbaik bagi pengunjung. Kami membangun website menggunakan standar teknologi modern agar tampil sempurna di HP, tablet, maupun komputer.",
     benefits: [
-      "Pilihan paket sesuai kebutuhan",
-      "Dapat melakukan upgrade paket",
-      "Cocok untuk website yang terus berkembang",
-      "Fleksibel untuk kebutuhan bisnis",
+      "Desain profesional & mobile-friendly",
+      "Loading ultra cepat dengan Cloud NVMe",
+      "Langsung siap pakai tanpa repot coding",
+      "Struktur rapi yang meningkatkan konversi penjualan",
+    ],
+  },
+  {
+    icon: "🎯",
+    badge: "Garansi Hal 1",
+    theme: "pink",
+    title: "Google Ads & Tracking Ready",
+    description:
+      "Terintegrasi konversi WhatsApp, tracking analitik, dan siap diiklankan langsung di halaman 1 Google.",
+    detail:
+      "Iklan yang efektif membutuhkan website yang siap menampung leads. Kami mengonfigurasi tombol direct WhatsApp, Google Tag, dan copywriting persuasif agar pengunjung segera menghubungi Anda.",
+    benefits: [
+      "Setting tracking konversi tombol WhatsApp",
+      "Copywriting penawaran yang meyakinkan",
+      "Garansi iklan muncul di halaman 1 Google",
+      "Monitoring performa kata kunci tertarget",
+    ],
+  },
+  {
+    icon: "🌐",
+    badge: "All-in-One Include",
+    theme: "orange",
+    title: "Domain & Server Termasuk",
+    description:
+      "Tidak perlu pusing beli terpisah. Paket sudah include domain resmi (.com / .id), server cepat, dan SSL gratis.",
+    detail:
+      "Layanan kami sudah serba lengkap (All-In-One). Anda mendapatkan nama domain pilihan, penyimpanan cloud berkecepatan tinggi, dan sertifikat enkripsi SSL tanpa biaya tersembunyi.",
+    benefits: [
+      "Gratis Domain .com / .my.id",
+      "Cloud Server NVMe Storage berkecepatan tinggi",
+      "SSL Certificate HTTPS aktif selamanya",
+      "Bebas ribet setting DNS & konfigurasi server",
+    ],
+  },
+  {
+    icon: "📈",
+    badge: "SEO On-Page Ready",
+    theme: "purple",
+    title: "Optimasi SEO Google",
+    description:
+      "Struktur website SEO-friendly agar bisnis Anda mudah ditemukan pelanggan di hasil pencarian organik Google.",
+    detail:
+      "Selain melalui iklan berbayar, website Anda juga dioptimasi secara On-Page agar memiliki peluang besar mendapatkan traffic gratis berkelanjutan dari pencarian Google.",
+    benefits: [
+      "Riset kata kunci potensial sesuai bisnis Anda",
+      "Optimasi meta title, meta description & heading tag",
+      "Sitemap XML otomatis terdaftar ke Google",
+      "Bonus artikel SEO berkualitas untuk paket bisnis",
+    ],
+  },
+  {
+    icon: "🛡️",
+    badge: "Garansi 100%",
+    theme: "blue",
+    title: "Garansi Bebas Error & Aman",
+    description:
+      "Sistem keamanan berlapis, auto backup rutin, dan garansi perbaikan jika ada kendala pada website Anda.",
+    detail:
+      "Kenyamanan dan keamanan website bisnis Anda adalah prioritas utama. Kami menyediakan proteksi firewall, backup harian otomatis, serta garansi revisi sampai sesuai kebutuhan.",
+    benefits: [
+      "Garansi perbaikan jika terjadi error",
+      "Proteksi keamanan anti-malware & SSL",
+      "Auto daily cloud backup",
+      "Bantuan update konten & materi website",
     ],
   },
   {
     icon: "💬",
     badge: "Respon < 5 Menit",
-    theme: "purple",
-    title: "Support Responsif",
-    description:
-      "Tim support siap membantu ketika kamu membutuhkan bantuan terkait hosting dan website.",
-    detail:
-      "Ketika mengalami kendala terkait hosting atau website, kamu dapat mendapatkan bantuan dari tim support untuk membantu menemukan solusi yang tepat.",
-    benefits: [
-      "Bantuan terkait layanan hosting",
-      "Dukungan ketika mengalami kendala",
-      "Membantu memberikan solusi",
-      "Support yang mudah dihubungi",
-    ],
-  },
-  {
-    icon: "🌐",
-    badge: "DNS Propagation Instan",
-    theme: "blue",
-    title: "Domain Mudah",
-    description:
-      "Cari dan daftarkan domain impianmu dengan proses yang cepat dan sederhana.",
-    detail:
-      "Domain merupakan alamat utama website kamu. HostingWeb membantu membuat proses penggunaan dan pengelolaan domain menjadi lebih mudah.",
-    benefits: [
-      "Domain .com tersedia pada paket tertentu",
-      "Proses pengelolaan domain lebih sederhana",
-      "Domain menjadi identitas profesional website",
-      "Cocok untuk website bisnis dan personal",
-    ],
-  },
-  {
-    icon: "🔄",
-    badge: "Auto Daily Backup",
     theme: "indigo",
-    title: "Backup Berkala",
+    title: "Support & Konsultasi 24/7",
     description:
-      "Data website kamu mendapatkan backup berkala sehingga lebih aman dari kehilangan data.",
+      "Tim spesialis kami siap mendampingi Anda melalui WhatsApp untuk konsultasi teknis maupun strategi iklan.",
     detail:
-      "Backup berkala memberikan perlindungan tambahan terhadap data website. Dengan adanya salinan data, risiko kehilangan data akibat masalah pada website dapat dikurangi.",
+      "Kami bukan sekadar pembuat web, melainkan partner digital yang siap memberikan saran terbaik agar website dan campaign iklan Anda menghasilkan omset maksimal.",
     benefits: [
-      "Backup dilakukan secara berkala",
-      "Perlindungan tambahan terhadap data",
-      "Mengurangi risiko kehilangan data",
-      "Mendukung proses pemulihan website",
+      "Konsultasi gratis strategi kata kunci iklan",
+      "Dukungan teknis cepat via WhatsApp",
+      "Panduan pengelolaan website yang mudah",
+      "Support yang ramah dan solutif",
     ],
   },
 ];
 
 const testimonials = [
   {
-    name: "Andi Pratama",
-    role: "Owner Online Store",
+    name: "H. Andi Pratama",
+    role: "Owner Dealer Mobil & Properti",
     initials: "AP",
     color: "#ef4444",
     rating: "5.0",
-    text: "Sejak pindah ke Hostingwebid website toko online saya terasa jauh lebih cepat. Support-nya juga sangat responsif dan selalu solutif.",
+    text: "Pesan website dan iklan Google Ads di Hostingwebid prosesnya cepat banget. Hari kedua iklan sudah tayang di halaman 1 Google dan langsung masuk chat WA calon pembeli!",
   },
   {
     name: "Rizky Maulana",
-    role: "Web Developer",
+    role: "Pengusaha Jasa Konstruksi & Aluminium",
     initials: "RM",
     color: "#f97316",
     rating: "5.0",
-    text: "Harganya sangat terjangkau dan proses set-up nya gampang banget. Cocok untuk project client maupun website pribadi yang butuh performa stabil.",
+    text: "Tampilan website sangat profesional dan loading-nya cepat di HP klien. Ditambah paket SEO dan iklannya sangat membantu bisnis saya closing proyek lebih banyak.",
   },
   {
     name: "Dewi Anggraini",
-    role: "Business Owner",
+    role: "Owner Toko Online & Skincare",
     initials: "DA",
     color: "#dc2626",
     rating: "5.0",
-    text: "Saya suka karena tidak ribet sama sekali. Domain dan hosting bisa diurus di satu tempat dan dibantu ketika ada kendala teknis.",
+    text: "Sangat terbantu karena sistemnya terima beres. Domain, hosting, sampai desain web dan pasang iklan semuanya diuruskan dengan rapi oleh tim ramah.",
   },
 ];
 
 const faqs = [
   {
-    question: "Apa itu web hosting?",
+    question: "Berapa lama proses pembuatan website?",
     answer:
-      "Web hosting adalah layanan penyimpanan online yang memungkinkan file, gambar, database, dan kode website Anda dapat diakses di internet secara online 24 jam nonstop di seluruh dunia dengan cepat dan aman.",
+      "Proses pengerjaan website sangat cepat, rata-rata 1 sampai 3 hari kerja setelah materi (nama usaha, foto produk/jasa, dan kontak) kami terima.",
   },
   {
-    question: "Apakah mendapatkan SSL gratis?",
+    question: "Apakah sudah termasuk domain dan hosting?",
     answer:
-      "Ya, semua paket hosting Hostingwebid sudah dilengkapi dengan SSL Certificate gratis (Let's Encrypt / Wildcard) untuk memastikan website Anda aman dan menggunakan protokol HTTPS.",
+      "Ya, semua paket jasa website kami sudah All-In-One lengkap. Sudah termasuk nama domain (.com/.id/.my.id), cloud hosting NVMe super cepat, dan SSL gratis tanpa perlu beli terpisah.",
   },
   {
-    question: "Apakah bisa menggunakan domain sendiri?",
+    question: "Bagaimana sistem garansi Iklan Google Ads?",
     answer:
-      "Tentu saja! Anda bisa menghubungkan domain yang sudah Anda miliki sebelumnya atau mendaftarkan nama domain baru langsung saat proses pemesanan.",
+      "Kami memberikan garansi iklan Anda tayang di halaman 1 Google. Anda hanya bayar setelah iklan berhasil terverifikasi, aktif, dan muncul di pencarian Google. Transparan dan tanpa resiko.",
   },
   {
-    question: "Apakah bisa migrasi dari hosting lain?",
+    question: "Apakah saya bisa request desain dan revisi?",
     answer:
-      "Bisa dan gratis! Tim teknis kami siap membantu proses pemindahan (migrasi) file website dan database dari penyedia hosting lama Anda tanpa downtime.",
+      "Tentu saja! Desain website akan kami sesuaikan dengan bidang bisnis dan warna brand Anda. Kami juga memberikan kesempatan revisi hingga website tayang sesuai harapan Anda.",
   },
   {
-    question: "Bagaimana jika saya mengalami masalah teknis?",
+    question: "Apakah website sudah bisa langsung diakses di HP (Mobile Friendly)?",
     answer:
-      "Tim support spesialis kami siap membantu Anda 24/7 melalui Live Chat WhatsApp, tiket bantuan, dan panduan teknis yang mudah dipahami.",
+      "Ya! Semua website yang kami buat 100% responsif dan dioptimasi khusus untuk layar smartphone serta terhubung langsung ke tombol chat WhatsApp agar calon pembeli mudah menghubungi Anda.",
+  },
+  {
+    question: "Bagaimana jika saya ingin konsultasi dulu?",
+    answer:
+      "Konsultasi 100% GRATIS! Tim spesialis kami siap berdiskusi via WhatsApp untuk merekomendasikan jenis website dan strategi iklan terbaik sesuai budget bisnis Anda.",
   },
 ];
 
@@ -772,9 +779,9 @@ export default function Home() {
 
     // Fetch 6 latest articles for Homepage
     fetch("/api/backend/article/index.php?limit=6")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json().catch(() => null) : null))
       .then((json) => {
-        if (json.status === "success" && json.data?.articles) {
+        if (json?.status === "success" && json.data?.articles) {
           setHomeArticles(json.data.articles);
         }
       })
@@ -938,13 +945,13 @@ export default function Home() {
           <div className="container flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold text-white text-center">
             <span>
               {systemSettings?.broadcastBannerText ||
-                "🔥 DISKON SPESIAL HARI INI: Dapatkan Diskon s/d 80% untuk Cloud Hosting & Gratis Domain .COM!"}
+                "🔥 PROMO SPESIAL: Jasa Pembuatan Website Siap Pakai + Bonus Setup Iklan Google Ads Diskon s/d 50%!"}
             </span>
             <a
               href={systemSettings?.broadcastBannerLink || "#pricing"}
               className="underline font-black hover:opacity-90 ml-1 inline-flex items-center gap-0.5"
             >
-              <span>Klaim Sekarang</span>
+              <span>Konsultasi Sekarang</span>
               <span>&rarr;</span>
             </a>
           </div>
@@ -968,12 +975,12 @@ export default function Home() {
 
     {/* DESKTOP NAVIGATION */}
     <nav className="nav-menu">
-      <Link href="/#pricing">Hosting</Link>
-      <Link href="/#domain">Domain</Link>
-      <Link href="/#portfolio">Portfolio</Link>
+      <Link href="/#pricing">Jasa Website</Link>
       <Link href="/#google-ads">Google Ads</Link>
+      <Link href="/#portfolio">Portfolio</Link>
+      <Link href="/#domain">Cek Domain</Link>
       <Link href="/seo">SEO</Link>
-      <Link href="/#features">Fitur</Link>
+      <Link href="/#features">Keunggulan</Link>
       <Link href="/blog">Blog</Link>
       <Link href="/#faq">FAQ</Link>
     </nav>
@@ -1022,14 +1029,14 @@ export default function Home() {
         href="/#pricing"
         onClick={() => setMobileMenuOpen(false)}
       >
-        Hosting
+        Jasa Website
       </Link>
 
       <Link
-        href="/#domain"
+        href="/#google-ads"
         onClick={() => setMobileMenuOpen(false)}
       >
-        Domain
+        Google Ads
       </Link>
 
       <Link
@@ -1040,10 +1047,10 @@ export default function Home() {
       </Link>
 
       <Link
-        href="/#google-ads"
+        href="/#domain"
         onClick={() => setMobileMenuOpen(false)}
       >
-        Google Ads
+        Cek Domain
       </Link>
 
       <Link
@@ -1057,7 +1064,7 @@ export default function Home() {
         href="/#features"
         onClick={() => setMobileMenuOpen(false)}
       >
-        Fitur
+        Keunggulan
       </Link>
 
       <Link
@@ -1113,41 +1120,39 @@ export default function Home() {
 
             <div className="hero-badge">
               <span className="badge-dot" />
-              Web Hosting Cepat & Terpercaya
+              Jasa Pembuatan Website &amp; Iklan Google Ads
             </div>
 
             <h1>
-              Hosting Murah
+              Jasa Pembuatan Website &amp;
               <br />
-              <span>Untuk Website Hebat</span>
+              <span>Iklan Google Ads Tertarget</span>
             </h1>
 
             <p className="hero-description">
-              Bangun website profesional dengan hosting cepat,
-              aman, dan stabil. Solusi hosting dan domain untuk
-              bisnis, toko online, portfolio, hingga website pribadi.
+              Tingkatkan omset dan kredibilitas bisnis Anda dengan website profesional siap pakai serta campaign iklan Google Ads bergaransi halaman 1. Cepat, modern, dan menghasilkan penjualan nyata.
             </p>
 
             <div className="hero-checklist">
 
               <div className="check-item">
                 <span className="check-icon">✓</span>
-                <span>SSD NVMe berkecepatan tinggi</span>
+                <span>Desain Premium &amp; Mobile Friendly</span>
               </div>
 
               <div className="check-item">
                 <span className="check-icon">✓</span>
-                <span>SSL Gratis</span>
+                <span>Garansi Masuk Halaman 1 Google</span>
               </div>
 
               <div className="check-item">
                 <span className="check-icon">✓</span>
-                <span>Backup berkala</span>
+                <span>All-In-One (Domain &amp; Server NVMe)</span>
               </div>
 
               <div className="check-item">
                 <span className="check-icon">✓</span>
-                <span>Support responsif</span>
+                <span>Support &amp; Maintenance Siaga</span>
               </div>
 
             </div>
@@ -1155,12 +1160,12 @@ export default function Home() {
             <div className="hero-actions">
 
               <a href="#pricing" className="btn btn-primary">
-                Lihat Paket Hosting
+                Lihat Paket Website
                 <span>→</span>
               </a>
 
-              <a href="#domain" className="btn btn-outline">
-                Cari Domain
+              <a href="#google-ads" className="btn btn-outline">
+                Jasa Iklan Google Ads
               </a>
 
             </div>
@@ -1176,7 +1181,7 @@ export default function Home() {
 
               <div>
                 <div className="trust-stars">★★★★★</div>
-                <p>Dipercaya pelanggan Indonesia</p>
+                <p>Dipercaya 1.200+ klien Indonesia</p>
               </div>
 
             </div>
@@ -1219,11 +1224,11 @@ export default function Home() {
             <div className="floating-card growth-card">
 
               <span className="card-label">
-                Website Growth
+                Leads &amp; Conversion Growth
               </span>
 
               <div className="growth-number">
-                <strong>+40%</strong>
+                <strong>+68%</strong>
                 <span>↗</span>
               </div>
 
@@ -1247,19 +1252,19 @@ export default function Home() {
                 <div className="server-brand">
 
                   <div className="server-logo">
-                    H
+                    W
                   </div>
 
                   <div>
                     <strong>Hostingwebid</strong>
-                    <small>Cloud Hosting</small>
+                    <small>Web &amp; Ads Specialist</small>
                   </div>
 
                 </div>
 
                 <div className="server-online">
                   <span />
-                  Online
+                  Campaign Active
                 </div>
 
               </div>
@@ -1269,12 +1274,12 @@ export default function Home() {
                 <div className="server-content-top">
 
                   <div>
-                    <span>Server Performance</span>
-                    <strong>99.9%</strong>
+                    <span>Conversion Rate</span>
+                    <strong>99.2%</strong>
                   </div>
 
                   <div className="server-period">
-                    Last 30 days
+                    Garansi Hal 1
                   </div>
 
                 </div>
@@ -1323,11 +1328,11 @@ export default function Home() {
                           stopColor="#ff4d20"
                           stopOpacity="0.35"
                         />
-                        <stop
-                          offset="100%"
-                          stopColor="#ff4d20"
-                          stopOpacity="0"
-                        />
+                          <stop
+                            offset="100%"
+                            stopColor="#ff4d20"
+                            stopOpacity="0"
+                          />
                       </linearGradient>
 
                     </defs>
@@ -1352,18 +1357,18 @@ export default function Home() {
                 <div className="server-stats">
 
                   <div>
-                    <span>CPU Usage</span>
-                    <strong>18%</strong>
+                    <span>Traffic HP</span>
+                    <strong>86%</strong>
                   </div>
 
                   <div>
-                    <span>Memory</span>
-                    <strong>32%</strong>
+                    <span>Speed Score</span>
+                    <strong>98/100</strong>
                   </div>
 
                   <div>
-                    <span>Uptime</span>
-                    <strong>99.9%</strong>
+                    <span>Status</span>
+                    <strong>Ready</strong>
                   </div>
 
                 </div>
@@ -1380,8 +1385,8 @@ export default function Home() {
               </div>
 
               <div>
-                <span>Website Speed</span>
-                <strong>40x Faster</strong>
+                <span>Optimasi Website</span>
+                <strong>SEO &amp; Ads Ready</strong>
               </div>
 
             </div>
@@ -1391,19 +1396,19 @@ export default function Home() {
 
               <div className="promo-top">
                 <span>🔥</span>
-                <strong>Promo Domain</strong>
+                <strong>Website Siap Pakai</strong>
               </div>
 
               <div className="promo-main">
 
                 <div>
-                  <strong>.COM</strong>
+                  <strong>All-in-One</strong>
                   <span>Mulai dari</span>
                 </div>
 
                 <div className="promo-price">
-                  <strong>Rp114.900</strong>
-                  <del>Rp209.900</del>
+                  <strong>Rp 750.000</strong>
+                  <del>Rp 1.200.000</del>
                 </div>
 
               </div>
@@ -1422,29 +1427,29 @@ export default function Home() {
         <div className="container trust-grid">
 
           <div className="trust-item">
-            <strong>99.9%</strong>
-            <span>Server Uptime</span>
+            <strong>1.200+</strong>
+            <span>Website Klien Aktif</span>
+          </div>
+
+          <div className="trust-divider" />
+
+          <div className="trust-item">
+            <strong>Halaman 1</strong>
+            <span>Garansi Iklan Google</span>
+          </div>
+
+          <div className="trust-divider" />
+
+          <div className="trust-item">
+            <strong>1-3 Hari</strong>
+            <span>Pengerjaan Cepat</span>
           </div>
 
           <div className="trust-divider" />
 
           <div className="trust-item">
             <strong>24/7</strong>
-            <span>Customer Support</span>
-          </div>
-
-          <div className="trust-divider" />
-
-          <div className="trust-item">
-            <strong>NVMe</strong>
-            <span>Storage Technology</span>
-          </div>
-
-          <div className="trust-divider" />
-
-          <div className="trust-item">
-            <strong>SSL</strong>
-            <span>Gratis Selamanya</span>
+            <span>Support &amp; Konsultasi Siaga</span>
           </div>
 
         </div>
@@ -1935,11 +1940,11 @@ export default function Home() {
             <h2 className="portfolio-main-title">
               Website yang Telah Online
               <br />
-              <span className="portfolio-title-highlight">Bersama Layanan HostingWeb.</span>
+              <span className="portfolio-title-highlight">Karya &amp; Optimasi Kami.</span>
             </h2>
 
             <p className="portfolio-main-subtitle">
-              Jelajahi berbagai website aktif yang menggunakan infrastruktur cloud hosting NVMe berkecepatan tinggi kami.
+              Jelajahi berbagai website klien yang telah kami rancang dan kami pasangkan iklan Google Ads untuk mendatangkan pelanggan setiap hari.
             </p>
           </div>
 
@@ -2298,11 +2303,11 @@ export default function Home() {
           {/* PORTFOLIO BOTTOM CTA */}
           <div className="portfolio-cta-card">
             <div className="portfolio-cta-content">
-              <h3>Ingin Website Bisnis Kamu Online &amp; Cepat Seperti Mereka?</h3>
-              <p>Mulai sekarang dengan paket hosting lengkap termasuk domain, SSL gratis, dan bantuan setup sampai siap tayang.</p>
+              <h3>Ingin Bisnis Anda Memiliki Website Menjual &amp; Tayang di Google?</h3>
+              <p>Mulai sekarang dengan jasa pembuatan website profesional &amp; pasang iklan Google Ads terukur bersama tim spesialis kami.</p>
             </div>
             <a href="#pricing" className="btn btn-primary">
-              Pilih Paket Hosting
+              Pilih Paket Website
               <span>→</span>
             </a>
           </div>
@@ -2310,25 +2315,25 @@ export default function Home() {
       </section>
 
       {/* =====================================================
-          HOSTING PLANS
+          PAKET JASA PEMBUATAN WEBSITE
       ===================================================== */}
       <section className="pricing-section" id="pricing">
         <div className="container">
           {/* SECTION HEADER */}
           <div className="pricing-header-center">
             <div className="pricing-top-badge">
-              <span className="pricing-top-badge-icon">🔥</span>
-              <span>PILIHAN TERBAIK UNTUK PERFORMA WEB ANDA</span>
+              <span className="pricing-top-badge-icon">🚀</span>
+              <span>PILIHAN PAKET JASA PEMBUATAN WEBSITE</span>
             </div>
 
             <h2 className="pricing-main-title">
-              Hosting Sesuai Kebutuhan
+              Website Profesional
               <br />
-              <span className="pricing-title-highlight">website kamu.</span>
+              <span className="pricing-title-highlight">Siap Pakai untuk Bisnis Anda.</span>
             </h2>
 
             <p className="pricing-main-subtitle">
-              Pilih paket yang sesuai dengan kebutuhan website dan bisnis kamu dengan jaminan kestabilan server, NVMe Cloud SSD, dan panduan langsung.
+              Pilih paket jasa website yang sesuai kebutuhan bisnis Anda. Sudah All-In-One termasuk domain resmi, cloud server berkecepatan tinggi, setting SEO, dan siap tayang.
             </p>
 
             {/* BILLING CYCLE SWITCHER */}
@@ -2336,18 +2341,11 @@ export default function Home() {
               <div className="pricing-billing-switch">
                 <button
                   type="button"
-                  className={`billing-btn ${billingCycle === "monthly" ? "active" : ""}`}
-                  onClick={() => setBillingCycle("monthly")}
-                >
-                  Bayar Bulanan
-                </button>
-                <button
-                  type="button"
                   className={`billing-btn ${billingCycle === "yearly" ? "active" : ""}`}
                   onClick={() => setBillingCycle("yearly")}
                 >
-                  Bayar Tahunan
-                  <span className="billing-save-pill">Hemat 25% + Free Domain</span>
+                  Paket Lengkap Siap Pakai
+                  <span className="billing-save-pill">All-In-One 1 Tahun + Domain &amp; Server</span>
                 </button>
               </div>
             </div>
@@ -2737,18 +2735,15 @@ export default function Home() {
                 type="button"
                 className="pricing-button pricing-button-primary"
                 onClick={() => {
-
                   setSelectedFeature(null);
-
                   document
                     .getElementById("pricing")
                     ?.scrollIntoView({
                       behavior: "smooth",
                     });
-
                 }}
               >
-                Lihat Paket Hosting
+                Lihat Paket Website
                 <span>→</span>
               </button>
 
@@ -2761,12 +2756,9 @@ export default function Home() {
       </section>
 
       {/* =====================================================
-          WHY US
+          WHY US (KENAPA MEMILIH KAMI?)
       ===================================================== */}
-      {/* =====================================================
-          WHY US (KENAPA HOSTINGWEBID?)
-      ===================================================== */}
-      <section className="why-section" id="hosting">
+      <section className="why-section" id="why-us">
         <div className="container why-grid">
           {/* LEFT: DASHBOARD UI MOCKUP */}
           <div className="why-visual-wrapper">
@@ -2774,15 +2766,15 @@ export default function Home() {
               {/* TOP HEADER */}
               <div className="mockup-header-bar">
                 <div className="mockup-brand-group">
-                  <div className="mockup-logo-icon">H</div>
+                  <div className="mockup-logo-icon">W</div>
                   <div className="mockup-brand-text">
                     <strong>Hostingwebid</strong>
-                    <span>Hosting Dashboard • Server Jakarta</span>
+                    <span>Website &amp; Ads Management</span>
                   </div>
                 </div>
                 <div className="mockup-online-pill">
                   <span className="online-dot" />
-                  <span>Online</span>
+                  <span>Campaign Active</span>
                 </div>
               </div>
 
@@ -2797,20 +2789,20 @@ export default function Home() {
                         <strong>websitekamu.com</strong>
                         <span className="site-active-dot" />
                       </div>
-                      <span className="site-sub-text">Active website • 1x - 3GB NVMe</span>
+                      <span className="site-sub-text">Active website • All-in-One Ready</span>
                     </div>
                   </div>
                   <div className="mockup-uptime-stat">
-                    <strong>99.9%</strong>
-                    <span>UPTIME RECORD</span>
+                    <strong>100%</strong>
+                    <span>GARANSI HAL 1</span>
                   </div>
                 </div>
 
                 {/* PERFORMANCE BAR */}
                 <div className="mockup-perf-section">
                   <div className="mockup-perf-labels">
-                    <span>Performance</span>
-                    <strong className="perf-highlight">Terdistribusi &amp; Stabil</strong>
+                    <span>Performance &amp; SEO</span>
+                    <strong className="perf-highlight">Teroptimasi &amp; Menjual</strong>
                   </div>
                   <div className="mockup-perf-bar-track">
                     <div className="mockup-perf-bar-fill" />
@@ -2820,16 +2812,16 @@ export default function Home() {
                 {/* 3 METRIC STATS */}
                 <div className="mockup-metrics-grid">
                   <div className="metric-box">
-                    <span className="metric-label">Response Time</span>
-                    <strong className="metric-val">18ms</strong>
+                    <span className="metric-label">Kecepatan Akses</span>
+                    <strong className="metric-val text-green">&lt; 1 Detik</strong>
                   </div>
                   <div className="metric-box">
                     <span className="metric-label">SSL Certificate</span>
-                    <strong className="metric-val text-green">Active (Auto)</strong>
+                    <strong className="metric-val text-green">Active (HTTPS)</strong>
                   </div>
                   <div className="metric-box">
-                    <span className="metric-label">Cloud Backup</span>
-                    <strong className="metric-val">Daily 02:00</strong>
+                    <span className="metric-label">Google Ads</span>
+                    <strong className="metric-val">Siap Tayang</strong>
                   </div>
                 </div>
               </div>
@@ -2838,8 +2830,8 @@ export default function Home() {
               <div className="mockup-floating-badge">
                 <div className="floating-check-icon">✓</div>
                 <div>
-                  <strong>Website Aktif</strong>
-                  <small>99.9% Real-time Uptime</small>
+                  <strong>Website Siap Pakai</strong>
+                  <small>Langsung Menghasilkan Leads</small>
                 </div>
               </div>
             </div>
@@ -2849,17 +2841,17 @@ export default function Home() {
           <div className="why-content-side">
             <div className="why-top-badge">
               <span className="why-top-badge-dot" />
-              <span>KENAPA HOSTINGWEBID?</span>
+              <span>KENAPA MEMILIH KAMI?</span>
             </div>
 
             <h2 className="why-main-title">
-              Bukan cuma hosting.
+              Bukan Sekadar Buat Web.
               <br />
-              <span className="why-title-highlight">Partner website kamu.</span>
+              <span className="why-title-highlight">Partner Sukses Bisnis Anda.</span>
             </h2>
 
             <p className="why-main-subtitle">
-              Kami percaya hosting yang bagus bukan hanya soal server. Kamu juga membutuhkan layanan yang mudah digunakan dan support yang bisa diandalkan.
+              Kami mendampingi bisnis Anda mulai dari pembuatan website profesional siap pakai hingga mendatangkan calon pembeli baru melalui iklan Google Ads tertarget.
             </p>
 
             <div className="why-numbered-list">
@@ -2868,10 +2860,10 @@ export default function Home() {
                 <span className="why-item-num">01</span>
                 <div className="why-item-body">
                   <div className="why-item-title-row">
-                    <strong>Performa cepat</strong>
-                    <span className="why-badge-tag yellow">⚡ NVME 5X FASTER</span>
+                    <strong>Desain Elegan &amp; Menjual</strong>
+                    <span className="why-badge-tag yellow">⚡ HIGH CONVERTING</span>
                   </div>
-                  <p>Infrastruktur modern untuk loading website yang lebih cepat dan lancar saat diakses dari seluruh Indonesia.</p>
+                  <p>Tampilan website modern yang responsif di smartphone, cepat diakses, dan dirancang untuk meyakinkan calon pelanggan agar langsung menghubungi WhatsApp Anda.</p>
                 </div>
               </div>
 
@@ -2880,10 +2872,10 @@ export default function Home() {
                 <span className="why-item-num">02</span>
                 <div className="why-item-body">
                   <div className="why-item-title-row">
-                    <strong>Harga transparan</strong>
-                    <span className="why-badge-tag green">🔒 NO HIDDEN COST</span>
+                    <strong>All-in-One Terima Beres</strong>
+                    <span className="why-badge-tag green">🔒 FREE DOMAIN &amp; SERVER</span>
                   </div>
-                  <p>Pilih paket sesuai kebutuhan tanpa fitur yang tidak diperlukan, tanpa biaya tersembunyi saat perpanjangan.</p>
+                  <p>Sudah termasuk nama domain resmi, cloud server NVMe, SSL gratis, copywriting, dan setting tombol WhatsApp tanpa biaya tersembunyi.</p>
                 </div>
               </div>
 
@@ -2892,10 +2884,10 @@ export default function Home() {
                 <span className="why-item-num">03</span>
                 <div className="why-item-body">
                   <div className="why-item-title-row">
-                    <strong>Support manusia</strong>
-                    <span className="why-badge-tag red">💬 RESPON &lt; 5 MENIT</span>
+                    <strong>Google Ads &amp; Pendampingan</strong>
+                    <span className="why-badge-tag red">🎯 GARANSI HALAMAN 1</span>
                   </div>
-                  <p>Dapatkan bantuan teknis dari tim spesialis asli ketika kamu membutuhkannya, via live chat WhatsApp &amp; tiket 24 jam.</p>
+                  <p>Dukungan tim spesialis periklanan Google Ads untuk memastikan website Anda berada di halaman 1 pencarian dan menghasilkan orderan nyata.</p>
                 </div>
               </div>
             </div>
@@ -3176,29 +3168,29 @@ export default function Home() {
               {/* TOP BADGE */}
               <div className="cta-top-badge">
                 <span className="cta-top-badge-dot" />
-                <span>SIAP MEMULAI?</span>
+                <span>SIAP MELEJITKAN PENJUALAN?</span>
               </div>
 
               {/* TITLE */}
               <h2 className="cta-main-title">
-                Saatnya website kamu
+                Saatnya bisnis Anda
                 <br />
-                <span className="cta-title-highlight">tampil lebih profesional.</span>
+                <span className="cta-title-highlight">memiliki website &amp; iklan profesional.</span>
               </h2>
 
               {/* SUBTITLE */}
               <p className="cta-main-subtitle">
-                Pilih hosting terbaik untuk website kamu dan mulai berkembang bersama <strong>Hostingwebid</strong>. Dapatkan kecepatan ultra, uptime 99.9%, dan dukungan ahli Indonesia.
+                Konsultasikan kebutuhan pembuatan website dan campaign iklan Google Ads bisnis Anda sekarang bersama tim spesialis <strong>Hostingwebid</strong>.
               </p>
 
               {/* BUTTONS */}
               <div className="cta-action-buttons">
                 <a href="#pricing" className="cta-btn-primary">
-                  Lihat Paket Hosting
+                  Lihat Paket Website
                   <span>→</span>
                 </a>
                 <a
-                  href={getWhatsAppUrl("Halo Admin HostingWeb, saya tertarik dengan promo paket hosting. Bisa dibantu penjelasannya?")}
+                  href={getWhatsAppUrl("Halo Admin HostingWeb, saya ingin konsultasi jasa pembuatan website dan iklan Google Ads.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="cta-btn-whatsapp"
@@ -3213,15 +3205,15 @@ export default function Home() {
               {/* BOTTOM TRUST CHECKLIST */}
               <div className="cta-trust-checklist">
                 <span className="cta-check-item">
-                  <span className="cta-item-icon">⚡</span> Aktivasi Instan
+                  <span className="cta-item-icon">⚡</span> Pengerjaan 1-3 Hari
                 </span>
                 <span className="cta-dot-separator">•</span>
                 <span className="cta-check-item">
-                  <span className="cta-item-icon">🛡️</span> Garansi 30 Hari Bebas Risiko
+                  <span className="cta-item-icon">🛡️</span> Garansi Halaman 1 Google
                 </span>
                 <span className="cta-dot-separator">•</span>
                 <span className="cta-check-item">
-                  <span className="cta-item-icon">💬</span> Support 24/7 Siaga
+                  <span className="cta-item-icon">💬</span> Konsultasi &amp; Support 24/7
                 </span>
               </div>
             </div>
@@ -3256,9 +3248,9 @@ export default function Home() {
               <div className="faq-help-icon-box">💬</div>
               <div className="faq-help-content">
                 <strong>Ada pertanyaan khusus?</strong>
-                <p>Konsultasikan kebutuhan website kamu secara gratis dengan Customer Success kami.</p>
+                <p>Konsultasikan kebutuhan website &amp; target iklan Anda secara gratis dengan tim kami.</p>
                 <a
-                  href={getWhatsAppUrl("Halo Customer Success HostingWeb, saya ingin konsultasi kebutuhan website saya.")}
+                  href={getWhatsAppUrl("Halo Customer Success HostingWeb, saya ingin konsultasi kebutuhan website dan iklan Google Ads saya.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="faq-help-link"
@@ -3314,7 +3306,7 @@ export default function Home() {
                 <img src="/logo.png" alt="hostingwebid" />
               </div>
               <p className="footer-top-desc">
-                Solusi hosting, domain, dan pembuatan website murah, cepat, dan terpercaya di Indonesia. Didesain untuk memaksimalkan performa bisnis digital Anda secara terjamin.
+                Solusi profesional pembuatan website siap pakai, jasa iklan Google Ads bergaransi halaman 1, dan optimasi digital marketing terpercaya di Indonesia.
               </p>
             </div>
 
@@ -3323,15 +3315,15 @@ export default function Home() {
                 <div className="feat-icon-box feat-red">⚡</div>
                 <div className="feat-text">
                   <span className="feat-label">Kecepatan</span>
-                  <strong className="feat-value">NVMe SSD Cepat</strong>
+                  <strong className="feat-value">NVMe Cepat</strong>
                 </div>
               </div>
 
               <div className="footer-feat-pill">
-                <div className="feat-icon-box feat-orange">🛡️</div>
+                <div className="feat-icon-box feat-orange">🎯</div>
                 <div className="feat-text">
-                  <span className="feat-label">Keamanan</span>
-                  <strong className="feat-value">Garansi 99.9% Up</strong>
+                  <span className="feat-label">Google Ads</span>
+                  <strong className="feat-value">Garansi Hal 1</strong>
                 </div>
               </div>
 
@@ -3417,9 +3409,10 @@ export default function Home() {
                 <span className="title-bar" /> LAYANAN
               </h3>
               <ul className="footer-nav-links">
-                <li><a href="#portfolio">Jasa Pembuatan Website</a></li>
+                <li><a href="#pricing">Jasa Pembuatan Website</a></li>
                 <li><a href="#google-ads">Jasa Iklan Google Ads</a></li>
-                <li><a href="#features">Jasa SEO</a></li>
+                <li><Link href="/seo">Jasa SEO &amp; PBN</Link></li>
+                <li><a href="#domain">Cek Domain</a></li>
               </ul>
             </div>
 
@@ -3430,11 +3423,11 @@ export default function Home() {
               </h3>
               <ul className="footer-nav-links">
                 <li><Link href="/blog">Blog &amp; Panduan Artikel</Link></li>
-                <li><a href="/checkout">Konfirmasi Pembayaran</a></li>
-                <li><a href="#about">Tentang Kami</a></li>
+                <li><Link href="/checkout">Konfirmasi Pembayaran</Link></li>
+                <li><a href="#why-us">Tentang Kami</a></li>
                 <li><a href="#portfolio">Portofolio Proyek</a></li>
-                <li><a href="#">Affiliasi</a></li>
-                <li><a href="#">Legalitas Perusahaan</a></li>
+                <li><a href="#why-us">Keunggulan</a></li>
+                <li><a href="#faq">FAQ</a></li>
               </ul>
             </div>
 
@@ -3481,7 +3474,7 @@ export default function Home() {
           {/* BOTTOM SUB-FOOTER */}
           <div className="footer-premium-bottom">
             <div className="footer-copyright">
-              © 2026 <strong>hostingwebid</strong> • Seluruh hak cipta dilindungi undang-undang.
+              © {new Date().getFullYear()} <strong>hostingwebid</strong> • Seluruh hak cipta dilindungi undang-undang.
             </div>
             <div className="footer-legal-bar">
               <a href="#">Syarat &amp; Ketentuan</a>
