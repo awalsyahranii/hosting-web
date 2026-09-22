@@ -1,6 +1,6 @@
     "use client";
 
-    import { useEffect, useMemo, useState } from "react";
+    import { useEffect, useMemo, useRef, useState } from "react";
     import { useRouter } from "next/navigation";
     import Link from "next/link";
     import AdminSidebar from "./components/AdminSidebar";
@@ -306,6 +306,9 @@
         const [showProfile, setShowProfile] =
             useState(false);
 
+        const notifDropdownRef = useRef<HTMLDivElement>(null);
+        const profileDropdownRef = useRef<HTMLDivElement>(null);
+
         const [pendingPaymentCount, setPendingPaymentCount] =
             useState(0);
 
@@ -314,6 +317,26 @@
 
         const [showPeriod, setShowPeriod] =
             useState(false);
+
+        /* Click outside to close dropdowns */
+        useEffect(() => {
+            function handleClickOutside(event: MouseEvent) {
+                if (
+                    notifDropdownRef.current &&
+                    !notifDropdownRef.current.contains(event.target as Node)
+                ) {
+                    setShowNotifications(false);
+                }
+                if (
+                    profileDropdownRef.current &&
+                    !profileDropdownRef.current.contains(event.target as Node)
+                ) {
+                    setShowProfile(false);
+                }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+        }, []);
 
 
 
@@ -447,11 +470,13 @@
                     cache: "no-store",
                     headers: { Accept: "application/json" },
                 });
-                const result: PaymentSummaryResponse = await response.json();
-                if (!response.ok || result.status !== "success") return;
-                const payments = result.data?.payments || [];
+                const result = await response.json().catch(() => null);
+                if (!response.ok || result?.status !== "success") return;
+                const payments = Array.isArray(result.data)
+                    ? result.data
+                    : result.data?.payments || [];
                 setPendingPaymentCount(
-                    payments.filter((payment) =>
+                    payments.filter((payment: any) =>
                         (payment.status || "pending").toLowerCase() === "pending"
                     ).length
                 );
@@ -1006,6 +1031,7 @@
 
     const notificationCount =
         pendingPaymentCount +
+        pendingOrders +
         (dashboardData?.new_tickets || 0);
 
 
@@ -1140,172 +1166,106 @@
 
             {/* NOTIFICATION */}
 
-            <div className="admin-dropdown-wrapper">
+            <div className="admin-dropdown-wrapper" ref={notifDropdownRef}>
 
               <button
                 className="admin-icon-btn notification-button"
                 onClick={() => {
-
-                  setShowNotifications(
-                    !showNotifications
-                  );
-
-                  setShowProfile(
-                    false
-                  );
-
+                  setShowNotifications(!showNotifications);
+                  setShowProfile(false);
                 }}
                 title="Notifikasi"
                 type="button"
               >
-
                 🔔
-
-
-                {notificationCount >
-                  0 && (
-
+                {notificationCount > 0 && (
                   <span className="notification-badge">
-
                     {notificationCount}
-
                   </span>
-
                 )}
-
               </button>
 
-
               {showNotifications && (
-
                 <div className="admin-dropdown notification-dropdown">
-
                   <div className="dropdown-title">
-
-                    <strong>
-                      Notifikasi
-                    </strong>
-
-                    <small>
-                      {notificationCount}{" "}
-                      baru
-                    </small>
-
+                    <strong>Notifikasi Admin</strong>
+                    <small>{notificationCount} baru</small>
                   </div>
 
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", padding: "8px 0" }}>
+                    {pendingPaymentCount > 0 && (
+                      <Link
+                        href="/admin/payment"
+                        onClick={() => setShowNotifications(false)}
+                        className="notification-item"
+                        style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                      >
+                        <span style={{ fontSize: "16px" }}>💳</span>
+                        <div>
+                          <strong>{pendingPaymentCount} Pembayaran Menunggu</strong>
+                          <small>Ada pembayaran pelanggan perlu diverifikasi.</small>
+                        </div>
+                      </Link>
+                    )}
 
-                  {pendingOrders >
-                    0 && (
+                    {pendingOrders > 0 && (
+                      <Link
+                        href="/admin/order"
+                        onClick={() => setShowNotifications(false)}
+                        className="notification-item"
+                        style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                      >
+                        <span style={{ fontSize: "16px" }}>🧾</span>
+                        <div>
+                          <strong>{pendingOrders} Pesanan Pending</strong>
+                          <small>Pesanan pelanggan menunggu diproses.</small>
+                        </div>
+                      </Link>
+                    )}
 
-                    <div className="notification-item">
+                    {(dashboardData?.new_tickets || 0) > 0 && (
+                      <Link
+                        href="/admin/system"
+                        onClick={() => setShowNotifications(false)}
+                        className="notification-item"
+                        style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                      >
+                        <span style={{ fontSize: "16px" }}>🎫</span>
+                        <div>
+                          <strong>{dashboardData?.new_tickets} Tiket Baru</strong>
+                          <small>Tiket bantuan pelanggan perlu direspon.</small>
+                        </div>
+                      </Link>
+                    )}
 
-                      <span>
-                        🧾
-                      </span>
-
-                      <div>
-
-                        <strong>
-                          Pesanan menunggu
-                        </strong>
-
-                        <small>
-                          {pendingOrders}{" "}
-                          pesanan masih
-                          berstatus pending.
-                        </small>
-
+                    {notificationCount === 0 && (
+                      <div className="notification-item">
+                        <span>✓</span>
+                        <div>
+                          <strong>Tidak ada notifikasi baru</strong>
+                          <small>Semua pesanan dan pembayaran sudah beres.</small>
+                        </div>
                       </div>
+                    )}
+                  </div>
 
-                    </div>
-
-                  )}
-
-
-                                    {pendingPaymentCount > 0 && (
-
-                                        <div className="notification-item">
-
-                                            <span>
-                                                ▣
-                                            </span>
-
-                                            <div>
-
-                                                <strong>
-                                                    Payment menunggu
-                                                </strong>
-
-                                                <small>
-                                                    {pendingPaymentCount} payment dari user perlu diperiksa.
-                                                </small>
-
-                                            </div>
-
-                                        </div>
-
-                                    )}
-
-
-                  {(dashboardData?.new_tickets ||
-                    0) > 0 && (
-
-                    <div className="notification-item">
-
-                      <span>
-                        🎫
-                      </span>
-
-                      <div>
-
-                        <strong>
-                          Ticket baru
-                        </strong>
-
-                        <small>
-                          Ada{" "}
-                          {
-                            dashboardData?.new_tickets
-                          }{" "}
-                          ticket yang
-                          perlu diperiksa.
-                        </small>
-
-                      </div>
-
-                    </div>
-
-                  )}
-
-
-                  {notificationCount ===
-                    0 && (
-
-                    <div className="notification-item">
-
-                      <span>
-                        ✓
-                      </span>
-
-                      <div>
-
-                        <strong>
-                          Tidak ada notifikasi
-                        </strong>
-
-                        <small>
-                          Tidak ada data baru
-                          yang perlu diperiksa.
-                        </small>
-
-                      </div>
-
-                    </div>
-
-                  )}
-
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #eeeeee", paddingTop: "8px", marginTop: "4px", fontSize: "11px" }}>
+                    <Link
+                      href="/admin/payment"
+                      onClick={() => setShowNotifications(false)}
+                      style={{ color: "#ea580c", fontWeight: 700, textDecoration: "none" }}
+                    >
+                      Buka Pembayaran →
+                    </Link>
+                    <Link
+                      href="/admin/order"
+                      onClick={() => setShowNotifications(false)}
+                      style={{ color: "#64748b", fontWeight: 600, textDecoration: "none" }}
+                    >
+                      Buka Pesanan →
+                    </Link>
+                  </div>
                 </div>
-
               )}
 
             </div>
@@ -1313,121 +1273,61 @@
 
             {/* PROFILE */}
 
-            <div className="admin-dropdown-wrapper">
+            <div className="admin-dropdown-wrapper" ref={profileDropdownRef}>
 
               <button
                 className="admin-profile"
                 onClick={() => {
-
-                  setShowProfile(
-                    !showProfile
-                  );
-
-                  setShowNotifications(
-                    false
-                  );
-
+                  setShowProfile(!showProfile);
+                  setShowNotifications(false);
                 }}
                 type="button"
               >
-
                 <div className="admin-avatar">
-
-                  {(user.name ||
-                    user.username ||
-                    "A")
-                    ?.charAt(0)
-                    .toUpperCase()}
-
+                  {(user.name || user.username || "A")?.charAt(0).toUpperCase()}
                 </div>
-
 
                 <div>
-
-                  <strong>
-                    {user.name ||
-                      user.username ||
-                      "Admin"}
-                  </strong>
-
-                  <small>
-                    {user.email}
-                  </small>
-
+                  <strong>{user.name || user.username || "Admin"}</strong>
+                  <small>{user.email}</small>
                 </div>
 
-
-                <span className="profile-arrow">
-                  ▾
-                </span>
-
+                <span className="profile-arrow">▾</span>
               </button>
 
-
               {showProfile && (
-
                 <div className="admin-dropdown profile-dropdown">
-
                   <div className="profile-dropdown-header">
-
                     <div className="admin-avatar large">
-
-                      {(user.name ||
-                        user.username ||
-                        "A")
-                        ?.charAt(0)
-                        .toUpperCase()}
-
+                      {(user.name || user.username || "A")?.charAt(0).toUpperCase()}
                     </div>
-
 
                     <div>
-
-                      <strong>
-                        {user.name ||
-                          user.username ||
-                          "Admin"}
-                      </strong>
-
-                      <small>
-                        {user.email}
-                      </small>
-
-                      <span>
-                        Role:{" "}
-                        {user.role}
-                      </span>
-
+                      <strong>{user.name || user.username || "Admin"}</strong>
+                      <small>{user.email}</small>
+                      <span>Role: {user.role}</span>
                     </div>
-
                   </div>
 
-
-                  <Link href="/admin">
+                  <Link href="/admin" onClick={() => setShowProfile(false)}>
                     ⚙️ Admin Dashboard
                   </Link>
 
+                  <Link href="/admin/payment" onClick={() => setShowProfile(false)}>
+                    💳 Manajemen Pembayaran
+                  </Link>
 
-                  <Link href="/dashboard">
+                  <Link href="/dashboard" onClick={() => setShowProfile(false)}>
                     👤 Dashboard User
                   </Link>
 
-
-                  <button
-                    onClick={logout}
-                    type="button"
-                  >
+                  <button onClick={logout} type="button">
                     ↪ Keluar
                   </button>
-
                 </div>
-
               )}
-
             </div>
-
           </div>
-
         </header>
 
 
