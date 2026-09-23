@@ -593,10 +593,6 @@ function CheckoutContent() {
           };
 
           localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
-
-          if (typeof window !== "undefined") {
-            window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(fallbackOrdNum)}&amount=${finalTotal}`);
-          }
         } else {
           const d = createResult.data;
           const ordId = Number(d.order_id);
@@ -624,10 +620,6 @@ function CheckoutContent() {
           };
 
           localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
-
-          if (typeof window !== "undefined" && ordNum) {
-            window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(ordNum)}&amount=${finalTotal}`);
-          }
         }
       } catch (err) {
         console.error("Checkout Error:", err);
@@ -639,7 +631,7 @@ function CheckoutContent() {
     }
 
     void fetchCheckout();
-  }, [router, orderNumberParam, amountParam, paketParam, cycleParam, domainParam, priceParam, domainIdParam, adsParam, seoParam, typeParam, packageParam, isNewParam]);
+  }, [orderNumberParam, amountParam, paketParam, cycleParam, domainParam, priceParam, domainIdParam, adsParam, seoParam, typeParam, packageParam, isNewParam]);
 
   /* =========================================================
      POLL PAYMENT STATUS
