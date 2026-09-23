@@ -13,7 +13,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [captchaChecked, setCaptchaChecked] = useState(false);
+  const [captchaChecked, setCaptchaChecked] = useState(true);
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,22 +26,22 @@ function LoginForm() {
         const parsed = JSON.parse(savedUser);
         if (parsed && (parsed.id || parsed.email)) {
           if (redirectParam) {
-            router.replace(redirectParam);
+            window.location.href = redirectParam;
           } else if (
             parsed.role === "admin" ||
             parsed.role === "super_admin" ||
             parsed.role === "superadmin"
           ) {
-            router.replace("/admin");
+            window.location.href = "/admin";
           } else {
-            router.replace("/dashboard");
+            window.location.href = "/dashboard";
           }
         }
       }
     } catch {
       // Abaikan jika json parse error
     }
-  }, [router, redirectParam]);
+  }, [redirectParam]);
 
   const handleCaptchaClick = () => {
     if (captchaChecked) return;
@@ -49,7 +49,7 @@ function LoginForm() {
     setTimeout(() => {
       setCaptchaLoading(false);
       setCaptchaChecked(true);
-    }, 500);
+    }, 300);
   };
 
   async function handleLogin(e: FormEvent) {
@@ -119,9 +119,9 @@ function LoginForm() {
         backendUser.role === "super_admin" ||
         backendUser.role === "superadmin"
       ) {
-        router.push("/admin");
+        window.location.href = "/admin";
       } else {
-        router.push("/dashboard");
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       console.error("Login error:", err);
