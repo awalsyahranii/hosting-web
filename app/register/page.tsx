@@ -120,11 +120,7 @@ function RegisterForm() {
             })
           );
 
-          if (redirectParam) {
-            window.location.href = redirectParam;
-          } else {
-            router.push("/dashboard");
-          }
+          window.location.href = "/dashboard";
           return;
         }
       } catch (loginErr) {

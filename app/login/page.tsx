@@ -112,9 +112,7 @@ function LoginForm() {
       );
 
       // REDIRECTION LOGIC:
-      if (redirectParam) {
-        window.location.href = redirectParam;
-      } else if (
+      if (
         backendUser.role === "admin" ||
         backendUser.role === "super_admin" ||
         backendUser.role === "superadmin"
