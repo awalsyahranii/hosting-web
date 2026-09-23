@@ -1342,12 +1342,7 @@ export default function CartPage() {
                 <button
                   className="cart-checkout-button"
                   onClick={() => {
-                    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-                    if (!savedUser) {
-                      router.push("/login?redirect=/checkout");
-                    } else {
-                      router.push("/checkout");
-                    }
+                    router.push("/checkout");
                   }}
                   disabled={
                     checkoutLoading ||

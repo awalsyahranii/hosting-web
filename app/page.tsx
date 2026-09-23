@@ -788,24 +788,33 @@ export default function Home() {
       .catch((err) => console.error("Gagal memuat artikel beranda:", err));
   }, []);
 
+  const [currentUser, setCurrentUser] = useState<{
+    id?: number;
+    name?: string;
+    username?: string;
+    email?: string;
+    role?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("hostingwebid_user");
+      if (savedUser) {
+        setCurrentUser(JSON.parse(savedUser));
+      }
+    } catch {
+      setCurrentUser(null);
+    }
+  }, []);
+
   const handleBuyAds = (pkg: GoogleAdsPackage) => {
     const targetUrl = `/checkout?ads=${encodeURIComponent(pkg.id)}`;
-    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-    if (!savedUser) {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    } else {
-      router.push(targetUrl);
-    }
+    router.push(targetUrl);
   };
 
   const handleBuyPackage = (planId: string) => {
     const targetUrl = `/checkout?paket=${encodeURIComponent(planId)}&cycle=${billingCycle}`;
-    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-    if (!savedUser) {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    } else {
-      router.push(targetUrl);
-    }
+    router.push(targetUrl);
   };
 
   const handleBuyWebsite = (item: { domain: string; packageTitle?: string; price?: string }) => {
@@ -813,24 +822,14 @@ export default function Home() {
     const targetUrl = `/checkout?type=website&package=${encodeURIComponent(
       item.packageTitle || "Jasa Pembuatan Website"
     )}&price=${rawPrice}&domain=${encodeURIComponent(item.domain)}&new=1`;
-    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-    if (!savedUser) {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    } else {
-      router.push(targetUrl);
-    }
+    router.push(targetUrl);
   };
 
   const handleBuyDomain = (domainName: string, domainId: number | string = 0, price: number | string = "") => {
     const priceQuery = price ? `&price=${encodeURIComponent(price)}` : "";
     const idQuery = domainId ? `&domain_id=${encodeURIComponent(domainId)}` : "";
     const targetUrl = `/checkout?domain=${encodeURIComponent(domainName)}${idQuery}${priceQuery}&new=1`;
-    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-    if (!savedUser) {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    } else {
-      router.push(targetUrl);
-    }
+    router.push(targetUrl);
   };
 
   const scrollSlider = (id: string, offset: number) => {
@@ -987,14 +986,53 @@ export default function Home() {
 
     {/* DESKTOP ACTIONS */}
     <div className="nav-actions">
-      <Link href="/login" className="nav-login">
-        Masuk
-      </Link>
+      {currentUser ? (
+        <>
+          <Link
+            href={
+              currentUser.role === "admin" ||
+              currentUser.role === "super_admin" ||
+              currentUser.role === "superadmin"
+                ? "/admin"
+                : "/dashboard"
+            }
+            className="nav-button"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+          >
+            <span>
+              {currentUser.role === "admin" ||
+              currentUser.role === "super_admin" ||
+              currentUser.role === "superadmin"
+                ? "⚡ Panel Admin"
+                : "👤 Dashboard Saya"}
+            </span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.removeItem("hostingwebid_user");
+              localStorage.removeItem("hostingweb_auth");
+              fetch("/api/backend/auth/logout.php", { credentials: "include" }).catch(() => null);
+              setCurrentUser(null);
+              router.refresh();
+            }}
+            className="nav-login"
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 12px" }}
+          >
+            Keluar
+          </button>
+        </>
+      ) : (
+        <>
+          <Link href="/login" className="nav-login">
+            Masuk
+          </Link>
 
-      <Link href="/register" className="nav-button">
-        Mulai Sekarang
-      </Link>
-
+          <Link href="/register" className="nav-button">
+            Mulai Sekarang
+          </Link>
+        </>
+      )}
     </div>
 
     {/* MOBILE MENU BUTTON */}
@@ -1083,22 +1121,62 @@ export default function Home() {
 
       <div className="mobile-menu-divider" />
 
-      <Link
-        href="/login"
-        className="mobile-login"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Masuk
-      </Link>
+      {currentUser ? (
+        <>
+          <Link
+            href={
+              currentUser.role === "admin" ||
+              currentUser.role === "super_admin" ||
+              currentUser.role === "superadmin"
+                ? "/admin"
+                : "/dashboard"
+            }
+            className="mobile-register"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            {currentUser.role === "admin" ||
+            currentUser.role === "super_admin" ||
+            currentUser.role === "superadmin"
+              ? "⚡ Panel Admin"
+              : "👤 Dashboard Saya"}
+            <span>→</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              localStorage.removeItem("hostingwebid_user");
+              localStorage.removeItem("hostingweb_auth");
+              fetch("/api/backend/auth/logout.php", { credentials: "include" }).catch(() => null);
+              setCurrentUser(null);
+              router.refresh();
+            }}
+            className="mobile-login"
+            style={{ textAlign: "left", width: "100%", background: "none", border: "none", cursor: "pointer" }}
+          >
+            Keluar / Logout
+          </button>
+        </>
+      ) : (
+        <>
+          <Link
+            href="/login"
+            className="mobile-login"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Masuk
+          </Link>
 
-      <Link
-        href="/register"
-        className="mobile-register"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Mulai Sekarang
-        <span>→</span>
-      </Link>
+          <Link
+            href="/register"
+            className="mobile-register"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Mulai Sekarang
+            <span>→</span>
+          </Link>
+        </>
+      )}
 
     </div>
   )}

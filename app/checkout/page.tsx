@@ -392,7 +392,24 @@ function CheckoutContent() {
         setLoading(true);
         setError("");
 
-        const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+        let savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+        if (!savedUser && typeof window !== "undefined") {
+          const authRaw = localStorage.getItem("hostingweb_auth");
+          if (authRaw) {
+            try {
+              const parsedAuth = JSON.parse(authRaw);
+              if (parsedAuth?.loggedIn && parsedAuth?.email) {
+                savedUser = JSON.stringify({
+                  id: parsedAuth.id || 0,
+                  name: parsedAuth.name || parsedAuth.username || parsedAuth.email.split("@")[0],
+                  email: parsedAuth.email,
+                  role: parsedAuth.role || "user",
+                });
+                localStorage.setItem("hostingwebid_user", savedUser);
+              }
+            } catch {}
+          }
+        }
         if (!savedUser) {
           redirectToLogin();
           return;
