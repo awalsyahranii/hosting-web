@@ -402,11 +402,14 @@ function CheckoutContent() {
           }
         }
 
-        // Jika belum login, redirect ke halaman login dengan query redirect
+        // Fallback user jika belum login
         if (!savedUser && typeof window !== "undefined") {
-          const currentUrl = window.location.pathname + window.location.search;
-          router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
-          return;
+          savedUser = JSON.stringify({
+            id: 0,
+            name: "Pelanggan",
+            email: "pelanggan@hostingwebid.com",
+            role: "user",
+          });
         }
 
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
