@@ -214,6 +214,54 @@ export default function AdminServicesPage() {
     keterangan: string;
   } | null>(null);
 
+  // Web Project Progress WhatsApp Modal State (Laporan Progres Website)
+  const [webProgressModal, setWebProgressModal] = useState<{
+    isOpen: boolean;
+    client: string;
+    domain: string;
+    phone: string;
+    progress: number;
+    stage: string;
+    deadline: string;
+    notes: string;
+  } | null>(null);
+
+  const openWebProgressModal = (item: WebProject) => {
+    setWebProgressModal({
+      isOpen: true,
+      client: item.client ? item.client.toUpperCase() : "PELANGGAN",
+      domain: item.domain || "website-klien.id",
+      phone: item.phone || "6285333555976",
+      progress: item.progress || 50,
+      stage: item.stage || "Pengerjaan Desain & Integrasi Fitur",
+      deadline: item.deadline || "14 Hari Kerja",
+      notes: item.notes || "Struktur halaman utama & company profile sudah siap di-review.",
+    });
+  };
+
+  const handleSendWebProgressWA = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!webProgressModal) return;
+    const cleanPhone = webProgressModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
+    const message = `Halo Kak/Tim *${webProgressModal.client}*, 👋
+
+Berikut *Update Progres Pengerjaan Website* Anda:
+🌐 *Domain:* ${webProgressModal.domain}
+
+📊 *Progres:* ${webProgressModal.progress}% Selesai
+🛠️ *Tahapan Saat Ini:* ${webProgressModal.stage}
+🎯 *Target Selesai:* ${webProgressModal.deadline}
+📝 *Catatan:* ${webProgressModal.notes || "-"}
+────────────────────────
+Website Anda terus kami kerjakan dengan standar kecepatan dan keamanan terbaik. ⚡
+
+Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
+
+    const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waLink, "_blank");
+    setWebProgressModal(null);
+  };
+
   const openDailyReportModal = (item: { client: string; domain: string; phone?: string }) => {
     const todayStr = new Intl.DateTimeFormat("id-ID", {
       day: "numeric",
@@ -239,6 +287,8 @@ export default function AdminServicesPage() {
 
   const handleSendDailyReportWA = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!dailyReportModal) return;
+    const cleanPhone = dailyReportModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
     const statusLabel =
       dailyReportModal.statusTayang === "Ya"
         ? "✅ AKTIF & TAYANG (Halaman 1 Google)"
@@ -1222,21 +1272,21 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
 
                               <td className="p-3.5 text-right">
                                 <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                                  <a
-                                    href={waUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded text-[11px] font-bold transition inline-flex items-center gap-1"
+                                  <button
+                                    type="button"
+                                    onClick={() => openWebProgressModal(item)}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition inline-flex items-center gap-1 shadow-sm"
+                                    title="Kirim Laporan Progres Website ke WhatsApp Klien"
                                   >
-                                    <span>📱</span>
-                                    <span>Update WA</span>
-                                  </a>
+                                    <span>🚀</span>
+                                    <span>Update Progres WA</span>
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => setSelectedWeb(item)}
                                     className="px-2.5 py-1 bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 rounded text-[11px] font-bold transition"
                                   >
-                                    Update Progres →
+                                    Edit Data →
                                   </button>
                                 </div>
                               </td>
@@ -1303,22 +1353,19 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                     <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs">
                       <span className="text-slate-400">Target: {project.deadline}</span>
                       <div className="flex items-center gap-2">
-                        <a
-                          href={getWhatsAppUrl(
-                            `Halo Kak *${project.client}*, update website ${project.domain}: Progres ${project.progress}%, Tahap ${project.stage}. Target selesai ${project.deadline}.`
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-[11px]"
+                        <button
+                          type="button"
+                          onClick={() => openWebProgressModal(project)}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition"
                         >
-                          📱 WA
-                        </a>
+                          <span>🚀</span> Update Progres WA
+                        </button>
                         <button
                           type="button"
                           onClick={() => setSelectedWeb(project)}
-                          className="text-orange-600 font-bold hover:underline"
+                          className="text-orange-600 font-bold hover:underline text-[11px]"
                         >
-                          Update Progres →
+                          Edit Data →
                         </button>
                       </div>
                     </div>
@@ -1804,6 +1851,159 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
                 >
                   <span>📲</span>
                   <span>Kirim ke WhatsApp (Buka Chat)</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* =========================================================
+          MODAL 5: KIRIM UPDATE PROGRES WEBSITE KE WA KLIEN
+      ========================================================= */}
+      {webProgressModal && webProgressModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in max-h-[95vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🚀</span>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">Kirim Update Progres Website</h3>
+                  <p className="text-[11px] text-slate-500">Format milestone otomatis ke WhatsApp Klien</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWebProgressModal(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSendWebProgressWA} className="flex flex-col gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Nama Klien / Instansi</label>
+                  <input
+                    type="text"
+                    value={webProgressModal.client}
+                    onChange={(e) => setWebProgressModal({ ...webProgressModal, client: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Domain Website</label>
+                  <input
+                    type="text"
+                    value={webProgressModal.domain}
+                    onChange={(e) => setWebProgressModal({ ...webProgressModal, domain: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Nomor WhatsApp Klien</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 6285333555976"
+                    value={webProgressModal.phone}
+                    onChange={(e) => setWebProgressModal({ ...webProgressModal, phone: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Progres Pengerjaan (%)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="10"
+                      max="100"
+                      step="5"
+                      value={webProgressModal.progress}
+                      onChange={(e) => setWebProgressModal({ ...webProgressModal, progress: Number(e.target.value) })}
+                      className="flex-1 accent-orange-600 cursor-pointer"
+                    />
+                    <strong className="text-orange-600 font-extrabold w-10 text-right">{webProgressModal.progress}%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Tahapan Saat Ini</label>
+                  <input
+                    type="text"
+                    value={webProgressModal.stage}
+                    onChange={(e) => setWebProgressModal({ ...webProgressModal, stage: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Target Selesai / Deadline</label>
+                  <input
+                    type="text"
+                    value={webProgressModal.deadline}
+                    onChange={(e) => setWebProgressModal({ ...webProgressModal, deadline: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Catatan Progres</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Struktur halaman utama & company profile sudah siap di-review."
+                  value={webProgressModal.notes}
+                  onChange={(e) => setWebProgressModal({ ...webProgressModal, notes: e.target.value })}
+                  className="w-full p-2.5 border border-slate-200 rounded-lg text-xs text-slate-900 bg-slate-50 focus:bg-white"
+                />
+              </div>
+
+              {/* PREVIEW PESAN WA */}
+              <div className="mt-2 p-3.5 bg-slate-950 text-slate-100 rounded-xl font-mono text-[11px] leading-relaxed border border-slate-800 shadow-inner">
+                <div className="flex items-center justify-between text-orange-400 font-bold mb-2 pb-1 border-b border-slate-800">
+                  <span>📱 Preview Teks WhatsApp:</span>
+                  <span className="text-[10px] bg-orange-950 px-1.5 py-0.5 rounded text-orange-200">Auto-Format</span>
+                </div>
+                <div className="whitespace-pre-line text-xs">
+                  {`Halo Kak/Tim *${webProgressModal.client || "PELANGGAN"}*, 👋
+
+Berikut *Update Progres Pengerjaan Website* Anda:
+🌐 *Domain:* ${webProgressModal.domain || "website-klien.id"}
+
+📊 *Progres:* ${webProgressModal.progress}% Selesai
+🛠️ *Tahapan Saat Ini:* ${webProgressModal.stage}
+🎯 *Target Selesai:* ${webProgressModal.deadline}
+📝 *Catatan:* ${webProgressModal.notes || "-"}
+────────────────────────
+Website Anda terus kami kerjakan dengan standar kecepatan dan keamanan terbaik. ⚡
+
+Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setWebProgressModal(null)}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-md transition"
+                >
+                  <span>📲</span>
+                  <span>Kirim Update ke WhatsApp Klien</span>
                 </button>
               </div>
             </form>
