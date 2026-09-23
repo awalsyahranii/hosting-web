@@ -811,9 +811,11 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    let timerIds: NodeJS.Timeout[] = [];
+
     const scrollToTargetSection = () => {
       let targetId = "";
-      const hash = window.location.hash.replace("#", "").trim();
+      const hash = (window.location.hash || "").replace("#", "").trim();
       const params = new URLSearchParams(window.location.search);
       const sectionParam = (params.get("section") || params.get("scroll") || "").trim();
 
@@ -828,55 +830,39 @@ export default function Home() {
       }
 
       if (targetId) {
-        const tryScroll = (attempts = 0) => {
+        const doScroll = () => {
           const element = document.getElementById(targetId);
           if (element) {
-            const headerOffset = 80;
-            const elementPosition = element.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-            window.scrollTo({
-              top: Math.max(0, offsetPosition),
-              behavior: "smooth",
-            });
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
             if (targetId === "domain") {
               const domainInput = document.getElementById("domainQuery");
               if (domainInput) {
                 domainInput.focus();
               }
             }
-          } else if (attempts < 12) {
-            setTimeout(() => tryScroll(attempts + 1), 100);
           }
         };
 
-        setTimeout(() => tryScroll(), 150);
+        // Scroll immediately and keep retrying as images/fonts load
+        doScroll();
+        timerIds.push(setTimeout(doScroll, 100));
+        timerIds.push(setTimeout(doScroll, 300));
+        timerIds.push(setTimeout(doScroll, 600));
+        timerIds.push(setTimeout(doScroll, 1000));
+        timerIds.push(setTimeout(doScroll, 1500));
       }
     };
 
     scrollToTargetSection();
     window.addEventListener("hashchange", scrollToTargetSection);
-    return () => window.removeEventListener("hashchange", scrollToTargetSection);
+    return () => {
+      timerIds.forEach((t) => clearTimeout(t));
+      window.removeEventListener("hashchange", scrollToTargetSection);
+    };
   }, []);
 
   const navigateWithAuth = (targetUrl: string) => {
-    let isLoggedIn = false;
-    try {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("hostingwebid_user");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && (parsed.id || parsed.email)) {
-            isLoggedIn = true;
-          }
-        }
-      }
-    } catch {}
-
-    if (isLoggedIn) {
-      router.push(targetUrl);
-    } else {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    }
+    router.push(targetUrl);
   };
 
   const handleBuyAds = (pkg: GoogleAdsPackage) => {

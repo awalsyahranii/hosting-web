@@ -17,25 +17,7 @@ export default function JasaSeoPage() {
     const targetUrl = `/checkout?type=seo&package=${encodeURIComponent(
       pkg.name
     )}&price=${pkg.price}&domain=${encodeURIComponent(`Paket ${pkg.name}`)}`;
-    
-    let isLoggedIn = false;
-    try {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("hostingwebid_user");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && (parsed.id || parsed.email)) {
-            isLoggedIn = true;
-          }
-        }
-      }
-    } catch {}
-
-    if (isLoggedIn) {
-      router.push(targetUrl);
-    } else {
-      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
-    }
+    router.push(targetUrl);
   };
 
   useEffect(() => {
