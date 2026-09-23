@@ -239,18 +239,24 @@ export default function AdminServicesPage() {
 
   const handleSendDailyReportWA = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!dailyReportModal) return;
-    const cleanPhone = dailyReportModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
-    const message = `Hi ${dailyReportModal.client},
+    const statusLabel =
+      dailyReportModal.statusTayang === "Ya"
+        ? "✅ AKTIF & TAYANG (Halaman 1 Google)"
+        : `⚡ ${dailyReportModal.statusTayang}`;
 
-Berikut update report harian iklan Anda untuk website ${dailyReportModal.website} :
+    const message = `Halo Kak/Tim *${dailyReportModal.client}*, 👋
 
-Tanggal: ${dailyReportModal.date}
-Iklan Tayang ?: ${dailyReportModal.statusTayang}
-Keterangan: ${dailyReportModal.keterangan}
----
+Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
+🌐 *Website:* ${dailyReportModal.website}
 
-Terima Kasih`;
+📅 *Tanggal:* ${dailyReportModal.date}
+🟢 *Status Iklan Tayang:* ${statusLabel}
+⚡ *Performa:* Berjalan Optimal & Menjangkau Calon Pembeli
+📝 *Keterangan:* ${dailyReportModal.keterangan || "-"}
+────────────────────────
+Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. 🚀
+
+Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
 
     const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     window.open(waLink, "_blank");
@@ -1763,17 +1769,24 @@ Terima Kasih`;
                   <span>📱 Preview Teks WhatsApp:</span>
                   <span className="text-[10px] bg-emerald-800 px-1.5 py-0.5 rounded text-emerald-200">Auto-Format</span>
                 </div>
-                <div className="whitespace-pre-line">
-                  {`Hi ${dailyReportModal.client || "PELANGGAN"},
+                <div className="whitespace-pre-line text-xs">
+                  {`Halo Kak/Tim *${dailyReportModal.client || "PELANGGAN"}*, 👋
 
-Berikut update report harian iklan Anda untuk website ${dailyReportModal.website || "https://..."} :
+Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
+🌐 *Website:* ${dailyReportModal.website || "https://..."}
 
-Tanggal: ${dailyReportModal.date}
-Iklan Tayang ?: ${dailyReportModal.statusTayang}
-Keterangan: ${dailyReportModal.keterangan || "-"}
----
+📅 *Tanggal:* ${dailyReportModal.date}
+🟢 *Status Iklan Tayang:* ${
+                    dailyReportModal.statusTayang === "Ya"
+                      ? "✅ AKTIF & TAYANG (Halaman 1 Google)"
+                      : `⚡ ${dailyReportModal.statusTayang}`
+                  }
+⚡ *Performa:* Berjalan Optimal & Menjangkau Calon Pembeli
+📝 *Keterangan:* ${dailyReportModal.keterangan || "-"}
+────────────────────────
+Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. 🚀
 
-Terima Kasih`}
+Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
                 </div>
               </div>
 
