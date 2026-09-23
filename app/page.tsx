@@ -807,14 +807,35 @@ export default function Home() {
     }
   }, []);
 
+  const navigateWithAuth = (targetUrl: string) => {
+    let isLoggedIn = false;
+    try {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("hostingwebid_user");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && (parsed.id || parsed.email)) {
+            isLoggedIn = true;
+          }
+        }
+      }
+    } catch {}
+
+    if (isLoggedIn) {
+      router.push(targetUrl);
+    } else {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    }
+  };
+
   const handleBuyAds = (pkg: GoogleAdsPackage) => {
     const targetUrl = `/checkout?ads=${encodeURIComponent(pkg.id)}`;
-    router.push(targetUrl);
+    navigateWithAuth(targetUrl);
   };
 
   const handleBuyPackage = (planId: string) => {
     const targetUrl = `/checkout?paket=${encodeURIComponent(planId)}&cycle=${billingCycle}`;
-    router.push(targetUrl);
+    navigateWithAuth(targetUrl);
   };
 
   const handleBuyWebsite = (item: { domain: string; packageTitle?: string; price?: string }) => {
@@ -822,14 +843,14 @@ export default function Home() {
     const targetUrl = `/checkout?type=website&package=${encodeURIComponent(
       item.packageTitle || "Jasa Pembuatan Website"
     )}&price=${rawPrice}&domain=${encodeURIComponent(item.domain)}&new=1`;
-    router.push(targetUrl);
+    navigateWithAuth(targetUrl);
   };
 
   const handleBuyDomain = (domainName: string, domainId: number | string = 0, price: number | string = "") => {
     const priceQuery = price ? `&price=${encodeURIComponent(price)}` : "";
     const idQuery = domainId ? `&domain_id=${encodeURIComponent(domainId)}` : "";
     const targetUrl = `/checkout?domain=${encodeURIComponent(domainName)}${idQuery}${priceQuery}&new=1`;
-    router.push(targetUrl);
+    navigateWithAuth(targetUrl);
   };
 
   const scrollSlider = (id: string, offset: number) => {

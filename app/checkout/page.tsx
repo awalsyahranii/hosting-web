@@ -402,6 +402,13 @@ function CheckoutContent() {
           }
         }
 
+        // Jika belum login, redirect ke halaman login dengan query redirect
+        if (!savedUser && typeof window !== "undefined") {
+          const currentUrl = window.location.pathname + window.location.search;
+          router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+          return;
+        }
+
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
         if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
           orderCreationLockRef.current = true;
