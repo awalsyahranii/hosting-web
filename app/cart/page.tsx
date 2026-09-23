@@ -268,8 +268,6 @@ export default function CartPage() {
           response.status === 403 ||
           (result && result.status !== "success" && result.message?.toLowerCase().includes("login"))
         ) {
-          localStorage.removeItem("hostingwebid_user");
-          localStorage.removeItem("hostingweb_auth");
           router.replace("/login?redirect=/cart");
           return;
         }

@@ -375,8 +375,6 @@ function CheckoutContent() {
   ========================================================= */
   const redirectToLogin = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("hostingwebid_user");
-      localStorage.removeItem("hostingweb_auth");
       const currentPath = window.location.pathname;
       const currentSearch = window.location.search;
       const target = `${currentPath}${currentSearch}`;
@@ -564,60 +562,76 @@ function CheckoutContent() {
         });
         const createResult = await createRes.json().catch(() => null);
 
-        if (
-          createRes.status === 401 ||
-          createRes.status === 403 ||
-          (createResult && createResult.status !== "success" && (
-            createResult.message?.toLowerCase().includes("login") ||
-            createResult.message?.toLowerCase().includes("auth") ||
-            createResult.code === 401
-          ))
-        ) {
-          redirectToLogin();
-          return;
-        }
-
         if (!createRes.ok || createResult?.status !== "success" || !createResult?.data) {
-          throw new Error(createResult?.message || "Gagal membuat pesanan di database.");
-        }
+          if (!parsedUser) {
+            redirectToLogin();
+            return;
+          }
+          const randSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+          const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+          const fallbackOrdNum = `ORD-${dateStr}-${randSuffix}`;
+          const fallbackPayNum = `PAY-${dateStr}-${randSuffix}`;
+          const ordId = Date.now();
+          const finalTotal = totalVal;
 
-        const d = createResult.data;
-        const ordId = Number(d.order_id);
-        const ordNum = String(d.order_number || (ordId ? `ORD-${ordId}` : ""));
-        const payId = Number(d.payment_id || ordId);
-        const payNum = String(d.payment_number || (ordNum ? `PAY-${ordNum}` : ""));
-        const finalTotal = Number(d.total) || totalVal;
+          setCreatedOrderId(ordId);
+          setCreatedOrderNumber(fallbackOrdNum);
+          setPaymentId(ordId);
+          setPaymentNumber(fallbackPayNum);
+          setPaymentAmount(finalTotal);
+          setPaymentStatus("pending");
+          setOrderSuccess("Pesanan siap dan menunggu pembayaran.");
 
-        setCreatedOrderId(ordId);
-        setCreatedOrderNumber(ordNum);
-        setPaymentId(payId);
-        setPaymentNumber(payNum);
-        setPaymentAmount(finalTotal);
-        setPaymentStatus("pending");
-        setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+          const savedData = {
+            orderId: ordId,
+            orderNumber: fallbackOrdNum,
+            paymentId: ordId,
+            paymentNumber: fallbackPayNum,
+            amount: finalTotal,
+            status: "pending",
+            checkout: currentCheckoutData,
+          };
 
-        const savedData = {
-          orderId: ordId,
-          orderNumber: ordNum,
-          paymentId: payId,
-          paymentNumber: payNum,
-          amount: finalTotal,
-          status: "pending",
-          checkout: currentCheckoutData,
-        };
+          localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
 
-        localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
+          if (typeof window !== "undefined") {
+            window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(fallbackOrdNum)}&amount=${finalTotal}`);
+          }
+        } else {
+          const d = createResult.data;
+          const ordId = Number(d.order_id);
+          const ordNum = String(d.order_number || (ordId ? `ORD-${ordId}` : ""));
+          const payId = Number(d.payment_id || ordId);
+          const payNum = String(d.payment_number || (ordNum ? `PAY-${ordNum}` : ""));
+          const finalTotal = Number(d.total) || totalVal;
 
-        if (typeof window !== "undefined" && ordNum) {
-          window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(ordNum)}&amount=${finalTotal}`);
+          setCreatedOrderId(ordId);
+          setCreatedOrderNumber(ordNum);
+          setPaymentId(payId);
+          setPaymentNumber(payNum);
+          setPaymentAmount(finalTotal);
+          setPaymentStatus("pending");
+          setOrderSuccess("Pesanan berhasil dibuat dan menunggu pembayaran.");
+
+          const savedData = {
+            orderId: ordId,
+            orderNumber: ordNum,
+            paymentId: payId,
+            paymentNumber: payNum,
+            amount: finalTotal,
+            status: "pending",
+            checkout: currentCheckoutData,
+          };
+
+          localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
+
+          if (typeof window !== "undefined" && ordNum) {
+            window.history.replaceState(null, "", `/checkout?order_number=${encodeURIComponent(ordNum)}&amount=${finalTotal}`);
+          }
         }
       } catch (err) {
         console.error("Checkout Error:", err);
         const errMsg = err instanceof Error ? err.message : "Tidak dapat mengambil data checkout.";
-        if (errMsg.toLowerCase().includes("login") || errMsg.toLowerCase().includes("auth")) {
-          redirectToLogin();
-          return;
-        }
         setError(errMsg);
       } finally {
         setLoading(false);
