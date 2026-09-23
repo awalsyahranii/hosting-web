@@ -336,8 +336,8 @@ function CheckoutContent() {
   // 24-Hour Countdown Timer State (Ticking dynamically)
   const [timeLeft, setTimeLeft] = useState<number>(23 * 3600 + 59 * 60 + 59);
 
-  // Security CAPTCHA Checkbox State ("Saya bukan robot")
-  const [isRobotVerified, setIsRobotVerified] = useState<boolean>(false);
+  // Security Checkbox State
+  const [isRobotVerified, setIsRobotVerified] = useState<boolean>(true);
 
   useEffect(() => {
     const storageKey = `hostingwebid_deadline_${createdOrderNumber || "default"}`;
@@ -1076,9 +1076,11 @@ function CheckoutContent() {
     const ordNum = createdOrderNumber || "ORD-TERBARU";
     const payNum = paymentNumber || "PAY-TERBARU";
     const amt = rupiah(calculatedTotal);
-    const text = `Halo Admin HostingWeb, saya ingin konfirmasi pembayaran untuk:\n- Nomor Order: ${ordNum}\n- Nomor Payment: ${payNum}\n- Total: ${amt}\n- Durasi: ${durationYears} Tahun\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk diproses dan diaktifkan. Terima kasih!`;
+    const itemName = checkout?.items[0]?.domain_name || "Layanan Hosting / Website";
+    const itemSpecs = checkout?.items[0]?.extension || "";
+    const text = `Halo Admin HostingWeb, saya ingin konfirmasi pemesanan & pembayaran:\n\n📦 *Layanan:* ${itemName}\nℹ️ *Detail:* ${itemSpecs}\n🔢 *Nomor Order:* ${ordNum}\n💳 *Nomor Payment:* ${payNum}\n💰 *Total Pembayaran:* ${amt} (${durationYears} Tahun)\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk segera diproses & diaktifkan. Terima kasih!`;
     return getWhatsAppUrl(text);
-  }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears]);
+  }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears, checkout]);
 
   if (loading) {
     return (
@@ -1524,38 +1526,28 @@ function CheckoutContent() {
                         </div>
                         <div className="payment-confirm-content">
                           <strong className="payment-confirm-title">
-                            Saya telah melakukan pembayaran & siap konfirmasi
+                            Saya telah melakukan pembayaran &amp; siap konfirmasi
                           </strong>
                           <p className="payment-confirm-desc">
-                            Centang di sini jika Anda sudah mentransfer pembayaran sesuai nominal.
+                            Klik tombol di bawah untuk kirim bukti transfer ke WhatsApp Admin.
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* WHATSAPP ACTION BUTTON (LOCKED UNTIL CONFIRMED) */}
+                    {/* WHATSAPP ACTION BUTTON */}
                     <a
-                      href={isRobotVerified ? whatsappUrl : undefined}
-                      target={isRobotVerified ? "_blank" : undefined}
-                      rel={isRobotVerified ? "noopener noreferrer" : undefined}
-                      className={`btn-checkout-primary whatsapp-btn ${!isRobotVerified ? "btn-locked-wa" : ""}`}
-                      onClick={(e) => {
-                        if (!isRobotVerified) {
-                          e.preventDefault();
-                        } else {
-                          void handleConfirmPaymentWA();
-                        }
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-checkout-primary whatsapp-btn"
+                      onClick={() => {
+                        void handleConfirmPaymentWA();
                       }}
-                      title={!isRobotVerified ? "Centang konfirmasi pembayaran di atas terlebih dahulu" : "Kirim struk konfirmasi ke WhatsApp"}
+                      title="Kirim struk konfirmasi ke WhatsApp Admin"
                     >
-                      {isRobotVerified ? "Sudah Bayar? Konfirmasi WA →" : "🔒 Centang Konfirmasi untuk Lanjut ke WA"}
+                      <span>💬 Sudah Bayar? Konfirmasi WA Admin →</span>
                     </a>
-
-                    {!isRobotVerified && (
-                      <div className="captcha-helper-warning">
-                        <span>ℹ️ Centang kotak di atas jika sudah melakukan transfer agar tombol WhatsApp aktif.</span>
-                      </div>
-                    )}
 
                     <div className="timer-countdown-box">
                       <span className="timer-label">SELESAIKAN PEMBAYARAN DALAM</span>
