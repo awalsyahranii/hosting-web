@@ -276,7 +276,7 @@ function LoginForm() {
             {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              disabled={loading || !captchaChecked}
+              disabled={loading}
               className="auth-submit-btn"
             >
               {loading ? (
@@ -290,11 +290,26 @@ function LoginForm() {
             </button>
           </form>
 
+          {/* JIKA MEMILIKI REDIRECT CHECKOUT / PESANAN */}
+          {redirectParam && (
+            <div className="mt-4 p-3 rounded-2xl bg-orange-50 border border-orange-200 text-orange-950 text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold">Ingin langsung bayar tanpa login?</span>
+                <a
+                  href={redirectParam}
+                  className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs whitespace-nowrap shadow-xs transition"
+                >
+                  Langsung Checkout →
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* REGISTER LINK */}
           <div className="auth-bottom-section">
             <div className="auth-register-text">
               Belum punya akun?{" "}
-              <Link href="/register" className="auth-register-link">
+              <Link href={redirectParam ? `/register?redirect=${encodeURIComponent(redirectParam)}` : "/register"} className="auth-register-link">
                 Daftar sekarang
               </Link>
             </div>
