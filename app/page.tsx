@@ -807,6 +807,34 @@ export default function Home() {
     }
   }, []);
 
+  // Handle smooth scroll to section on hash navigation (e.g. /#pricing or /#domain from Dashboard)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollToHash = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        const id = hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+            if (id === "domain") {
+              const domainInput = document.getElementById("domainQuery");
+              if (domainInput) {
+                domainInput.focus();
+              }
+            }
+          }, 200);
+        }
+      }
+    };
+
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
+
   const navigateWithAuth = (targetUrl: string) => {
     let isLoggedIn = false;
     try {
