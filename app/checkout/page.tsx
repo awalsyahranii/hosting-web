@@ -373,16 +373,6 @@ function CheckoutContent() {
   /* =========================================================
      LOAD INITIAL CHECKOUT DATA (DIRECT 1-STEP CHECKOUT)
   ========================================================= */
-  const redirectToLogin = () => {
-    if (typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
-      const currentSearch = window.location.search;
-      const target = `${currentPath}${currentSearch}`;
-      router.replace(`/login?redirect=${encodeURIComponent(target)}`);
-    } else {
-      router.replace("/login?redirect=/checkout");
-    }
-  };
 
   useEffect(() => {
     async function fetchCheckout() {
