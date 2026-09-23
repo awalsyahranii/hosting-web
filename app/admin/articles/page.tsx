@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
@@ -53,6 +53,8 @@ export default function AdminArticlesPage() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
+  const [editorMode, setEditorMode] = useState<"visual" | "html">("visual");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Form Fields
   const [formId, setFormId] = useState<number | null>(null);
@@ -65,6 +67,9 @@ export default function AdminArticlesPage() {
   const [formExcerpt, setFormExcerpt] = useState("");
   const [formContent, setFormContent] = useState("");
   const [formStatus, setFormStatus] = useState<"published" | "draft">("published");
+
+  // Ref untuk ContentEditable Visual Editor
+  const visualEditorRef = useRef<HTMLDivElement>(null);
 
   // Delete Confirmation Modal
   const [deleteTarget, setDeleteTarget] = useState<ArticleItem | null>(null);
@@ -133,6 +138,43 @@ export default function AdminArticlesPage() {
     }
   };
 
+  // Upload Thumbnail Langsung dari Komputer
+  const handleUploadThumbnail = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setUploadingImage(true);
+      const res = await fetch("/api/backend/admin/article/upload.php", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (res.ok && json.status === "success" && json.data?.url) {
+        setFormThumbnail(json.data.url);
+        showToast("success", "Gambar thumbnail berhasil diupload!");
+      } else {
+        showToast("error", json.message || "Gagal mengunggah gambar.");
+      }
+    } catch (err) {
+      showToast("error", "Terjadi kesalahan saat upload gambar.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Visual Formatting Helper (ExecCommand ala WordPress/Word)
+  const execFormat = (command: string, value: string = "") => {
+    document.execCommand(command, false, value);
+    if (visualEditorRef.current) {
+      setFormContent(visualEditorRef.current.innerHTML);
+    }
+  };
+
   const openCreateModal = () => {
     setModalMode("create");
     setFormId(null);
@@ -140,13 +182,21 @@ export default function AdminArticlesPage() {
     setFormSlug("");
     setFormCategory("Web Hosting");
     setCustomCategory("");
-    setFormAuthor(currentUser?.name || "Tim HostingWeb ID");
-    setFormThumbnail("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80");
+    setFormAuthor(currentUser?.name || currentUser?.username || "Tim HostingWeb ID");
+    setFormThumbnail("");
     setFormExcerpt("");
-    setFormContent(`<h2>1. Pengantar</h2>\n<p>Tulis paragraf pembuka artikel Anda di sini dengan bahasa yang informatif dan menarik pembaca.</p>\n\n<h2>2. Pembahasan Utama</h2>\n<p>Jelaskan langkah-langkah, tips praktis, atau solusi yang Anda tawarkan secara terstruktur.</p>\n\n<h2>3. Kesimpulan</h2>\n<p>Berikan ringkasan poin penting dan ajakan untuk mencoba layanan terbaik.</p>`);
+    const defaultContent = `<h2>1. Pengantar</h2>\n<p>Tulis paragraf pembuka artikel Anda di sini dengan bahasa yang informatif dan menarik pembaca.</p>\n\n<h2>2. Pembahasan Utama</h2>\n<p>Jelaskan langkah-langkah, tips praktis, atau solusi yang Anda tawarkan secara terstruktur.</p>\n\n<h2>3. Kesimpulan</h2>\n<p>Berikan ringkasan poin penting dan ajakan untuk mencoba layanan terbaik.</p>`;
+    setFormContent(defaultContent);
     setFormStatus("published");
     setActiveTab("editor");
+    setEditorMode("visual");
     setIsModalOpen(true);
+
+    setTimeout(() => {
+      if (visualEditorRef.current) {
+        visualEditorRef.current.innerHTML = defaultContent;
+      }
+    }, 100);
   };
 
   const openEditModal = (art: ArticleItem) => {
@@ -156,13 +206,20 @@ export default function AdminArticlesPage() {
     setFormSlug(art.slug);
     setFormCategory(art.category);
     setCustomCategory("");
-    setFormAuthor(art.author);
-    setFormThumbnail(art.thumbnail);
-    setFormExcerpt(art.excerpt);
-    setFormContent(art.content);
+    setFormAuthor(art.author || currentUser?.name || "Tim HostingWeb ID");
+    setFormThumbnail(art.thumbnail || "");
+    setFormExcerpt(art.excerpt || "");
+    setFormContent(art.content || "");
     setFormStatus(art.status === "published" ? "published" : "draft");
     setActiveTab("editor");
+    setEditorMode("visual");
     setIsModalOpen(true);
+
+    setTimeout(() => {
+      if (visualEditorRef.current) {
+        visualEditorRef.current.innerHTML = art.content || "";
+      }
+    }, 100);
   };
 
   const handleSaveArticle = async (e: React.FormEvent) => {
@@ -170,6 +227,12 @@ export default function AdminArticlesPage() {
     if (!formTitle.trim()) {
       showToast("error", "Judul artikel wajib diisi.");
       return;
+    }
+
+    // Ambil konten terbaru dari visual editor jika sedang di tab editor visual
+    let finalContent = formContent;
+    if (editorMode === "visual" && visualEditorRef.current) {
+      finalContent = visualEditorRef.current.innerHTML;
     }
 
     try {
@@ -182,9 +245,9 @@ export default function AdminArticlesPage() {
         slug: formSlug.trim(),
         category: finalCategory,
         author: formAuthor.trim(),
-        thumbnail: formThumbnail.trim(),
-        excerpt: formExcerpt.trim(),
-        content: formContent.trim(),
+        thumbnail: formThumbnail.trim() || "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800",
+        excerpt: formExcerpt.trim() || formTitle.trim(),
+        content: finalContent.trim(),
         status: formStatus,
       };
 
@@ -201,7 +264,7 @@ export default function AdminArticlesPage() {
       });
 
       const json = await res.json();
-      if (!res.ok || json.status !== "success") {
+      if (!res.ok || (json.status !== "success" && json.code !== 200 && json.code !== 201)) {
         throw new Error(json.message || "Gagal menyimpan artikel.");
       }
 
@@ -299,11 +362,10 @@ export default function AdminArticlesPage() {
       {toast && (
         <div className="fixed bottom-6 right-6 z-[9999] animate-fade-in">
           <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold ${
-              toast.type === "success"
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold ${toast.type === "success"
                 ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/20"
                 : "bg-rose-600 text-white border-rose-500 shadow-rose-600/20"
-            }`}
+              }`}
           >
             <span>{toast.type === "success" ? "✓" : "⚠️"}</span>
             <span>{toast.message}</span>
@@ -400,27 +462,24 @@ export default function AdminArticlesPage() {
               <button
                 type="button"
                 onClick={() => setStatusFilter("all")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                  statusFilter === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${statusFilter === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
                 Semua ({articles.length})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter("published")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                  statusFilter === "published" ? "bg-white text-emerald-700 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${statusFilter === "published" ? "bg-white text-emerald-700 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
                 Published ({articles.filter((a) => a.status === "published").length})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter("draft")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                  statusFilter === "draft" ? "bg-white text-amber-700 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${statusFilter === "draft" ? "bg-white text-amber-700 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                  }`}
               >
                 Draft ({articles.filter((a) => a.status === "draft").length})
               </button>
@@ -488,9 +547,18 @@ export default function AdminArticlesPage() {
                             <strong className="text-slate-900 block font-bold text-xs line-clamp-2 hover:text-orange-600 transition">
                               {art.title}
                             </strong>
-                            <span className="text-[10px] text-slate-400 font-mono block truncate">
-                              /{art.slug}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] text-slate-400 font-mono block truncate">
+                                /{art.slug}
+                              </span>
+                              <Link
+                                href={`/blog/${art.slug}`}
+                                target="_blank"
+                                className="text-[10px] text-orange-600 hover:text-orange-800 font-bold inline-flex items-center gap-0.5 hover:underline"
+                              >
+                                Buka ↗
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -512,11 +580,10 @@ export default function AdminArticlesPage() {
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(art)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition ${
-                            art.status === "published"
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider transition ${art.status === "published"
                               ? "bg-emerald-100 text-emerald-800 border border-emerald-200 hover:bg-emerald-200"
                               : "bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200"
-                          }`}
+                            }`}
                           title="Klik untuk mengubah status tayang"
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${art.status === "published" ? "bg-emerald-600" : "bg-amber-600"}`} />
@@ -531,7 +598,7 @@ export default function AdminArticlesPage() {
 
                       {/* TANGGAL */}
                       <td className="py-3.5 px-4 text-slate-500 text-[11px]">
-                        {art.created_at.slice(0, 10)}
+                        {art.created_at ? art.created_at.slice(0, 10) : "-"}
                       </td>
 
                       {/* AKSI BUTTONS */}
@@ -540,18 +607,20 @@ export default function AdminArticlesPage() {
                           <Link
                             href={`/blog/${art.slug}`}
                             target="_blank"
-                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 rounded-lg transition font-bold text-[11px] flex items-center gap-1"
                             title="Preview di Halaman Blog"
                           >
-                            👁️
+                            <span>👁️</span>
+                            <span className="hidden sm:inline">Lihat</span>
                           </Link>
                           <button
                             type="button"
                             onClick={() => openEditModal(art)}
-                            className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition font-bold"
+                            className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg transition font-bold text-[11px] flex items-center gap-1"
                             title="Edit Artikel"
                           >
-                            ✏️ Edit
+                            <span>✏️</span>
+                            <span className="hidden sm:inline">Edit</span>
                           </button>
                           <button
                             type="button"
@@ -577,15 +646,15 @@ export default function AdminArticlesPage() {
       ========================================================= */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm overflow-y-auto animate-fade-in">
-          <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+          <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
             {/* MODAL HEADER */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
               <div>
                 <h3 className="text-lg font-black text-slate-900">
                   {modalMode === "create" ? "➕ Tulis Artikel Baru" : "✏️ Edit Artikel"}
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Lengkapi informasi judul, kategori, thumbnail, dan isi artikel website Anda.
+                  Visual Editor — tulis artikel langsung tanpa perlu mengetik kode HTML.
                 </p>
               </div>
 
@@ -594,20 +663,23 @@ export default function AdminArticlesPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab("editor")}
-                    className={`px-3 py-1 rounded-lg transition ${
-                      activeTab === "editor" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                    className={`px-3 py-1 rounded-lg transition ${activeTab === "editor" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                      }`}
                   >
-                    Editor HTML
+                    ✏️ Form Editor
                   </button>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("preview")}
-                    className={`px-3 py-1 rounded-lg transition ${
-                      activeTab === "preview" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
-                    }`}
+                    onClick={() => {
+                      if (visualEditorRef.current) {
+                        setFormContent(visualEditorRef.current.innerHTML);
+                      }
+                      setActiveTab("preview");
+                    }}
+                    className={`px-3 py-1 rounded-lg transition ${activeTab === "preview" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
+                      }`}
                   >
-                    Live Preview
+                    👁️ Live Preview
                   </button>
                 </div>
 
@@ -622,7 +694,7 @@ export default function AdminArticlesPage() {
             </div>
 
             {/* MODAL BODY */}
-            <form onSubmit={handleSaveArticle} className="p-6 overflow-y-auto flex-1 space-y-5">
+            <form onSubmit={handleSaveArticle} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
               {activeTab === "editor" ? (
                 <>
                   {/* JUDUL & SLUG */}
@@ -651,7 +723,7 @@ export default function AdminArticlesPage() {
                         value={formSlug}
                         onChange={(e) => setFormSlug(e.target.value)}
                         required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-slate-50"
                       />
                     </div>
                   </div>
@@ -663,7 +735,7 @@ export default function AdminArticlesPage() {
                       <select
                         value={formCategory}
                         onChange={(e) => setFormCategory(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-white"
                       >
                         <option value="Web Hosting">Web Hosting</option>
                         <option value="Tips SEO">Tips SEO</option>
@@ -697,31 +769,73 @@ export default function AdminArticlesPage() {
                     </div>
                   </div>
 
-                  {/* THUMBNAIL URL & PRESETS */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      URL Gambar Thumbnail (Unsplash / Gambar Web)
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="url"
-                        placeholder="https://images.unsplash.com/..."
-                        value={formThumbnail}
-                        onChange={(e) => setFormThumbnail(e.target.value)}
-                        required
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-orange-500 focus:outline-none"
-                      />
+                  {/* UPLOAD THUMBNAIL LANGSUNG DARI KOMPUTER */}
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-800">
+                        🖼️ Gambar Thumbnail Artikel
+                      </label>
+                      <span className="text-[10px] text-slate-400">Upload dari komputer atau masukkan link URL</span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                      {/* Live Image Preview */}
+                      {formThumbnail ? (
+                        <div className="relative group shrink-0">
+                          <img
+                            src={formThumbnail}
+                            alt="Preview Thumbnail"
+                            className="w-28 h-20 object-cover rounded-xl border border-slate-300 shadow-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setFormThumbnail("")}
+                            className="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-md hover:bg-rose-700"
+                            title="Hapus gambar"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-28 h-20 bg-white rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 text-[10px] shrink-0">
+                          <span>Belum ada foto</span>
+                        </div>
+                      )}
+
+                      {/* File Uploader & Direct Input */}
+                      <div className="flex-1 space-y-2 w-full">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleUploadThumbnail}
+                            className="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-700 cursor-pointer"
+                          />
+                        </div>
+                        {uploadingImage && (
+                          <p className="text-xs text-orange-600 font-bold animate-pulse">
+                            ⏳ Mengunggah foto ke server...
+                          </p>
+                        )}
+                        <input
+                          type="url"
+                          placeholder="Atau tempel link URL gambar (opsional)..."
+                          value={formThumbnail}
+                          onChange={(e) => setFormThumbnail(e.target.value)}
+                          className="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-orange-500 bg-white"
+                        />
+                      </div>
                     </div>
 
                     {/* PRESET CHIPS */}
-                    <div className="flex items-center gap-1.5 flex-wrap pt-2">
-                      <span className="text-[10px] text-slate-400 font-bold">Pilih Cepat:</span>
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-200/60">
+                      <span className="text-[10px] text-slate-400 font-bold">Pilihan Cepat:</span>
                       {presetThumbnails.map((p) => (
                         <button
                           key={p.label}
                           type="button"
                           onClick={() => setFormThumbnail(p.url)}
-                          className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-orange-100 hover:text-orange-700 border border-slate-200 text-[10px] font-semibold text-slate-600 transition"
+                          className="px-2 py-0.5 rounded-md bg-white hover:bg-orange-100 hover:text-orange-700 border border-slate-200 text-[10px] font-semibold text-slate-600 transition"
                         >
                           {p.label}
                         </button>
@@ -743,24 +857,176 @@ export default function AdminArticlesPage() {
                     />
                   </div>
 
-                  {/* CONTENT (HTML FORMAT) */}
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-bold text-slate-700">
-                        Isi Konten Artikel <span className="text-rose-500">*</span>
+                  {/* VISUAL RICH TEXT EDITOR (ALA WORDPRESS) */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800">
+                        ✍️ Isi Konten Artikel <span className="text-rose-500">*</span>
                       </label>
-                      <div className="flex gap-1.5 text-[10px] text-slate-500">
-                        <span>Mendukung tag: &lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;code&gt;</span>
+                      <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editorMode === "html" && visualEditorRef.current) {
+                              visualEditorRef.current.innerHTML = formContent;
+                            }
+                            setEditorMode("visual");
+                          }}
+                          className={`px-2.5 py-0.5 rounded-md transition ${editorMode === "visual" ? "bg-white text-orange-600 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                            }`}
+                        >
+                          Visual (WordPress)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (editorMode === "visual" && visualEditorRef.current) {
+                              setFormContent(visualEditorRef.current.innerHTML);
+                            }
+                            setEditorMode("html");
+                          }}
+                          className={`px-2.5 py-0.5 rounded-md transition ${editorMode === "html" ? "bg-white text-orange-600 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                            }`}
+                        >
+                          Kode HTML
+                        </button>
                       </div>
                     </div>
-                    <textarea
-                      rows={10}
-                      placeholder="Tulis artikel menggunakan format HTML..."
-                      value={formContent}
-                      onChange={(e) => setFormContent(e.target.value)}
-                      required
-                      className="w-full px-3.5 py-3 rounded-xl border border-slate-300 text-xs font-mono leading-relaxed focus:ring-2 focus:ring-orange-500 focus:outline-none"
-                    />
+
+                    {editorMode === "visual" ? (
+                      /* WORDPRESS STYLE VISUAL TOOLBAR & EDITABLE AREA */
+                      <div className="border border-slate-300 rounded-2xl overflow-hidden bg-white shadow-xs">
+                        {/* Toolbar */}
+                        <div className="bg-slate-100/90 border-b border-slate-200 p-2 flex flex-wrap gap-1 items-center">
+                          <button
+                            type="button"
+                            onClick={() => execFormat("formatBlock", "<h2>")}
+                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs"
+                            title="Sub Judul Utama (Heading 2)"
+                          >
+                            H2
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("formatBlock", "<h3>")}
+                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs"
+                            title="Sub Judul Kecil (Heading 3)"
+                          >
+                            H3
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("formatBlock", "<p>")}
+                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs"
+                            title="Paragraf Teks Biasa"
+                          >
+                            Paragraf
+                          </button>
+
+                          <div className="w-px h-5 bg-slate-300 mx-1" />
+
+                          <button
+                            type="button"
+                            onClick={() => execFormat("bold")}
+                            className="w-7 h-7 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-800 hover:bg-orange-50 hover:text-orange-600 shadow-xs flex items-center justify-center"
+                            title="Cetak Tebal (Bold)"
+                          >
+                            B
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("italic")}
+                            className="w-7 h-7 bg-white border border-slate-200 rounded-lg text-xs italic font-bold text-slate-800 hover:bg-orange-50 hover:text-orange-600 shadow-xs flex items-center justify-center"
+                            title="Cetak Miring (Italic)"
+                          >
+                            I
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("underline")}
+                            className="w-7 h-7 bg-white border border-slate-200 rounded-lg text-xs underline font-bold text-slate-800 hover:bg-orange-50 hover:text-orange-600 shadow-xs flex items-center justify-center"
+                            title="Garis Bawah (Underline)"
+                          >
+                            U
+                          </button>
+
+                          <div className="w-px h-5 bg-slate-300 mx-1" />
+
+                          <button
+                            type="button"
+                            onClick={() => execFormat("insertUnorderedList")}
+                            className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs flex items-center gap-1"
+                            title="Daftar Poin (Bullet List)"
+                          >
+                            <span>•</span> List
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("insertOrderedList")}
+                            className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs flex items-center gap-1"
+                            title="Daftar Angka (Numbered List)"
+                          >
+                            <span>1.</span> Angka
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("formatBlock", "<blockquote>")}
+                            className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 shadow-xs"
+                            title="Kutipan / Highlight"
+                          >
+                            ❝ Quote
+                          </button>
+
+                          <div className="w-px h-5 bg-slate-300 mx-1" />
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const url = prompt("Masukkan Link URL tujuan (contoh: https://google.com):");
+                              if (url) execFormat("createLink", url);
+                            }}
+                            className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-blue-600 hover:bg-blue-50 shadow-xs flex items-center gap-1"
+                            title="Sisipkan Link Website"
+                          >
+                            🔗 Link
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => execFormat("removeFormat")}
+                            className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-500 hover:bg-rose-50 hover:text-rose-600 shadow-xs"
+                            title="Reset Format"
+                          >
+                            ✕ Reset
+                          </button>
+                        </div>
+
+                        {/* ContentEditable Visual Screen */}
+                        <div
+                          ref={visualEditorRef}
+                          contentEditable
+                          onInput={() => {
+                            if (visualEditorRef.current) {
+                              setFormContent(visualEditorRef.current.innerHTML);
+                            }
+                          }}
+                          className="p-5 min-h-[300px] max-h-[480px] overflow-y-auto focus:outline-none text-slate-800 text-xs sm:text-sm leading-relaxed prose max-w-none"
+                          style={{ whiteSpace: "pre-wrap" }}
+                        />
+                      </div>
+                    ) : (
+                      /* HTML TEXTAREA MODE */
+                      <textarea
+                        rows={12}
+                        placeholder="Tulis artikel menggunakan format HTML..."
+                        value={formContent}
+                        onChange={(e) => setFormContent(e.target.value)}
+                        required
+                        className="w-full px-3.5 py-3 rounded-2xl border border-slate-300 text-xs font-mono leading-relaxed focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      />
+                    )}
+                    <p className="text-[11px] text-slate-400">
+                      💡 <strong>Tips:</strong> Penulis bisa langsung mengetik di atas atau menyalin (copy-paste) tulisan dari Word / Google Docs tanpa perlu mengetik tag HTML manual.
+                    </p>
                   </div>
 
                   {/* STATUS RADIO */}
