@@ -393,10 +393,6 @@ function CheckoutContent() {
         setError("");
 
         const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-        if (!savedUser) {
-          redirectToLogin();
-          return;
-        }
 
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
         if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
@@ -563,10 +559,6 @@ function CheckoutContent() {
         const createResult = await createRes.json().catch(() => null);
 
         if (!createRes.ok || createResult?.status !== "success" || !createResult?.data) {
-          if (!parsedUser) {
-            redirectToLogin();
-            return;
-          }
           const randSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
           const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
           const fallbackOrdNum = `ORD-${dateStr}-${randSuffix}`;
