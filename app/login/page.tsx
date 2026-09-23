@@ -18,23 +18,29 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Auto-redirect jika sudah memiliki session aktif
+  // Auto-redirect jika sudah memiliki session aktif ATAU jika redirect adalah alur checkout / pembayaran
   useEffect(() => {
+    // 1. Jika ada redirectParam menuju checkout, langsung teruskan ke checkout (tidak perlu login)
+    if (redirectParam && (redirectParam.startsWith("/checkout") || redirectParam.includes("checkout"))) {
+      window.location.replace(redirectParam);
+      return;
+    }
+
     try {
       const savedUser = localStorage.getItem("hostingwebid_user");
       if (savedUser) {
         const parsed = JSON.parse(savedUser);
         if (parsed && (parsed.id || parsed.email)) {
           if (redirectParam) {
-            window.location.href = redirectParam;
+            window.location.replace(redirectParam);
           } else if (
             parsed.role === "admin" ||
             parsed.role === "super_admin" ||
             parsed.role === "superadmin"
           ) {
-            window.location.href = "/admin";
+            window.location.replace("/admin");
           } else {
-            window.location.href = "/dashboard";
+            window.location.replace("/dashboard");
           }
         }
       }
