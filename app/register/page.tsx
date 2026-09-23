@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,6 +17,31 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Auto-redirect jika sudah memiliki session aktif
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("hostingwebid_user");
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        if (parsed && (parsed.id || parsed.email)) {
+          if (redirectParam) {
+            window.location.href = redirectParam;
+          } else if (
+            parsed.role === "admin" ||
+            parsed.role === "super_admin" ||
+            parsed.role === "superadmin"
+          ) {
+            router.replace("/admin");
+          } else {
+            router.replace("/dashboard");
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [router, redirectParam]);
 
   async function handleRegister(e: FormEvent) {
     e.preventDefault();
@@ -93,7 +120,11 @@ export default function RegisterPage() {
             })
           );
 
-          router.push("/dashboard");
+          if (redirectParam) {
+            window.location.href = redirectParam;
+          } else {
+            router.push("/dashboard");
+          }
           return;
         }
       } catch (loginErr) {
@@ -101,7 +132,11 @@ export default function RegisterPage() {
       }
 
       // Fallback: Redirect to login page
-      router.push("/login");
+      if (redirectParam) {
+        router.push(`/login?redirect=${encodeURIComponent(redirectParam)}`);
+      } else {
+        router.push("/login");
+      }
     } catch (err) {
       console.error("Register network error:", err);
       setError("Tidak dapat terhubung ke server backend.");
@@ -612,5 +647,13 @@ export default function RegisterPage() {
         }
       `}</style>
     </main>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Memuat...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

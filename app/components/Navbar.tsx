@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SITE_CONFIG, getWhatsAppUrl } from "../lib/siteConfig";
 
 interface NavbarProps {
@@ -9,7 +10,31 @@ interface NavbarProps {
 }
 
 export default function Navbar({ activeMenu }: NavbarProps) {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<{ id?: number; name?: string; email?: string; role?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("hostingwebid_user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("hostingwebid_user");
+    localStorage.removeItem("hostingweb_auth");
+    fetch("/api/backend/auth/logout.php", { credentials: "include" }).catch(() => null);
+    setUser(null);
+    router.push("/");
+    router.refresh();
+  };
+
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin" || user?.role === "superadmin";
 
   return (
     <>
@@ -54,13 +79,33 @@ export default function Navbar({ activeMenu }: NavbarProps) {
 
           {/* DESKTOP ACTIONS */}
           <div className="nav-actions">
-            <Link href="/login" className="nav-login">
-              Masuk
-            </Link>
-
-            <Link href="/register" className="nav-button">
-              Mulai Sekarang
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={isAdmin ? "/admin" : "/dashboard"}
+                  className="nav-button"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span>{isAdmin ? "⚡ Panel Admin" : "👤 Dashboard Saya"}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="nav-login"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 12px" }}
+                >
+                  Keluar
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="nav-login">
+                  Masuk
+                </Link>
+                <Link href="/register" className="nav-button">
+                  Mulai Sekarang
+                </Link>
+              </>
+            )}
           </div>
 
           {/* MOBILE MENU BUTTON */}
@@ -106,22 +151,47 @@ export default function Navbar({ activeMenu }: NavbarProps) {
 
             <div className="mobile-menu-divider" />
 
-            <Link
-              href="/login"
-              className="mobile-login"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Masuk
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={isAdmin ? "/admin" : "/dashboard"}
+                  className="mobile-register"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {isAdmin ? "⚡ Panel Admin" : "👤 Dashboard Saya"}
+                  <span>→</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="mobile-login"
+                  style={{ textAlign: "left", width: "100%", background: "none", border: "none", cursor: "pointer" }}
+                >
+                  Keluar / Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="mobile-login"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Masuk
+                </Link>
 
-            <Link
-              href="/register"
-              className="mobile-register"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Mulai Sekarang
-              <span>→</span>
-            </Link>
+                <Link
+                  href="/register"
+                  className="mobile-register"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Mulai Sekarang
+                  <span>→</span>
+                </Link>
+              </>
+            )}
           </div>
         )}
       </header>
