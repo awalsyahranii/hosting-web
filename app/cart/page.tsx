@@ -134,66 +134,23 @@ export default function CartPage() {
       // =====================================================
 
       if (!savedUser) {
-
-        router.replace("/login");
-
+        router.replace("/checkout");
         return;
-
       }
-
 
       try {
-
-        const parsedUser =
-          JSON.parse(savedUser);
-
-
-        // ===================================================
-        // VALIDASI ROLE
-        // ===================================================
-
-        if (
-          parsedUser?.role !== "user"
-        ) {
-
-          // ADMIN TIDAK BOLEH MASUK CART
-
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser?.role === "admin" || parsedUser?.role === "super_admin") {
           router.replace("/admin");
-
           return;
-
         }
 
-
-        // ===================================================
-        // USER VALID
-        // ===================================================
-
         setUser(parsedUser);
-
         setLoading(false);
-
       } catch (error) {
-
-        console.error(
-          "Session user tidak valid:",
-          error
-        );
-
-
-        localStorage.removeItem(
-          "hostingwebid_user"
-        );
-
-        localStorage.removeItem(
-          "hostingweb_auth"
-        );
-
-
-        router.replace("/login");
-
+        console.error("Session user tidak valid:", error);
+        router.replace("/checkout");
       }
-
     }, [router]);
 
 
@@ -268,7 +225,7 @@ export default function CartPage() {
           response.status === 403 ||
           (result && result.status !== "success" && result.message?.toLowerCase().includes("login"))
         ) {
-          router.replace("/login?redirect=/cart");
+          router.replace("/checkout");
           return;
         }
 
