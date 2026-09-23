@@ -410,10 +410,6 @@ function CheckoutContent() {
             } catch {}
           }
         }
-        if (!savedUser) {
-          redirectToLogin();
-          return;
-        }
 
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
         if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
@@ -566,9 +562,9 @@ function CheckoutContent() {
 
         const enrichedPayload = {
           ...orderPayload,
-          user_id: parsedUser?.id,
-          user_email: parsedUser?.email,
-          username: parsedUser?.name || parsedUser?.username,
+          user_id: parsedUser?.id || 0,
+          user_email: parsedUser?.email || "pelanggan@hostingwebid.com",
+          username: parsedUser?.name || parsedUser?.username || "Pelanggan",
         };
 
         const createRes = await fetch(ORDER_CREATE_API, {
