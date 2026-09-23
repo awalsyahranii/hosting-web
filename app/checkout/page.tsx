@@ -1503,19 +1503,42 @@ function CheckoutContent() {
                     {/* KONFIRMASI PEMBAYARAN INTERAKTIF */}
                     <div
                       className={`payment-confirm-card ${isRobotVerified ? "verified" : ""}`}
-                      onClick={handleToggleConfirmation}
+                      onClick={() => {
+                        const next = !isRobotVerified;
+                        setIsRobotVerified(next);
+                        if (next) {
+                          void handleConfirmPaymentWA();
+                        }
+                      }}
                       role="button"
                       tabIndex={0}
+                      style={{ cursor: "pointer" }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          void handleToggleConfirmation();
+                          const next = !isRobotVerified;
+                          setIsRobotVerified(next);
+                          if (next) {
+                            void handleConfirmPaymentWA();
+                          }
                         }
                       }}
                     >
                       <div className="payment-confirm-left">
                         <div className={`payment-confirm-box ${isRobotVerified ? "checked" : ""}`}>
-                          {isRobotVerified && <span className="payment-confirm-icon">✓</span>}
+                          {isRobotVerified ? (
+                            <span className="payment-confirm-icon">✓</span>
+                          ) : (
+                            <input
+                              type="checkbox"
+                              checked={isRobotVerified}
+                              onChange={(e) => {
+                                e.stopPropagation();
+                                setIsRobotVerified(e.target.checked);
+                              }}
+                              style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#16a34a" }}
+                            />
+                          )}
                         </div>
                         <div className="payment-confirm-content">
                           <strong className="payment-confirm-title">
@@ -1535,6 +1558,7 @@ function CheckoutContent() {
                       rel="noopener noreferrer"
                       className="btn-checkout-primary whatsapp-btn"
                       onClick={() => {
+                        setIsRobotVerified(true);
                         void handleConfirmPaymentWA();
                       }}
                       title="Kirim struk konfirmasi ke WhatsApp Admin"
