@@ -552,9 +552,9 @@ export default function DashboardPage() {
                 <div className="dash-empty-icon">📦</div>
                 <h4>Belum Ada Layanan Hosting</h4>
                 <p>Anda belum memiliki layanan hosting aktif.</p>
-                <Link href="/#pricing" className="dash-empty-action-btn">
+                <a href="/?scroll=pricing#pricing" className="dash-empty-action-btn">
                   + Order Hosting Sekarang
-                </Link>
+                </a>
               </div>
             )}
           </div>
@@ -659,9 +659,9 @@ export default function DashboardPage() {
                 <div className="dash-empty-icon">🌐</div>
                 <h4>Belum Ada Domain Terdaftar</h4>
                 <p>Daftarkan nama domain bisnis Anda sekarang.</p>
-                <Link href="/#domain" className="dash-empty-action-btn">
+                <a href="/?scroll=domain#domain" className="dash-empty-action-btn">
                   🔍 Cari Domain Baru
-                </Link>
+                </a>
               </div>
             )}
           </div>

@@ -807,6 +807,18 @@ export default function Home() {
     }
   }, []);
 
+  const scrollToSection = (id: string) => {
+    setMobileMenuOpen(false);
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (id === "domain") {
+        const domInput = document.getElementById("domainQuery");
+        if (domInput) domInput.focus();
+      }
+    }
+  };
+
   // Handle smooth scroll to section on hash/query navigation (e.g. /?scroll=pricing#pricing or /?scroll=domain#domain from Dashboard)
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -833,15 +845,13 @@ export default function Home() {
       }
 
       if (targetElId) {
-        const scrollToEl = () => {
+        let hasScrolled = false;
+        const tryScroll = () => {
+          if (hasScrolled) return;
           const el = document.getElementById(targetElId);
           if (el) {
-            const rect = el.getBoundingClientRect();
-            const topOffset = rect.top + window.pageYOffset - 90;
-            window.scrollTo({
-              top: Math.max(0, topOffset),
-              behavior: "smooth",
-            });
+            hasScrolled = true;
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
             if (targetElId === "domain") {
               const domInput = document.getElementById("domainQuery");
               if (domInput) domInput.focus();
@@ -849,10 +859,9 @@ export default function Home() {
           }
         };
 
-        // Scroll immediately & with retry timings
-        scrollToEl();
-        const intervals = [50, 150, 300, 600, 1000, 1500, 2000];
-        intervals.forEach((ms) => setTimeout(scrollToEl, ms));
+        tryScroll();
+        setTimeout(tryScroll, 100);
+        setTimeout(tryScroll, 300);
       }
     };
 
@@ -1032,14 +1041,14 @@ export default function Home() {
 
     {/* DESKTOP NAVIGATION */}
     <nav className="nav-menu">
-      <Link href="/#pricing">Jasa Website</Link>
-      <Link href="/#google-ads">Google Ads</Link>
-      <Link href="/#portfolio">Portfolio</Link>
-      <Link href="/#domain">Cek Domain</Link>
+      <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToSection("pricing"); }}>Jasa Website</a>
+      <a href="#google-ads" onClick={(e) => { e.preventDefault(); scrollToSection("google-ads"); }}>Google Ads</a>
+      <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollToSection("portfolio"); }}>Portfolio</a>
+      <a href="#domain" onClick={(e) => { e.preventDefault(); scrollToSection("domain"); }}>Cek Domain</a>
       <Link href="/seo">SEO</Link>
-      <Link href="/#features">Keunggulan</Link>
+      <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>Keunggulan</a>
       <Link href="/blog">Blog</Link>
-      <Link href="/#faq">FAQ</Link>
+      <a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }}>FAQ</a>
     </nav>
 
     {/* DESKTOP ACTIONS */}
@@ -1121,33 +1130,45 @@ export default function Home() {
   {mobileMenuOpen && (
     <div className="mobile-menu">
 
-      <Link
-        href="/#pricing"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#pricing"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("pricing");
+        }}
       >
         Jasa Website
-      </Link>
+      </a>
 
-      <Link
-        href="/#google-ads"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#google-ads"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("google-ads");
+        }}
       >
         Google Ads
-      </Link>
+      </a>
 
-      <Link
-        href="/#portfolio"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#portfolio"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("portfolio");
+        }}
       >
         Portfolio
-      </Link>
+      </a>
 
-      <Link
-        href="/#domain"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#domain"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("domain");
+        }}
       >
         Cek Domain
-      </Link>
+      </a>
 
       <Link
         href="/seo"
@@ -1156,12 +1177,15 @@ export default function Home() {
         SEO
       </Link>
 
-      <Link
-        href="/#features"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#features"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("features");
+        }}
       >
         Keunggulan
-      </Link>
+      </a>
 
       <Link
         href="/blog"
@@ -1170,12 +1194,15 @@ export default function Home() {
         Blog &amp; Artikel
       </Link>
 
-      <Link
-        href="/#faq"
-        onClick={() => setMobileMenuOpen(false)}
+      <a
+        href="#faq"
+        onClick={(e) => {
+          e.preventDefault();
+          scrollToSection("faq");
+        }}
       >
         FAQ
-      </Link>
+      </a>
 
       <div className="mobile-menu-divider" />
 
@@ -1295,12 +1322,26 @@ export default function Home() {
 
             <div className="hero-actions">
 
-              <a href="#pricing" className="btn btn-primary">
+              <a
+                href="#pricing"
+                className="btn btn-primary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection("pricing");
+                }}
+              >
                 Lihat Paket Website
                 <span>→</span>
               </a>
 
-              <a href="#google-ads" className="btn btn-outline">
+              <a
+                href="#google-ads"
+                className="btn btn-outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToSection("google-ads");
+                }}
+              >
                 Jasa Iklan Google Ads
               </a>
 
