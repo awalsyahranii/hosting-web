@@ -5,6 +5,13 @@ export const metadata: Metadata = {
   title: "HostingWeb - Jasa Web Murah",
   description:
     "Hosting, domain dan kebutuhan website dengan harga terjangkau.",
+  icons: {
+    icon: [
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
