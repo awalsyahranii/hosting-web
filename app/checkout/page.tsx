@@ -337,8 +337,8 @@ function CheckoutContent() {
   // 24-Hour Countdown Timer State (Ticking dynamically)
   const [timeLeft, setTimeLeft] = useState<number>(23 * 3600 + 59 * 60 + 59);
 
-  // Security Checkbox State
-  const [isRobotVerified, setIsRobotVerified] = useState<boolean>(true);
+  // Security & Transfer Confirmation Checkbox State (Default false di awal)
+  const [isRobotVerified, setIsRobotVerified] = useState<boolean>(false);
 
   useEffect(() => {
     const storageKey = `hostingwebid_deadline_${createdOrderNumber || "default"}`;
@@ -1016,6 +1016,7 @@ function CheckoutContent() {
   const handleCopyAccount = (number: string, bank: string) => {
     navigator.clipboard.writeText(number.replace(/[^0-9]/g, ""));
     setCopiedAccount(bank);
+    setIsRobotVerified(true);
     setTimeout(() => setCopiedAccount(null), 2500);
   };
 
