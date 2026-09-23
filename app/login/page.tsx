@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function LoginForm() {
@@ -17,6 +17,31 @@ function LoginForm() {
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Auto-redirect jika sudah memiliki session aktif
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem("hostingwebid_user");
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser);
+        if (parsed && (parsed.id || parsed.email)) {
+          if (redirectParam) {
+            router.replace(redirectParam);
+          } else if (
+            parsed.role === "admin" ||
+            parsed.role === "super_admin" ||
+            parsed.role === "superadmin"
+          ) {
+            router.replace("/admin");
+          } else {
+            router.replace("/dashboard");
+          }
+        }
+      }
+    } catch {
+      // Abaikan jika json parse error
+    }
+  }, [router, redirectParam]);
 
   const handleCaptchaClick = () => {
     if (captchaChecked) return;

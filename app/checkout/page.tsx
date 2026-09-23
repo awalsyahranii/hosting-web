@@ -544,11 +544,23 @@ function CheckoutContent() {
         setCheckout(currentCheckoutData);
 
         // 4. Create Order Immediately in Backend
+        let parsedUser: any = null;
+        try {
+          parsedUser = savedUser ? JSON.parse(savedUser) : null;
+        } catch {}
+
+        const enrichedPayload = {
+          ...orderPayload,
+          user_id: parsedUser?.id,
+          user_email: parsedUser?.email,
+          username: parsedUser?.name || parsedUser?.username,
+        };
+
         const createRes = await fetch(ORDER_CREATE_API, {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(orderPayload),
+          body: JSON.stringify(enrichedPayload),
         });
         const createResult = await createRes.json().catch(() => null);
 
