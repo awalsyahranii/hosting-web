@@ -193,7 +193,7 @@ export default function HostingPage() {
               <div className="dash-empty-icon">📦</div>
               <h4>Belum Ada Layanan Hosting</h4>
               <p>Anda belum memiliki paket cloud hosting aktif.</p>
-              <Link href="/#pricing" className="dash-empty-action-btn">
+              <Link href="/?section=pricing#pricing" className="dash-empty-action-btn">
                 + Beli Paket Hosting Sekarang
               </Link>
             </div>

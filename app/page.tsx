@@ -811,28 +811,51 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const scrollToHash = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const id = hash.replace("#", "");
-        const element = document.getElementById(id);
-        if (element) {
-          setTimeout(() => {
-            element.scrollIntoView({ behavior: "smooth", block: "start" });
-            if (id === "domain") {
+    const scrollToTargetSection = () => {
+      let targetId = "";
+      const hash = window.location.hash.replace("#", "").trim();
+      const params = new URLSearchParams(window.location.search);
+      const sectionParam = (params.get("section") || params.get("scroll") || "").trim();
+
+      if (hash === "pricing" || sectionParam === "pricing" || hash === "hosting" || sectionParam === "hosting") {
+        targetId = "pricing";
+      } else if (hash === "domain" || sectionParam === "domain" || hash === "domains" || sectionParam === "domains") {
+        targetId = "domain";
+      } else if (hash) {
+        targetId = hash;
+      } else if (sectionParam) {
+        targetId = sectionParam;
+      }
+
+      if (targetId) {
+        const tryScroll = (attempts = 0) => {
+          const element = document.getElementById(targetId);
+          if (element) {
+            const headerOffset = 80;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({
+              top: Math.max(0, offsetPosition),
+              behavior: "smooth",
+            });
+            if (targetId === "domain") {
               const domainInput = document.getElementById("domainQuery");
               if (domainInput) {
                 domainInput.focus();
               }
             }
-          }, 200);
-        }
+          } else if (attempts < 12) {
+            setTimeout(() => tryScroll(attempts + 1), 100);
+          }
+        };
+
+        setTimeout(() => tryScroll(), 150);
       }
     };
 
-    scrollToHash();
-    window.addEventListener("hashchange", scrollToHash);
-    return () => window.removeEventListener("hashchange", scrollToHash);
+    scrollToTargetSection();
+    window.addEventListener("hashchange", scrollToTargetSection);
+    return () => window.removeEventListener("hashchange", scrollToTargetSection);
   }, []);
 
   const navigateWithAuth = (targetUrl: string) => {
