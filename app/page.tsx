@@ -807,58 +807,58 @@ export default function Home() {
     }
   }, []);
 
-  // Handle smooth scroll to section on hash navigation (e.g. /#pricing or /#domain from Dashboard)
+  // Handle smooth scroll to section on hash/query navigation (e.g. /?scroll=pricing#pricing or /?scroll=domain#domain from Dashboard)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    let timerIds: NodeJS.Timeout[] = [];
+    try {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+    } catch {}
 
-    const scrollToTargetSection = () => {
-      let targetId = "";
-      const hash = (window.location.hash || "").replace("#", "").trim();
-      const params = new URLSearchParams(window.location.search);
-      const sectionParam = (params.get("section") || params.get("scroll") || "").trim();
+    const checkAndScroll = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const scrollParam = (urlParams.get("scroll") || urlParams.get("section") || "").trim();
+      const hashParam = (window.location.hash || "").replace("#", "").trim();
+      const target = scrollParam || hashParam;
 
-      if (hash === "pricing" || sectionParam === "pricing" || hash === "hosting" || sectionParam === "hosting") {
-        targetId = "pricing";
-      } else if (hash === "domain" || sectionParam === "domain" || hash === "domains" || sectionParam === "domains") {
-        targetId = "domain";
-      } else if (hash) {
-        targetId = hash;
-      } else if (sectionParam) {
-        targetId = sectionParam;
+      let targetElId = "";
+      if (target === "pricing" || target === "hosting" || target === "paket") {
+        targetElId = "pricing";
+      } else if (target === "domain" || target === "domains") {
+        targetElId = "domain";
+      } else if (target) {
+        targetElId = target;
       }
 
-      if (targetId) {
-        const doScroll = () => {
-          const element = document.getElementById(targetId);
-          if (element) {
-            element.scrollIntoView({ behavior: "smooth", block: "start" });
-            if (targetId === "domain") {
-              const domainInput = document.getElementById("domainQuery");
-              if (domainInput) {
-                domainInput.focus();
-              }
+      if (targetElId) {
+        const scrollToEl = () => {
+          const el = document.getElementById(targetElId);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            const topOffset = rect.top + window.pageYOffset - 90;
+            window.scrollTo({
+              top: Math.max(0, topOffset),
+              behavior: "smooth",
+            });
+            if (targetElId === "domain") {
+              const domInput = document.getElementById("domainQuery");
+              if (domInput) domInput.focus();
             }
           }
         };
 
-        // Scroll immediately and keep retrying as images/fonts load
-        doScroll();
-        timerIds.push(setTimeout(doScroll, 100));
-        timerIds.push(setTimeout(doScroll, 300));
-        timerIds.push(setTimeout(doScroll, 600));
-        timerIds.push(setTimeout(doScroll, 1000));
-        timerIds.push(setTimeout(doScroll, 1500));
+        // Scroll immediately & with retry timings
+        scrollToEl();
+        const intervals = [50, 150, 300, 600, 1000, 1500, 2000];
+        intervals.forEach((ms) => setTimeout(scrollToEl, ms));
       }
     };
 
-    scrollToTargetSection();
-    window.addEventListener("hashchange", scrollToTargetSection);
-    return () => {
-      timerIds.forEach((t) => clearTimeout(t));
-      window.removeEventListener("hashchange", scrollToTargetSection);
-    };
+    checkAndScroll();
+    window.addEventListener("hashchange", checkAndScroll);
+    return () => window.removeEventListener("hashchange", checkAndScroll);
   }, []);
 
   const navigateWithAuth = (targetUrl: string) => {
