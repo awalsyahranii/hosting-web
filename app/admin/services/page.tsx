@@ -203,6 +203,60 @@ export default function AdminServicesPage() {
   const [selectedAds, setSelectedAds] = useState<AdsCampaign | null>(null);
   const [isNewAdsModalOpen, setIsNewAdsModalOpen] = useState(false);
 
+  // Daily Report WhatsApp Modal State (Laporan Tayang Harian Google Ads)
+  const [dailyReportModal, setDailyReportModal] = useState<{
+    isOpen: boolean;
+    client: string;
+    website: string;
+    phone: string;
+    date: string;
+    statusTayang: string;
+    keterangan: string;
+  } | null>(null);
+
+  const openDailyReportModal = (item: { client: string; domain: string; phone?: string }) => {
+    const todayStr = new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date());
+
+    let domainUrl = (item.domain || "").trim();
+    if (domainUrl && !domainUrl.startsWith("http://") && !domainUrl.startsWith("https://")) {
+      domainUrl = `https://${domainUrl}/`;
+    }
+
+    setDailyReportModal({
+      isOpen: true,
+      client: item.client ? item.client.toUpperCase() : "PELANGGAN",
+      website: domainUrl || "https://website-klien.id/",
+      phone: item.phone || "6285333555976",
+      date: todayStr,
+      statusTayang: "Ya",
+      keterangan: "-",
+    });
+  };
+
+  const handleSendDailyReportWA = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dailyReportModal) return;
+    const cleanPhone = dailyReportModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
+    const message = `Hi ${dailyReportModal.client},
+
+Berikut update report harian iklan Anda untuk website ${dailyReportModal.website} :
+
+Tanggal: ${dailyReportModal.date}
+Iklan Tayang ?: ${dailyReportModal.statusTayang}
+Keterangan: ${dailyReportModal.keterangan}
+---
+
+Terima Kasih`;
+
+    const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waLink, "_blank");
+    setDailyReportModal(null);
+  };
+
   // New Ads Form State
   const [newAdsForm, setNewAdsForm] = useState({
     client: "",
@@ -859,21 +913,16 @@ export default function AdminServicesPage() {
                               {/* AKSI & NOTIFIKASI */}
                               <td className="p-3.5 text-right">
                                 <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                                  {/* TOMBOL WA LAPORAN / INGATKAN */}
-                                  <a
-                                    href={waUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title="Kirim pesan laporan atau pengingat masa aktif iklan ke WhatsApp klien"
-                                    className={`px-2.5 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1 transition ${
-                                      exp.isExpiringSoon || exp.isExpired
-                                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                                        : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
-                                    }`}
+                                  {/* TOMBOL LAPORAN TAYANG WA (FORMAT KHUSUS ADMIN) */}
+                                  <button
+                                    type="button"
+                                    onClick={() => openDailyReportModal(item)}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold inline-flex items-center gap-1 shadow-sm transition"
+                                    title="Kirim Laporan Harian Iklan Tayang ke WhatsApp Pelanggan"
                                   >
-                                    <span>📱</span>
-                                    <span>Ingatkan WA</span>
-                                  </a>
+                                    <span>📊</span>
+                                    <span>Laporan Tayang WA</span>
+                                  </button>
 
                                   <button
                                     type="button"
@@ -1002,16 +1051,13 @@ export default function AdminServicesPage() {
                           Masa Aktif: <strong className="text-slate-800">{exp.formattedDate}</strong> ({exp.statusText})
                         </span>
                         <div className="flex items-center gap-2">
-                          <a
-                            href={getWhatsAppUrl(
-                              `Halo Kak *${ads.client}*, laporan performa iklan *${ads.packageType}* (${ads.domain}):\n- Status: ${ads.status.toUpperCase()}\n- Impresi: ${ads.impressions.toLocaleString()}\n- Klik: ${ads.clicks.toLocaleString()} (CTR ${ctr}%)\n- Saldo: Rp ${ads.spent.toLocaleString("id-ID")} / ${rupiah(ads.totalBudget)}\n- Masa Aktif: ${exp.formattedDate}\n\nTerima kasih!`
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-[11px] flex items-center gap-1"
+                          <button
+                            type="button"
+                            onClick={() => openDailyReportModal(ads)}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition"
                           >
-                            <span>📱</span> Laporan WA
-                          </a>
+                            <span>📊</span> Laporan Tayang WA
+                          </button>
                           <button
                             type="button"
                             onClick={() => setSelectedAds(ads)}
@@ -1609,6 +1655,142 @@ export default function AdminServicesPage() {
                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold hover:bg-emerald-700"
                 >
                   Tambah Kampanye
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* =========================================================
+          MODAL 4: KIRIM LAPORAN HARIAN IKLAN TAYANG KE WA KLIEN
+      ========================================================= */}
+      {dailyReportModal && dailyReportModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in max-h-[95vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📊</span>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">Kirim Laporan Harian Iklan Tayang</h3>
+                  <p className="text-[11px] text-slate-500">Format otomatis ke WhatsApp Pelanggan (Admin Only)</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDailyReportModal(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSendDailyReportWA} className="flex flex-col gap-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Nama Klien / Brand</label>
+                <input
+                  type="text"
+                  value={dailyReportModal.client}
+                  onChange={(e) => setDailyReportModal({ ...dailyReportModal, client: e.target.value })}
+                  className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-900 bg-slate-50 focus:bg-white"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">URL Website Klien</label>
+                  <input
+                    type="text"
+                    value={dailyReportModal.website}
+                    onChange={(e) => setDailyReportModal({ ...dailyReportModal, website: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Nomor WhatsApp Klien</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 6285333555976"
+                    value={dailyReportModal.phone}
+                    onChange={(e) => setDailyReportModal({ ...dailyReportModal, phone: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-mono text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Tanggal Laporan</label>
+                  <input
+                    type="text"
+                    value={dailyReportModal.date}
+                    onChange={(e) => setDailyReportModal({ ...dailyReportModal, date: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs text-slate-900 bg-slate-50 focus:bg-white"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Iklan Tayang ?</label>
+                  <select
+                    value={dailyReportModal.statusTayang}
+                    onChange={(e) => setDailyReportModal({ ...dailyReportModal, statusTayang: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 focus:bg-white"
+                  >
+                    <option value="Ya">✅ Ya (Tayang Normal di Google)</option>
+                    <option value="Sedang Optimasi">⚡ Sedang Optimasi Bid / Target</option>
+                    <option value="Review Google">⏳ Sedang Ditinjau Google</option>
+                    <option value="Jadwal Jam Tayang">⏰ Berdasarkan Jadwal Jam Kerja</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Keterangan Tambahan</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: - atau Iklan aktif di posisi 1 Google"
+                  value={dailyReportModal.keterangan}
+                  onChange={(e) => setDailyReportModal({ ...dailyReportModal, keterangan: e.target.value })}
+                  className="w-full p-2.5 border border-slate-200 rounded-lg text-xs text-slate-900 bg-slate-50 focus:bg-white"
+                />
+              </div>
+
+              {/* PREVIEW PESAN WA */}
+              <div className="mt-2 p-3.5 bg-emerald-950 text-emerald-100 rounded-xl font-mono text-[11px] leading-relaxed border border-emerald-800 shadow-inner">
+                <div className="flex items-center justify-between text-emerald-400 font-bold mb-2 pb-1 border-b border-emerald-800">
+                  <span>📱 Preview Teks WhatsApp:</span>
+                  <span className="text-[10px] bg-emerald-800 px-1.5 py-0.5 rounded text-emerald-200">Auto-Format</span>
+                </div>
+                <div className="whitespace-pre-line">
+                  {`Hi ${dailyReportModal.client || "PELANGGAN"},
+
+Berikut update report harian iklan Anda untuk website ${dailyReportModal.website || "https://..."} :
+
+Tanggal: ${dailyReportModal.date}
+Iklan Tayang ?: ${dailyReportModal.statusTayang}
+Keterangan: ${dailyReportModal.keterangan || "-"}
+---
+
+Terima Kasih`}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setDailyReportModal(null)}
+                  className="px-4 py-2 border border-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-md transition"
+                >
+                  <span>📲</span>
+                  <span>Kirim ke WhatsApp (Buka Chat)</span>
                 </button>
               </div>
             </form>
