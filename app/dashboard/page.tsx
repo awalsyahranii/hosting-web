@@ -438,7 +438,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <span className="dash-quick-arrow">→</span>
-          </Link>
+          </a>
 
           <Link href="/dashboard/profile" className="dash-quick-card">
             <div className="dash-quick-card-left">
