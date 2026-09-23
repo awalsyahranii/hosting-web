@@ -113,7 +113,7 @@ function LoginForm() {
 
       // REDIRECTION LOGIC:
       if (redirectParam) {
-        router.push(redirectParam);
+        window.location.href = redirectParam;
       } else if (
         backendUser.role === "admin" ||
         backendUser.role === "super_admin" ||

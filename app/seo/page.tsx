@@ -17,7 +17,12 @@ export default function JasaSeoPage() {
     const targetUrl = `/checkout?type=seo&package=${encodeURIComponent(
       pkg.name
     )}&price=${pkg.price}&domain=${encodeURIComponent(`Paket ${pkg.name}`)}`;
-    router.push(targetUrl);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   useEffect(() => {

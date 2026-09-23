@@ -790,12 +790,22 @@ export default function Home() {
 
   const handleBuyAds = (pkg: GoogleAdsPackage) => {
     const targetUrl = `/checkout?ads=${encodeURIComponent(pkg.id)}`;
-    router.push(targetUrl);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   const handleBuyPackage = (planId: string) => {
     const targetUrl = `/checkout?paket=${encodeURIComponent(planId)}&cycle=${billingCycle}`;
-    router.push(targetUrl);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   const handleBuyWebsite = (item: { domain: string; packageTitle?: string; price?: string }) => {
@@ -803,14 +813,24 @@ export default function Home() {
     const targetUrl = `/checkout?type=website&package=${encodeURIComponent(
       item.packageTitle || "Jasa Pembuatan Website"
     )}&price=${rawPrice}&domain=${encodeURIComponent(item.domain)}&new=1`;
-    router.push(targetUrl);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   const handleBuyDomain = (domainName: string, domainId: number | string = 0, price: number | string = "") => {
     const priceQuery = price ? `&price=${encodeURIComponent(price)}` : "";
     const idQuery = domainId ? `&domain_id=${encodeURIComponent(domainId)}` : "";
     const targetUrl = `/checkout?domain=${encodeURIComponent(domainName)}${idQuery}${priceQuery}&new=1`;
-    router.push(targetUrl);
+    const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+    if (!savedUser) {
+      router.push(`/login?redirect=${encodeURIComponent(targetUrl)}`);
+    } else {
+      router.push(targetUrl);
+    }
   };
 
   const scrollSlider = (id: string, offset: number) => {

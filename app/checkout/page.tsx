@@ -393,6 +393,10 @@ function CheckoutContent() {
         setError("");
 
         const savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
+        if (!savedUser) {
+          redirectToLogin();
+          return;
+        }
 
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
         if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
