@@ -34,6 +34,18 @@ html {
   scroll-behavior: smooth;
 }
 
+#pricing,
+#domain,
+#portfolio,
+#google-ads,
+#features,
+#why-us,
+#blog,
+#faq,
+#contact {
+  scroll-margin-top: 100px;
+}
+
 body {
   margin: 0;
 
