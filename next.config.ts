@@ -10,10 +10,15 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        source: "/sitemap_index.xml",
+        destination: "/sitemap.xml",
+      },
+      {
         source: "/api/backend/:path*",
         destination: `${backendUrl}/:path*`,
       },
     ];
+
   },
   async headers() {
     return [
