@@ -743,8 +743,9 @@ export default function Home() {
   const [portfolioSearch, setPortfolioSearch] = useState("");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
 
-  // Google Ads Filter
+  // Google Ads Filter & Detail Modal
   const [adsFilter, setAdsFilter] = useState<"all" | "pemula" | "bisnis">("all");
+  const [selectedAdsDetail, setSelectedAdsDetail] = useState<GoogleAdsPackage | null>(null);
 
   const [systemSettings, setSystemSettings] = useState<{
     maintenanceMode?: boolean;
@@ -2766,14 +2767,13 @@ export default function Home() {
 
                   {/* ACTION BUTTONS */}
                   <div className="gads-card-actions">
-                    <a
-                      href={getWhatsAppUrl(`Halo Admin HostingWeb, saya tertarik dengan layanan *${pkg.title}* (${pkg.priceFormatted}). Bisa konsultasi kata kunci dan target iklannya?`)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="gads-btn-wa"
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAdsDetail(pkg)}
+                      className="gads-btn-detail"
                     >
-                      <span>💬</span> Chat Admin
-                    </a>
+                      <span>🔍</span> Lihat Detail
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleBuyAds(pkg)}
@@ -2786,6 +2786,156 @@ export default function Home() {
               ))}
           </div>
         </div>
+
+        {/* =====================================================
+            GOOGLE ADS PRODUCT DETAIL MODAL
+        ===================================================== */}
+        {selectedAdsDetail && (
+          <div 
+            className="gads-modal-overlay" 
+            onClick={() => setSelectedAdsDetail(null)}
+          >
+            <div 
+              className="gads-modal-dialog" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* HEADER */}
+              <div className="gads-modal-header">
+                <div className="gads-modal-header-info">
+                  <span className={`gads-badge ${selectedAdsDetail.category === "pemula" ? "badge-pemula" : "badge-bisnis"}`}>
+                    {selectedAdsDetail.categoryLabel.toUpperCase()} • {selectedAdsDetail.durationLabel.toUpperCase()}
+                  </span>
+                  <h2 className="gads-modal-title">{selectedAdsDetail.title}</h2>
+                  <p className="gads-modal-desc">{selectedAdsDetail.description}</p>
+                </div>
+                <button 
+                  type="button"
+                  onClick={() => setSelectedAdsDetail(null)} 
+                  className="gads-modal-close"
+                  aria-label="Tutup Detail"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* BODY */}
+              <div className="gads-modal-body">
+                {/* PRICE & STATS CARD */}
+                <div className="gads-modal-stats-grid">
+                  <div className="gads-modal-stat-card primary">
+                    <span className="stat-card-label">Total Investasi Paket</span>
+                    <div className="stat-card-val">{selectedAdsDetail.priceFormatted}</div>
+                    <span className="stat-card-sub">Termasuk saldo &amp; jasa kelola</span>
+                  </div>
+
+                  <div className="gads-modal-stat-card">
+                    <span className="stat-card-label">Saldo Iklan Masuk Google</span>
+                    <div className="stat-card-val text-emerald-600">{selectedAdsDetail.dailyBudget}</div>
+                    <span className="stat-card-sub">Total {selectedAdsDetail.durationDays} hari tayang non-stop</span>
+                  </div>
+
+                  <div className="gads-modal-stat-card">
+                    <span className="stat-card-label">Estimasi Jangkauan</span>
+                    <div className="stat-card-val text-blue-600">
+                      {selectedAdsDetail.category === "pemula" ? "1.500 - 5.000+" : "5.000 - 15.000+"}
+                    </div>
+                    <span className="stat-card-sub">Calon konsumen pencari di Google</span>
+                  </div>
+                </div>
+
+                {/* DETAILS ACCORDION / SPECIFICATION */}
+                <div className="gads-modal-section">
+                  <h3 className="gads-modal-section-title">
+                    <span>✨</span> Rincian Fasilitas &amp; Layanan yang Anda Dapatkan:
+                  </h3>
+                  <div className="gads-modal-features-grid">
+                    {selectedAdsDetail.features.map((feat, idx) => (
+                      <div key={idx} className={`gads-modal-feat-item ${feat.includes("Belum termasuk") ? "is-excluded" : ""}`}>
+                        <span className="feat-icon">{feat.includes("Belum termasuk") ? "ℹ️" : "✅"}</span>
+                        <span className="feat-text">{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* WORKFLOW / CARA KERJA */}
+                <div className="gads-modal-section">
+                  <h3 className="gads-modal-section-title">
+                    <span>🚀</span> Tahapan Pemasangan &amp; Skema Iklan:
+                  </h3>
+                  <div className="gads-modal-steps">
+                    <div className="gads-step-card">
+                      <div className="step-num">1</div>
+                      <div className="step-content">
+                        <strong>Pilih Paket &amp; Diskusi Target</strong>
+                        <p>Kirimkan link website atau nama produk. Tim kami akan meriset kata kunci dengan volume pencarian tertinggi.</p>
+                      </div>
+                    </div>
+                    <div className="gads-step-card">
+                      <div className="step-num">2</div>
+                      <div className="step-content">
+                        <strong>Setup Akun &amp; Copywriting Iklan</strong>
+                        <p>Kami buatkan struktur teks iklan persuasif, ekstensi WhatsApp, ekstensi telepon, dan filter kata kunci negatif.</p>
+                      </div>
+                    </div>
+                    <div className="gads-step-card">
+                      <div className="step-num">3</div>
+                      <div className="step-content">
+                        <strong>Iklan Tayang &amp; Pemantauan Berkala</strong>
+                        <p>Iklan langsung tayang di ranking teratas Google Search. Laporan transparan performa impresi, klik, dan biaya kami sediakan.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SUITABLE FOR */}
+                <div className="gads-modal-target-box">
+                  <div className="target-box-title">🎯 Sangat Cocok untuk Berbagai Bidang Usaha:</div>
+                  <div className="target-tags">
+                    <span className="target-tag">🏪 Toko Online &amp; Retail</span>
+                    <span className="target-tag">🚗 Rental Mobil &amp; Travel</span>
+                    <span className="target-tag">🛠️ Jasa Service / Kontraktor</span>
+                    <span className="target-tag">🩺 Klinik, Salon &amp; Skincare</span>
+                    <span className="target-tag">🏢 B2B, Legalitas &amp; Konsultan</span>
+                    <span className="target-tag">🏠 Properti &amp; Interior</span>
+                  </div>
+                </div>
+
+                {/* GUARANTEE BOX */}
+                <div className="gads-modal-guarantee">
+                  <div className="guarantee-icon">🛡️</div>
+                  <div className="guarantee-text">
+                    <strong>Garansi Transparansi 100%</strong>
+                    <p>Iklan disetting langsung sesuai standar Google Partner. Proses kilat 1 hari kerja, Anda dapat memantau tayangan iklan secara langsung di Google!</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* FOOTER ACTIONS */}
+              <div className="gads-modal-footer">
+                <a
+                  href={getWhatsAppUrl(`Halo Admin HostingWeb, saya mau tanya detail lebih lanjut tentang *${selectedAdsDetail.title}* (${selectedAdsDetail.priceFormatted}). Apakah kata kunci bisnis saya bisa diiklankan?`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="gads-modal-btn-wa"
+                >
+                  <span>💬</span> Chat Konsultasi WA
+                </a>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pkg = selectedAdsDetail;
+                    setSelectedAdsDetail(null);
+                    handleBuyAds(pkg);
+                  }}
+                  className="gads-modal-btn-buy"
+                >
+                  <span>🛍️</span> Pesan Paket Ini ({selectedAdsDetail.priceFormatted})
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* =====================================================

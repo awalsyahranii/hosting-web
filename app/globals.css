@@ -15963,3 +15963,387 @@ html {
   font-size: 11px;
   font-weight: 700;
 }
+
+/* =====================================================
+   GOOGLE ADS "LIHAT DETAIL" & PRODUCT DETAIL MODAL
+===================================================== */
+.gads-btn-detail {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 12px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.gads-btn-detail:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  transform: translateY(-1px);
+}
+
+.gads-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: gadsModalFadeIn 0.22s ease-out forwards;
+}
+
+@keyframes gadsModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.gads-modal-dialog {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  overflow: hidden;
+  animation: gadsModalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gadsModalScaleUp {
+  from { transform: scale(0.95) translateY(12px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.gads-modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(to bottom, #f8fafc, #ffffff);
+}
+
+.gads-modal-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gads-modal-title {
+  font-size: 22px;
+  font-weight: 850;
+  color: #0f172a;
+  margin: 8px 0 4px 0;
+  line-height: 1.25;
+}
+
+.gads-modal-desc {
+  font-size: 13.5px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.gads-modal-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.gads-modal-close:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+  transform: rotate(90deg);
+}
+
+.gads-modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.gads-modal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.gads-modal-stat-card {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.gads-modal-stat-card.primary {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border-color: #fed7aa;
+}
+
+.stat-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.gads-modal-stat-card.primary .stat-card-label {
+  color: #c2410c;
+}
+
+.stat-card-val {
+  font-size: 19px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.gads-modal-stat-card.primary .stat-card-val {
+  color: #ea580c;
+}
+
+.stat-card-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.gads-modal-section-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gads-modal-features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gads-modal-feat-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.gads-modal-feat-item.is-excluded {
+  background: #fff1f2;
+  border-color: #ffe4e6;
+  color: #9f1239;
+}
+
+.gads-modal-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.gads-step-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.gads-step-card .step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #0284c7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.gads-step-card .step-content strong {
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.gads-step-card .step-content p {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.gads-modal-target-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+.target-box-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #166534;
+  margin-bottom: 8px;
+}
+
+.target-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.target-tag {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: #ffffff;
+  border: 1px solid #86efac;
+  border-radius: 999px;
+  color: #15803d;
+}
+
+.gads-modal-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 16px;
+  padding: 14px 18px;
+}
+
+.gads-modal-guarantee .guarantee-icon {
+  font-size: 26px;
+}
+
+.gads-modal-guarantee .guarantee-text strong {
+  display: block;
+  font-size: 13px;
+  color: #92400e;
+  margin-bottom: 2px;
+}
+
+.gads-modal-guarantee .guarantee-text p {
+  font-size: 11.5px;
+  color: #b45309;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.gads-modal-footer {
+  padding: 16px 28px 20px;
+  border-top: 1px solid #f1f5f9;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 12px;
+  background: #ffffff;
+}
+
+.gads-modal-btn-wa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 14px;
+  color: #166534;
+  font-size: 13.5px;
+  font-weight: 750;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.gads-modal-btn-wa:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.gads-modal-btn-buy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+  border: none;
+  border-radius: 14px;
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 850;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.35);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.gads-modal-btn-buy:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(234, 88, 12, 0.45);
+}
+
+@media (max-width: 640px) {
+  .gads-modal-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .gads-modal-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .gads-modal-footer {
+    grid-template-columns: 1fr;
+  }
+}
