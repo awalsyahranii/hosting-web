@@ -16281,58 +16281,38 @@ html {
 }
 
 .gads-modal-footer {
-  padding: 16px 28px 20px;
+  padding: 16px 28px 22px;
   border-top: 1px solid #f1f5f9;
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 12px;
+  display: flex;
   background: #ffffff;
 }
 
-.gads-modal-btn-wa {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 18px;
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  border-radius: 14px;
-  color: #166534;
-  font-size: 13.5px;
-  font-weight: 750;
-  text-decoration: none;
-  transition: all 0.2s;
-  cursor: pointer;
-}
-
-.gads-modal-btn-wa:hover {
-  background: #16a34a;
-  color: #ffffff;
-  border-color: #16a34a;
-}
-
 .gads-modal-btn-buy {
+  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 15px 24px;
   background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
   border: none;
   border-radius: 14px;
   color: #ffffff !important;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 850;
   text-decoration: none;
-  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.35);
-  transition: all 0.2s;
+  box-shadow: 0 4px 18px rgba(234, 88, 12, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 
 .gads-modal-btn-buy:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(234, 88, 12, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(234, 88, 12, 0.45);
+}
+
+.gads-modal-btn-buy:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 640px) {
@@ -16341,9 +16321,6 @@ html {
     gap: 8px;
   }
   .gads-modal-features-grid {
-    grid-template-columns: 1fr;
-  }
-  .gads-modal-footer {
     grid-template-columns: 1fr;
   }
 }

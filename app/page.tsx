@@ -2913,14 +2913,6 @@ export default function Home() {
 
               {/* FOOTER ACTIONS */}
               <div className="gads-modal-footer">
-                <a
-                  href={getWhatsAppUrl(`Halo Admin HostingWeb, saya mau tanya detail lebih lanjut tentang *${selectedAdsDetail.title}* (${selectedAdsDetail.priceFormatted}). Apakah kata kunci bisnis saya bisa diiklankan?`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="gads-modal-btn-wa"
-                >
-                  <span>💬</span> Chat Konsultasi WA
-                </a>
                 <button
                   type="button"
                   onClick={() => {
