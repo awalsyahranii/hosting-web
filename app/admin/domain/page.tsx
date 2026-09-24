@@ -28,6 +28,17 @@ export default function AdminDomainPage() {
   const [tldFilter, setTldFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // WhatsApp Reminder Modal State
+  const [reminderModal, setReminderModal] = useState<{
+    isOpen: boolean;
+    client: string;
+    domain: string;
+    serviceType: string;
+    expiryDate: string;
+    daysRemaining: number | null;
+    phone: string;
+  } | null>(null);
+
   useEffect(() => {
     const savedUser = localStorage.getItem("hostingwebid_user");
     if (!savedUser) {
@@ -369,10 +380,19 @@ export default function AdminDomainPage() {
                           </span>
                         </td>
                         <td className="p-3.5 text-right">
-                          <a
-                            href={waUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReminderModal({
+                                isOpen: true,
+                                client: item.username || "Pelanggan",
+                                domain: item.domain_name,
+                                serviceType: "Domain Registration",
+                                expiryDate: exp.formattedDate,
+                                daysRemaining: exp.daysRemaining,
+                                phone: (item as any).phone || (item as any).whatsapp || (item as any).no_hp || "62",
+                              });
+                            }}
                             title="Kirim pesan pengingat perpanjangan domain ke WhatsApp klien"
                             className={`px-2.5 py-1 rounded text-[11px] font-bold inline-flex items-center gap-1 transition ${
                               exp.isExpiringSoon || exp.isExpired
@@ -382,7 +402,7 @@ export default function AdminDomainPage() {
                           >
                             <span>📱</span>
                             <span>Ingatkan WA</span>
-                          </a>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -393,7 +413,114 @@ export default function AdminDomainPage() {
           )}
         </div>
       </section>
+
+      {/* MODAL PENGINGAT WHATSAPP */}
+      {reminderModal && reminderModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-700 p-5 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">📱</span>
+                <div>
+                  <h3 className="font-bold text-base leading-tight">Kirim Pengingat WhatsApp Klien</h3>
+                  <p className="text-xs text-emerald-100">Kirim tagihan perpanjangan domain ke WhatsApp pelanggan</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReminderModal(null)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!reminderModal) return;
+                const cleanPhone = reminderModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
+                const url = generateWhatsAppReminderUrl({
+                  clientName: reminderModal.client,
+                  domainName: reminderModal.domain,
+                  serviceType: reminderModal.serviceType,
+                  expiryDate: reminderModal.expiryDate,
+                  daysRemaining: reminderModal.daysRemaining,
+                  phone: cleanPhone,
+                });
+                window.open(url, "_blank");
+                setReminderModal(null);
+              }}
+              className="p-5 space-y-4 text-xs"
+            >
+              <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Nama Klien</span>
+                  <strong className="text-slate-800 text-xs">{reminderModal.client}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Nama Domain</span>
+                  <strong className="text-slate-800 text-xs font-mono">{reminderModal.domain}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Layanan</span>
+                  <span className="text-slate-700 font-semibold">{reminderModal.serviceType}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Masa Aktif</span>
+                  <span className="text-slate-700 font-semibold">{reminderModal.expiryDate}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Nomor WhatsApp Klien <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: 085333555976 atau 6285333555976"
+                    value={reminderModal.phone}
+                    onChange={(e) => setReminderModal({ ...reminderModal, phone: e.target.value })}
+                    className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                  />
+                  <span className="absolute left-2.5 top-2 text-slate-400 font-bold">📞</span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  *Masukkan nomor WhatsApp klien tujuan (format 08xxx atau 62xxx).
+                </p>
+              </div>
+
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3 text-[11px] text-emerald-950 font-sans leading-relaxed">
+                <span className="font-bold text-emerald-800 block mb-1">Preview Format Pesan:</span>
+                Halo Kak <strong>{reminderModal.client}</strong>,<br />
+                Kami dari tim <strong>HostingWeb.id</strong> ingin menginformasikan bahwa layanan <strong>{reminderModal.serviceType}</strong> untuk domain <strong>{reminderModal.domain}</strong> akan berakhir pada <strong>{reminderModal.expiryDate}</strong>.<br />
+                Akses perpanjangan: <em>https://hostingwebid.com/dashboard</em>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setReminderModal(null)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md inline-flex items-center gap-1.5 transition"
+                >
+                  <span>💬</span>
+                  <span>Buka Chat WhatsApp Klien</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
+
 

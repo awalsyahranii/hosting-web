@@ -231,7 +231,7 @@ export default function AdminServicesPage() {
       isOpen: true,
       client: item.client ? item.client.toUpperCase() : "PELANGGAN",
       domain: item.domain || "website-klien.id",
-      phone: item.phone || "6285333555976",
+      phone: item.phone || "",
       progress: item.progress || 50,
       stage: item.stage || "Pengerjaan Desain & Integrasi Fitur",
       deadline: item.deadline || "14 Hari Kerja",
@@ -278,12 +278,13 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
       isOpen: true,
       client: item.client ? item.client.toUpperCase() : "PELANGGAN",
       website: domainUrl || "https://website-klien.id/",
-      phone: item.phone || "6285333555976",
+      phone: item.phone || "",
       date: todayStr,
       statusTayang: "Ya",
       keterangan: "-",
     });
   };
+
 
   const handleSendDailyReportWA = (e: React.FormEvent) => {
     e.preventDefault();
