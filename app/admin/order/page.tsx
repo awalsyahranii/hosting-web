@@ -119,9 +119,12 @@ export default function AdminOrderPage() {
 
   const [catFilter, setCatFilter] = useState("all");
 
-  function detectOrderCategory(o: OrderLog): "hosting" | "domain" | "google_ads" {
+  function detectOrderCategory(o: OrderLog): "hosting" | "domain" | "google_ads" | "seo" | "website" | "theme" {
     const text = `${o.service_category || ""} ${o.domain_name || ""}`.toLowerCase();
+    if (text.includes("tema") || text.includes("theme") || text.includes("template")) return "theme";
     if (text.includes("ads") || text.includes("iklan") || text.includes("google") || text.includes("pemula-") || text.includes("bisnis-") || text.includes("paket pemula")) return "google_ads";
+    if (text.includes("seo") || text.includes("backlink")) return "seo";
+    if (text.includes("website") || text.includes("desain web")) return "website";
     if (text.includes("domain") || text.includes(".com") || text.includes(".id")) return "domain";
     return "hosting";
   }
@@ -196,18 +199,26 @@ export default function AdminOrderPage() {
         {/* TOOLBAR */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex gap-2 flex-wrap">
-            {["all", "hosting", "domain", "google_ads"].map((ct) => (
+            {[
+              { key: "all", label: "Semua Kategori" },
+              { key: "hosting", label: "🔥 Hosting" },
+              { key: "domain", label: "🌐 Domain" },
+              { key: "google_ads", label: "🎯 Google Ads" },
+              { key: "seo", label: "🚀 SEO" },
+              { key: "website", label: "💻 Website" },
+              { key: "theme", label: "🎨 Tema" },
+            ].map((ct) => (
               <button
-                key={ct}
+                key={ct.key}
                 type="button"
-                onClick={() => setCatFilter(ct)}
+                onClick={() => setCatFilter(ct.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition ${
-                  catFilter === ct
+                  catFilter === ct.key
                     ? "bg-slate-900 text-white shadow-sm"
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
                 }`}
               >
-                {ct === "all" ? "Semua Kategori" : ct === "google_ads" ? "🎯 Google Ads" : ct}
+                {ct.label}
               </button>
             ))}
           </div>

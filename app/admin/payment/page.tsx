@@ -851,6 +851,10 @@ export default function AdminPaymentPage() {
                             <span className="badge-category" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
                               💻 WEBSITE
                             </span>
+                          ) : cat === "theme" ? (
+                            <span className="badge-category" style={{ background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a" }}>
+                              🎨 TEMA WEBSITE
+                            </span>
                           ) : (
                             <span className="badge-category domain">
                               🌐 DOMAIN
@@ -871,15 +875,17 @@ export default function AdminPaymentPage() {
                           <small>{payment.email || "-"}</small>
                         </td>
                         <td>
-                          <strong className={cat === "hosting" ? "text-orange-600" : cat === "google_ads" ? "text-amber-700" : "text-blue-600"}>
+                          <strong className={cat === "hosting" ? "text-orange-600" : cat === "google_ads" ? "text-amber-700" : cat === "theme" ? "text-amber-600" : "text-blue-600"}>
                             {paymentDomain(payment)}
                           </strong>
                           <small style={{ color: "#64748b", display: "block" }}>
-                            {cat === "hosting"
-                              ? (payment.billing_period || "Paket Tahunan (12 Bulan)")
-                              : cat === "google_ads"
-                                ? (payment.billing_period || "Masa Aktif Kampanye Iklan")
-                                : "Registrasi Domain (1 Tahun)"}
+                            {cat === "theme"
+                              ? "Akses Selamanya (Sekali Bayar)"
+                              : cat === "hosting"
+                                ? (payment.billing_period || "Paket Tahunan (12 Bulan)")
+                                : cat === "google_ads"
+                                  ? (payment.billing_period || "Masa Aktif Kampanye Iklan")
+                                  : "Registrasi Domain (1 Tahun)"}
                           </small>
                         </td>
                         <td>
@@ -968,6 +974,18 @@ export default function AdminPaymentPage() {
                         <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
                           🎯 GOOGLE ADS
                         </span>
+                      ) : getPaymentCategory(selectedPayment) === "seo" ? (
+                        <span className="badge-category" style={{ background: "#f5f3ff", color: "#6d28d9", border: "1px solid #ddd6fe" }}>
+                          🚀 JASA SEO
+                        </span>
+                      ) : getPaymentCategory(selectedPayment) === "website" ? (
+                        <span className="badge-category" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
+                          💻 WEBSITE
+                        </span>
+                      ) : getPaymentCategory(selectedPayment) === "theme" ? (
+                        <span className="badge-category" style={{ background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a" }}>
+                          🎨 TEMA WEBSITE
+                        </span>
                       ) : (
                         <span className="badge-category domain">🌐 DOMAIN WEB</span>
                       )}
@@ -1037,9 +1055,15 @@ export default function AdminPaymentPage() {
                     onClick={() => {
                       const rawAmt = Number(selectedPayment.amount ?? selectedPayment.total ?? 0);
                       const isGoogleAds = getPaymentCategory(selectedPayment) === "google_ads";
+                      const isTheme = getPaymentCategory(selectedPayment) === "theme";
                       const desc = isGoogleAds
                         ? (selectedPayment.domain_name || "Paket Bisnis 30 Hari Google Ads (Google Search Campaign)")
                         : paymentDomain(selectedPayment);
+                      const itemDesc = isTheme
+                        ? "Lisensi Tema & Template Website (Akses Selamanya)"
+                        : isGoogleAds
+                          ? "Layanan Kampanye Iklan Google Ads"
+                          : "Paket Cloud Server & Infrastruktur Website";
 
                       printOrDownloadInvoicePdf({
                         invoice_number: selectedPayment.payment_number || `INV-${paymentId(selectedPayment)}`,
@@ -1053,7 +1077,7 @@ export default function AdminPaymentPage() {
                         items: [
                           {
                             domain_name: desc,
-                            description: "Paket Cloud Server & Infrastruktur Website",
+                            description: itemDesc,
                             price: rawAmt,
                           },
                         ],
