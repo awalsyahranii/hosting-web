@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "../components/AdminSidebar";
 import {
+  fetchThemesAsync,
   getThemes,
-  addTheme,
-  updateTheme,
-  deleteTheme,
+  addThemeAsync,
+  updateThemeAsync,
+  deleteThemeAsync,
   generateThemeDefaultsFromUrl,
   ThemeItem,
 } from "@/app/lib/themeStore";
@@ -18,6 +19,7 @@ export default function AdminTemaPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [themes, setThemes] = useState<ThemeItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -70,22 +72,24 @@ export default function AdminTemaPage() {
   // Load Data
   useEffect(() => {
     loadData();
-    window.addEventListener("themes_updated", loadData);
-    return () => {
-      window.removeEventListener("themes_updated", loadData);
-    };
   }, []);
 
-  function loadData() {
+  async function loadData() {
     setLoading(true);
-    const list = getThemes();
-    setThemes(list);
-    setLoading(false);
+    try {
+      const list = await fetchThemesAsync();
+      setThemes(list);
+    } catch (err) {
+      console.error(err);
+      setThemes(getThemes());
+    } finally {
+      setLoading(false);
+    }
   }
 
   function showToast(msg: string) {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 4000);
   }
 
   function rupiah(val: number) {
@@ -152,7 +156,7 @@ export default function AdminTemaPage() {
   }
 
   // Save (Create / Update)
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!formData.name.trim()) {
@@ -178,54 +182,81 @@ export default function AdminTemaPage() {
     const priceNum = parseInt(formData.price.replace(/\D/g, "")) || 0;
     const origPriceNum = parseInt(formData.originalPrice.replace(/\D/g, "")) || priceNum * 2;
 
-    if (editingTheme) {
-      updateTheme(editingTheme.id, {
-        demoUrl: validUrl,
-        name: formData.name.trim(),
-        category: formData.category,
-        price: priceNum,
-        originalPrice: origPriceNum,
-        image: formData.image.trim() || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
-        badge: formData.badge.trim(),
-        description: formData.description.trim(),
-        features: features.length > 0 ? features : ["Fitur Premium Siap Pakai", "Mobile Friendly 100%", "Integrasi WhatsApp"],
-        status: formData.status,
-      });
-      showToast("✅ Tema berhasil diperbarui!");
-    } else {
-      addTheme({
-        demoUrl: validUrl,
-        name: formData.name.trim(),
-        category: formData.category,
-        price: priceNum,
-        originalPrice: origPriceNum,
-        image: formData.image.trim() || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
-        badge: formData.badge.trim() || "LIVE DEMO READY",
-        description: formData.description.trim() || "Template website bisnis profesional, siap pakai, dan mudah dikelola.",
-        features: features.length > 0 ? features : ["Fitur Premium Siap Pakai", "Mobile Friendly 100%", "Integrasi WhatsApp"],
-        status: formData.status,
-      });
-      showToast("🎉 Tema baru berhasil ditambahkan!");
-    }
+    setIsSaving(true);
+    try {
+      if (editingTheme) {
+        const res = await updateThemeAsync(editingTheme.id, {
+          demoUrl: validUrl,
+          name: formData.name.trim(),
+          category: formData.category,
+          price: priceNum,
+          originalPrice: origPriceNum,
+          image: formData.image.trim() || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
+          badge: formData.badge.trim(),
+          description: formData.description.trim(),
+          features: features.length > 0 ? features : ["Fitur Premium Siap Pakai", "Mobile Friendly 100%", "Integrasi WhatsApp"],
+          status: formData.status,
+        });
 
-    setModalOpen(false);
-    loadData();
+        if (res.success) {
+          showToast(`✅ Harga ${formData.name} berhasil diubah ke ${rupiah(priceNum)}!`);
+        } else {
+          alert("Gagal update ke server: " + (res.message || "Error"));
+        }
+      } else {
+        const res = await addThemeAsync({
+          demoUrl: validUrl,
+          name: formData.name.trim(),
+          category: formData.category,
+          price: priceNum,
+          originalPrice: origPriceNum,
+          image: formData.image.trim() || "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80",
+          badge: formData.badge.trim() || "LIVE DEMO READY",
+          description: formData.description.trim() || "Template website bisnis profesional, siap pakai, dan mudah dikelola.",
+          features: features.length > 0 ? features : ["Fitur Premium Siap Pakai", "Mobile Friendly 100%", "Integrasi WhatsApp"],
+          status: formData.status,
+        });
+
+        if (res.success) {
+          showToast("🎉 Tema baru berhasil ditambahkan dan disimpan ke server!");
+        } else {
+          alert("Gagal simpan ke server: " + (res.message || "Error"));
+        }
+      }
+      setModalOpen(false);
+      await loadData();
+    } catch (err: any) {
+      alert("Gagal menyimpan tema: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   // Delete
-  function handleDelete(id: string) {
-    deleteTheme(id);
-    setDeleteConfirmId(null);
-    showToast("🗑️ Tema berhasil dihapus.");
-    loadData();
+  async function handleDelete(id: string) {
+    setIsSaving(true);
+    try {
+      const res = await deleteThemeAsync(id);
+      if (res.success) {
+        showToast("🗑️ Tema berhasil dihapus dari server.");
+      } else {
+        alert("Gagal menghapus: " + (res.message || "Error"));
+      }
+      setDeleteConfirmId(null);
+      await loadData();
+    } catch (err: any) {
+      alert("Gagal menghapus tema: " + (err?.message || "Unknown error"));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   // Toggle Status
-  function handleToggleStatus(theme: ThemeItem) {
+  async function handleToggleStatus(theme: ThemeItem) {
     const nextStatus = theme.status === "inactive" ? "active" : "inactive";
-    updateTheme(theme.id, { status: nextStatus });
+    await updateThemeAsync(theme.id, { status: nextStatus });
     showToast(`Status tema diubah menjadi: ${nextStatus.toUpperCase()}`);
-    loadData();
+    await loadData();
   }
 
   // Filter Data
@@ -256,8 +287,8 @@ export default function AdminTemaPage() {
       <main className="admin-content">
         {/* TOAST ALERT */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 bg-slate-900 text-white text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-3">
-            {toastMessage}
+          <div className="fixed top-6 right-6 z-50 bg-slate-900 text-white text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-3 flex items-center gap-2">
+            <span>{toastMessage}</span>
           </div>
         )}
 
@@ -350,21 +381,36 @@ export default function AdminTemaPage() {
             </select>
           </div>
 
-          <span className="text-xs text-slate-500 font-medium self-end md:self-center">
-            Menampilkan <strong>{filteredThemes.length}</strong> dari {themes.length} tema
-          </span>
+          <div className="flex items-center gap-3 self-end md:self-center">
+            <button
+              type="button"
+              onClick={() => loadData()}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold hover:bg-slate-100 flex items-center gap-1"
+              title="Refresh Data dari Server"
+            >
+              <span>🔄</span> Refresh
+            </button>
+            <span className="text-xs text-slate-500 font-medium">
+              Menampilkan <strong>{filteredThemes.length}</strong> dari {themes.length} tema
+            </span>
+          </div>
         </div>
 
         {/* THEMES TABLE / GRID */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          {filteredThemes.length > 0 ? (
+          {loading ? (
+            <div className="py-16 text-center text-slate-500 text-xs font-bold">
+              <span className="inline-block animate-spin text-2xl mb-2">⏳</span>
+              <p>Memuat katalog tema dari server...</p>
+            </div>
+          ) : filteredThemes.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-700">
                 <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
                   <tr>
                     <th className="py-3.5 px-4">Info Tema</th>
                     <th className="py-3.5 px-4">Kategori</th>
-                    <th className="py-3.5 px-4">Harga</th>
+                    <th className="py-3.5 px-4">Harga Jual</th>
                     <th className="py-3.5 px-4">Demo URL</th>
                     <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-4 text-right">Aksi</th>
@@ -403,7 +449,7 @@ export default function AdminTemaPage() {
                       <td className="py-3 px-4">
                         <div>
                           <del className="text-[10px] text-slate-400 block">{rupiah(theme.originalPrice)}</del>
-                          <strong className="text-sm font-bold text-slate-900">{rupiah(theme.price)}</strong>
+                          <strong className="text-sm font-bold text-orange-600">{rupiah(theme.price)}</strong>
                         </div>
                       </td>
 
@@ -565,7 +611,7 @@ export default function AdminTemaPage() {
                     <input
                       type="number"
                       required
-                      placeholder="350000"
+                      placeholder="150000"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-orange-500"
@@ -577,7 +623,7 @@ export default function AdminTemaPage() {
                     </label>
                     <input
                       type="number"
-                      placeholder="700000"
+                      placeholder="500000"
                       value={formData.originalPrice}
                       onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:border-orange-500"
@@ -659,14 +705,17 @@ export default function AdminTemaPage() {
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
+                    disabled={isSaving}
                     className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25"
+                    disabled={isSaving}
+                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25 flex items-center gap-2"
                   >
+                    {isSaving && <span className="animate-spin">⏳</span>}
                     {editingTheme ? "💾 Simpan Perubahan" : "🚀 Publikasikan Tema"}
                   </button>
                 </div>
@@ -688,6 +737,7 @@ export default function AdminTemaPage() {
                 <button
                   type="button"
                   onClick={() => setDeleteConfirmId(null)}
+                  disabled={isSaving}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50"
                 >
                   Batal
@@ -695,8 +745,10 @@ export default function AdminTemaPage() {
                 <button
                   type="button"
                   onClick={() => handleDelete(deleteConfirmId)}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5"
                 >
+                  {isSaving && <span className="animate-spin">⏳</span>}
                   Ya, Hapus
                 </button>
               </div>
