@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
 
@@ -713,6 +713,8 @@ const popularRow2 = [
   },
 ];
 
+const allPortfolioItems = [...popularRow1, ...popularRow2];
+
 const portfolioCategories = [
   "Semua",
   "Bisnis & Jasa",
@@ -724,6 +726,9 @@ const portfolioCategories = [
 ];
 
 export default function Home() {
+  const portfolioTrackRef = useRef<HTMLDivElement>(null);
+  const featuresTrackRef = useRef<HTMLDivElement>(null);
+
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [domain, setDomain] = useState("");
 
@@ -900,10 +905,23 @@ export default function Home() {
     navigateWithAuth(targetUrl);
   };
 
+  const scrollTrack = (ref: React.RefObject<HTMLDivElement | null>, offset: number) => {
+    if (!ref.current) return;
+    const el = ref.current;
+    try {
+      el.scrollBy({ left: offset, behavior: "smooth" });
+    } catch {
+      el.scrollLeft += offset;
+    }
+  };
+
   const scrollSlider = (id: string, offset: number) => {
     const el = document.getElementById(id);
-    if (el) {
+    if (!el) return;
+    try {
       el.scrollBy({ left: offset, behavior: "smooth" });
+    } catch {
+      el.scrollLeft += offset;
     }
   };
   
@@ -2166,8 +2184,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* SLIDER ROW 1 */}
-          {popularRow1.filter((item) => {
+          {/* SLIDER ROW (1 BARIS) */}
+          {allPortfolioItems.filter((item) => {
             const matchesCategory =
               portfolioCategory === "Semua" || item.category === portfolioCategory;
             const matchesSearch =
@@ -2183,7 +2201,7 @@ export default function Home() {
               <div className="slider-row-header">
                 <div className="slider-row-title">
                   <span className="slider-row-bullet" />
-                  <strong>Koleksi Populer #1: Instansi, Media &amp; Bisnis Retail</strong>
+                  <strong>Koleksi Portofolio &amp; Contoh Website Siap Pakai</strong>
                 </div>
 
                 <div className="slider-row-nav">
@@ -2191,7 +2209,7 @@ export default function Home() {
                   <button
                     type="button"
                     className="slider-nav-btn"
-                    onClick={() => scrollSlider("slider-row-1", -340)}
+                    onClick={() => scrollTrack(portfolioTrackRef, -340)}
                     aria-label="Geser ke kiri"
                   >
                     ‹
@@ -2199,7 +2217,7 @@ export default function Home() {
                   <button
                     type="button"
                     className="slider-nav-btn"
-                    onClick={() => scrollSlider("slider-row-1", 340)}
+                    onClick={() => scrollTrack(portfolioTrackRef, 340)}
                     aria-label="Geser ke kanan"
                   >
                     ›
@@ -2207,143 +2225,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="slider-track" id="slider-row-1">
-                {popularRow1
-                  .filter((item) => {
-                    const matchesCategory =
-                      portfolioCategory === "Semua" || item.category === portfolioCategory;
-                    const matchesSearch =
-                      !portfolioSearch ||
-                      item.domain.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-                      item.bannerTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-                      item.packageTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-                      item.categoryTag.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-                      item.category.toLowerCase().includes(portfolioSearch.toLowerCase());
-                    return matchesCategory && matchesSearch;
-                  })
-                  .map((item, index) => (
-                    <div className="slider-card" key={item.domain + index}>
-                      {/* CARD PREVIEW BANNER */}
-                      <div
-                        className="slider-card-banner"
-                        style={{ background: item.gradient }}
-                      >
-                        <div className="banner-browser-top">
-                          <div className="banner-dots">
-                            <span className="dot dot-red" />
-                            <span className="dot dot-yellow" />
-                            <span className="dot dot-green" />
-                          </div>
-                          <span className="banner-domain">{item.domain}</span>
-                        </div>
-
-                        <div className="banner-badges-row">
-                          <span className="banner-category-badge">{item.categoryTag}</span>
-                          <span className="banner-promo-badge">{item.promoTag}</span>
-                        </div>
-
-                        <div className="banner-main-text">
-                          <h4 className="banner-title">{item.bannerTitle}</h4>
-                          <p className="banner-desc">{item.bannerDesc}</p>
-                        </div>
-                      </div>
-
-                      {/* CARD BODY */}
-                      <div className="slider-card-body">
-                        <div className="slider-card-rating">
-                          <span className="stars">★★★★★</span>
-                          <small>({item.rating})</small>
-                        </div>
-
-                        <div className="slider-card-pricing">
-                          <div className="slider-price-row">
-                            <del>{item.originalPrice}</del>
-                            <span className="slider-discount-tag">{item.discountBadge}</span>
-                          </div>
-                          <strong className="slider-final-price">{item.price}</strong>
-                        </div>
-
-                        <h5 className="slider-package-title">{item.packageTitle}</h5>
-
-                        <ul className="slider-features-list">
-                          <li>
-                            <span className="check">✓</span>
-                            {item.feat1}
-                          </li>
-                          <li>
-                            <span className="check">✓</span>
-                            {item.feat2}
-                          </li>
-                        </ul>
-
-                        <div className="slider-card-actions">
-                          <a
-                            href={`https://${item.domain}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="slider-btn-detail"
-                          >
-                            👁️ Lihat Detail
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => handleBuyWebsite(item)}
-                            className="slider-btn-order"
-                          >
-                            {item.orderPrice}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-
-          {/* SLIDER ROW 2 */}
-          {popularRow2.filter((item) => {
-            const matchesCategory =
-              portfolioCategory === "Semua" || item.category === portfolioCategory;
-            const matchesSearch =
-              !portfolioSearch ||
-              item.domain.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.bannerTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.packageTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.categoryTag.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.category.toLowerCase().includes(portfolioSearch.toLowerCase());
-            return matchesCategory && matchesSearch;
-          }).length > 0 && (
-            <div className="slider-row-wrapper" style={{ marginTop: "44px" }}>
-              <div className="slider-row-header">
-                <div className="slider-row-title">
-                  <span className="slider-row-bullet" />
-                  <strong>Koleksi Populer #2: Pariwisata, Komunitas, Tokoh &amp; B2B</strong>
-                </div>
-
-                <div className="slider-row-nav">
-                  <span className="slider-hint">Geser untuk melihat →</span>
-                  <button
-                    type="button"
-                    className="slider-nav-btn"
-                    onClick={() => scrollSlider("slider-row-2", -340)}
-                    aria-label="Geser ke kiri"
-                  >
-                    ‹
-                  </button>
-                  <button
-                    type="button"
-                    className="slider-nav-btn"
-                    onClick={() => scrollSlider("slider-row-2", 340)}
-                    aria-label="Geser ke kanan"
-                  >
-                    ›
-                  </button>
-                </div>
-              </div>
-
-              <div className="slider-track" id="slider-row-2">
-                {popularRow2
+              <div className="slider-track" id="slider-row-main" ref={portfolioTrackRef}>
+                {allPortfolioItems
                   .filter((item) => {
                     const matchesCategory =
                       portfolioCategory === "Semua" || item.category === portfolioCategory;
@@ -2437,19 +2320,7 @@ export default function Home() {
           )}
 
           {/* EMPTY STATE */}
-          {popularRow1.filter((item) => {
-            const matchesCategory =
-              portfolioCategory === "Semua" || item.category === portfolioCategory;
-            const matchesSearch =
-              !portfolioSearch ||
-              item.domain.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.bannerTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.packageTitle.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.categoryTag.toLowerCase().includes(portfolioSearch.toLowerCase()) ||
-              item.category.toLowerCase().includes(portfolioSearch.toLowerCase());
-            return matchesCategory && matchesSearch;
-          }).length === 0 &&
-          popularRow2.filter((item) => {
+          {allPortfolioItems.filter((item) => {
             const matchesCategory =
               portfolioCategory === "Semua" || item.category === portfolioCategory;
             const matchesSearch =
@@ -2936,25 +2807,48 @@ export default function Home() {
       <section className="features-section" id="features">
         <div className="container">
           {/* SECTION HEADER */}
-          <div className="features-header-left">
-            <div className="features-top-badge">
-              <span className="features-top-badge-dot" />
-              <span>FITUR UNGGULAN</span>
+          <div className="features-header-wrapper">
+            <div className="features-header-left">
+              <div className="features-top-badge">
+                <span className="features-top-badge-dot" />
+                <span>FITUR UNGGULAN</span>
+              </div>
+
+              <h2 className="features-main-title">
+                Semua yang dibutuhkan
+                <br />
+                <span className="features-title-highlight">website kamu.</span>
+              </h2>
+
+              <p className="features-main-subtitle">
+                Kami menyediakan infrastruktur yang dirancang untuk membuat website tetap cepat, aman, dan mudah dikelola.
+              </p>
             </div>
 
-            <h2 className="features-main-title">
-              Semua yang dibutuhkan
-              <br />
-              <span className="features-title-highlight">website kamu.</span>
-            </h2>
-
-            <p className="features-main-subtitle">
-              Kami menyediakan infrastruktur yang dirancang untuk membuat website tetap cepat, aman, dan mudah dikelola.
-            </p>
+            {/* SLIDER NAVIGATION */}
+            <div className="slider-row-nav">
+              <span className="slider-hint">Geser untuk melihat →</span>
+              <button
+                type="button"
+                className="slider-nav-btn"
+                onClick={() => scrollTrack(featuresTrackRef, -340)}
+                aria-label="Geser ke kiri"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="slider-nav-btn"
+                onClick={() => scrollTrack(featuresTrackRef, 340)}
+                aria-label="Geser ke kanan"
+              >
+                ›
+              </button>
+            </div>
           </div>
 
-          {/* FEATURES GRID */}
-          <div className="features-grid-modern">
+          {/* FEATURES 1-ROW SLIDER */}
+          <div className="features-grid-modern" id="featuresSliderTrack" ref={featuresTrackRef}>
             {features.map((feature) => (
               <div
                 className="feature-modern-card"
