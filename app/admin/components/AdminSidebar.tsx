@@ -194,6 +194,24 @@ export default function AdminSidebar({
           {isCurrent("/admin/seo") && <span className="admin-nav-dot" />}
         </Link>
 
+        {/* 6. Tema Website */}
+        <Link
+          href="/admin/tema"
+          className={`admin-nav-item ${isCurrent("/admin/tema") ? "active" : ""}`}
+        >
+          <span className="admin-nav-svg-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.6 0-.4-.2-.8-.5-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-5.5-4.5-9.6-10-9.6z" />
+              <circle cx="6.5" cy="11.5" r="1.5" fill="currentColor" />
+              <circle cx="9.5" cy="7.5" r="1.5" fill="currentColor" />
+              <circle cx="14.5" cy="7.5" r="1.5" fill="currentColor" />
+              <circle cx="17.5" cy="11.5" r="1.5" fill="currentColor" />
+            </svg>
+          </span>
+          <span className="admin-nav-text">Tema Website</span>
+          {isCurrent("/admin/tema") && <span className="admin-nav-dot" />}
+        </Link>
+
         {/* =========================================================
             SECTION 3: TRANSAKSI & BILLING
         ========================================================= */}

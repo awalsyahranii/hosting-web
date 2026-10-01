@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Navbar from "./components/Navbar";
 import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
 
 interface PlanFeature {
@@ -728,6 +729,8 @@ const portfolioCategories = [
 export default function Home() {
   const portfolioTrackRef = useRef<HTMLDivElement>(null);
   const featuresTrackRef = useRef<HTMLDivElement>(null);
+  const blogTrackRef = useRef<HTMLDivElement>(null);
+  const testimonialTrackRef = useRef<HTMLDivElement>(null);
 
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [domain, setDomain] = useState("");
@@ -1046,245 +1049,7 @@ export default function Home() {
       {/* =====================================================
           NAVBAR
       ===================================================== */}
-      <header className="navbar">
-  <div className="container nav-inner">
-
-    {/* LOGO */}
-    <Link
-      href="/"
-      className="brand"
-      onClick={() => setMobileMenuOpen(false)}
-    >
-      <img src="/logo.png" alt="Hostingwebid" />
-    </Link>
-
-    {/* DESKTOP NAVIGATION */}
-    <nav className="nav-menu">
-      <a href="#pricing" onClick={(e) => { e.preventDefault(); scrollToSection("pricing"); }}>Jasa Website</a>
-      <a href="#google-ads" onClick={(e) => { e.preventDefault(); scrollToSection("google-ads"); }}>Google Ads</a>
-      <a href="#portfolio" onClick={(e) => { e.preventDefault(); scrollToSection("portfolio"); }}>Portfolio</a>
-      <a href="#domain" onClick={(e) => { e.preventDefault(); scrollToSection("domain"); }}>Cek Domain</a>
-      <Link href="/seo">SEO</Link>
-      <a href="#features" onClick={(e) => { e.preventDefault(); scrollToSection("features"); }}>Keunggulan</a>
-      <Link href="/blog">Blog</Link>
-      <a href="#faq" onClick={(e) => { e.preventDefault(); scrollToSection("faq"); }}>FAQ</a>
-    </nav>
-
-    {/* DESKTOP ACTIONS */}
-    <div className="nav-actions">
-      {currentUser ? (
-        <>
-          <Link
-            href={
-              currentUser.role === "admin" ||
-              currentUser.role === "super_admin" ||
-              currentUser.role === "superadmin"
-                ? "/admin"
-                : "/dashboard"
-            }
-            className="nav-button"
-            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-          >
-            <span>
-              {currentUser.role === "admin" ||
-              currentUser.role === "super_admin" ||
-              currentUser.role === "superadmin"
-                ? "⚡ Panel Admin"
-                : "👤 Dashboard Saya"}
-            </span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              localStorage.removeItem("hostingwebid_user");
-              localStorage.removeItem("hostingweb_auth");
-              fetch("/api/backend/auth/logout.php", { credentials: "include" }).catch(() => null);
-              setCurrentUser(null);
-              router.refresh();
-            }}
-            className="nav-login"
-            style={{ background: "none", border: "none", cursor: "pointer", padding: "8px 12px" }}
-          >
-            Keluar
-          </button>
-        </>
-      ) : (
-        <>
-          <Link href="/login" className="nav-login">
-            Masuk
-          </Link>
-
-          <Link href="/register" className="nav-button">
-            Mulai Sekarang
-          </Link>
-        </>
-      )}
-    </div>
-
-    {/* MOBILE MENU BUTTON */}
-    <button
-      className={`mobile-menu-button ${
-        mobileMenuOpen ? "menu-open" : ""
-      }`}
-      aria-label={
-        mobileMenuOpen
-          ? "Tutup menu"
-          : "Buka menu"
-      }
-      type="button"
-      onClick={() =>
-        setMobileMenuOpen(!mobileMenuOpen)
-      }
-    >
-      <span />
-      <span />
-      <span />
-    </button>
-
-  </div>
-
-  {/* =====================================================
-      MOBILE / TABLET MENU
-  ===================================================== */}
-  {mobileMenuOpen && (
-    <div className="mobile-menu">
-
-      <a
-        href="#pricing"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("pricing");
-        }}
-      >
-        Jasa Website
-      </a>
-
-      <a
-        href="#google-ads"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("google-ads");
-        }}
-      >
-        Google Ads
-      </a>
-
-      <a
-        href="#portfolio"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("portfolio");
-        }}
-      >
-        Portfolio
-      </a>
-
-      <a
-        href="#domain"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("domain");
-        }}
-      >
-        Cek Domain
-      </a>
-
-      <Link
-        href="/seo"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        SEO
-      </Link>
-
-      <a
-        href="#features"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("features");
-        }}
-      >
-        Keunggulan
-      </a>
-
-      <Link
-        href="/blog"
-        onClick={() => setMobileMenuOpen(false)}
-      >
-        Blog &amp; Artikel
-      </Link>
-
-      <a
-        href="#faq"
-        onClick={(e) => {
-          e.preventDefault();
-          scrollToSection("faq");
-        }}
-      >
-        FAQ
-      </a>
-
-      <div className="mobile-menu-divider" />
-
-      {currentUser ? (
-        <>
-          <Link
-            href={
-              currentUser.role === "admin" ||
-              currentUser.role === "super_admin" ||
-              currentUser.role === "superadmin"
-                ? "/admin"
-                : "/dashboard"
-            }
-            className="mobile-register"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            {currentUser.role === "admin" ||
-            currentUser.role === "super_admin" ||
-            currentUser.role === "superadmin"
-              ? "⚡ Panel Admin"
-              : "👤 Dashboard Saya"}
-            <span>→</span>
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              localStorage.removeItem("hostingwebid_user");
-              localStorage.removeItem("hostingweb_auth");
-              fetch("/api/backend/auth/logout.php", { credentials: "include" }).catch(() => null);
-              setCurrentUser(null);
-              router.refresh();
-            }}
-            className="mobile-login"
-            style={{ textAlign: "left", width: "100%", background: "none", border: "none", cursor: "pointer" }}
-          >
-            Keluar / Logout
-          </button>
-        </>
-      ) : (
-        <>
-          <Link
-            href="/login"
-            className="mobile-login"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Masuk
-          </Link>
-
-          <Link
-            href="/register"
-            className="mobile-register"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Mulai Sekarang
-            <span>→</span>
-          </Link>
-        </>
-      )}
-
-    </div>
-  )}
-</header>
+      <Navbar activeMenu="home" />
 
       {/* =====================================================
           HERO
@@ -1302,12 +1067,11 @@ export default function Home() {
 
             <div className="hero-badge">
               <span className="badge-dot" />
-              Jasa Pembuatan Website &amp; Iklan Google Ads
+              <span>Jasa Pembuatan Website &amp; Iklan Google Ads</span>
             </div>
 
             <h1>
-              Jasa Pembuatan Website &amp;
-              <br />
+              Jasa Pembuatan Website &amp;{" "}
               <span>Iklan Google Ads Tertarget</span>
             </h1>
 
@@ -1349,7 +1113,7 @@ export default function Home() {
                   scrollToSection("pricing");
                 }}
               >
-                Lihat Paket Website
+                <span>Lihat Paket Website</span>
                 <span>→</span>
               </a>
 
@@ -1361,7 +1125,7 @@ export default function Home() {
                   scrollToSection("google-ads");
                 }}
               >
-                Jasa Iklan Google Ads
+                <span>Jasa Iklan Google Ads</span>
               </a>
 
             </div>
@@ -1669,21 +1433,12 @@ export default function Home() {
               </div>
 
               <h2>
-                Temukan nama
-                <br />
-                domain
-                <br />
-                <span>
-                  untuk brand
-                  <br />
-                  kamu.
-                </span>
+                Temukan nama domain{" "}
+                <span>untuk brand kamu.</span>
               </h2>
 
               <p>
-                Pilih nama domain yang mudah diingat dan buat
-                bisnis kamu terlihat lebih profesional dengan
-                jaringan Tier-4 berlatensi ultra-rendah.
+                Pilih nama domain yang mudah diingat dan buat bisnis kamu terlihat lebih profesional dengan jaringan Tier-4 berlatensi ultra-rendah.
               </p>
 
               {/* TRUST BADGES */}
@@ -2134,8 +1889,7 @@ export default function Home() {
             </div>
 
             <h2 className="portfolio-main-title">
-              Website yang Telah Online
-              <br />
+              Website yang Telah Online{" "}
               <span className="portfolio-title-highlight">Karya &amp; Optimasi Kami.</span>
             </h2>
 
@@ -2815,8 +2569,7 @@ export default function Home() {
               </div>
 
               <h2 className="features-main-title">
-                Semua yang dibutuhkan
-                <br />
+                Semua yang dibutuhkan{" "}
                 <span className="features-title-highlight">website kamu.</span>
               </h2>
 
@@ -3109,9 +2862,9 @@ export default function Home() {
       </section>
 
       {/* =====================================================
-          TESTIMONIAL SECTION
+          TESTIMONIAL SECTION (SLIDER ON MOBILE, GRID ON DESKTOP)
       ===================================================== */}
-      <section className="testimonial-section">
+      <section className="testimonial-section" id="testimonial">
         <div className="container">
           {/* SECTION HEADER */}
           <div className="testimonial-header-center">
@@ -3121,18 +2874,45 @@ export default function Home() {
             </div>
 
             <h2 className="testimonial-main-title">
-              Cerita dari pelanggan
-              <br />
+              Cerita dari pelanggan{" "}
               <span className="testimonial-title-highlight">Hostingwebid.</span>
             </h2>
 
             <p className="testimonial-main-subtitle">
               Beberapa pengalaman pelanggan yang menggunakan layanan kami untuk kebutuhan website bisnis dan profesional mereka.
             </p>
+
+            {/* MOBILE SLIDER ARROWS & HINT */}
+            <div className="flex sm:hidden items-center justify-between pt-3 px-1 w-full max-w-sm mx-auto">
+              <span className="text-[12px] font-bold text-orange-600">
+                Geser ulasan pelanggan →
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center justify-center font-bold text-sm shadow-xs active:bg-orange-50 active:scale-95 transition-all"
+                  onClick={() => scrollTrack(testimonialTrackRef, -290)}
+                  aria-label="Ulasan sebelumnya"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center justify-center font-bold text-sm shadow-xs active:bg-orange-50 active:scale-95 transition-all"
+                  onClick={() => scrollTrack(testimonialTrackRef, 290)}
+                  aria-label="Ulasan berikutnya"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* TESTIMONIALS 3 CARDS */}
-          <div className="testimonial-grid-modern">
+          <div
+            ref={testimonialTrackRef}
+            className="testimonial-grid-modern"
+          >
             {testimonials.map((testimonial) => (
               <div
                 className="testimonial-modern-card"
@@ -3204,12 +2984,12 @@ export default function Home() {
       </section>
 
       {/* =====================================================
-          6 ARTIKEL / BLOG TERBARU SECTION
+          6 ARTIKEL / BLOG TERBARU SECTION (SLIDER ON MOBILE, GRID ON DESKTOP)
       ===================================================== */}
-      <section className="py-20 bg-gradient-to-b from-slate-50 via-white to-orange-50/30 border-t border-slate-200/70" id="blog">
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 via-white to-orange-50/30 border-t border-slate-200/70" id="blog">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* SECTION HEADER */}
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14 space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold shadow-xs">
               <span>📝</span>
               <span>PUSAT EDUKASI &amp; ARTIKEL PILIHAN</span>
@@ -3222,10 +3002,38 @@ export default function Home() {
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-2xl mx-auto">
               Pelajari tips optimasi SEO, keamanan server, panduan domain, dan strategi digital marketing terkini untuk memaksimalkan potensi bisnis online Anda.
             </p>
+
+            {/* MOBILE SLIDER ARROWS & HINT */}
+            <div className="flex sm:hidden items-center justify-between pt-3 px-1">
+              <span className="text-[12px] font-bold text-orange-600">
+                Geser untuk membaca artikel →
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center justify-center font-bold text-sm shadow-xs active:bg-orange-50 active:scale-95 transition-all"
+                  onClick={() => scrollTrack(blogTrackRef, -290)}
+                  aria-label="Artikel sebelumnya"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full border border-slate-200 bg-white text-slate-700 flex items-center justify-center font-bold text-sm shadow-xs active:bg-orange-50 active:scale-95 transition-all"
+                  onClick={() => scrollTrack(blogTrackRef, 290)}
+                  aria-label="Artikel berikutnya"
+                >
+                  ›
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* 6 ARTICLES GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* 6 ARTICLES CONTAINER: SLIDER TRACK ON MOBILE, 3-COL GRID ON DESKTOP */}
+          <div
+            ref={blogTrackRef}
+            className="articles-slider-track"
+          >
             {(homeArticles.length > 0
               ? homeArticles
               : [
@@ -3299,7 +3107,7 @@ export default function Home() {
             ).map((art) => (
               <article
                 key={art.id}
-                className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden shadow-xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between"
+                className="article-slider-card group"
               >
                 <div>
                   {/* THUMBNAIL */}
@@ -3369,70 +3177,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* =====================================================
-          CTA BANNER SECTION
-      ===================================================== */}
-      <section className="cta-section">
-        <div className="container">
-          <div className="cta-box-modern">
-            <div className="cta-ambient-rings" />
 
-            <div className="cta-content-inner">
-              {/* TOP BADGE */}
-              <div className="cta-top-badge">
-                <span className="cta-top-badge-dot" />
-                <span>SIAP MELEJITKAN PENJUALAN?</span>
-              </div>
-
-              {/* TITLE */}
-              <h2 className="cta-main-title">
-                Saatnya bisnis Anda
-                <br />
-                <span className="cta-title-highlight">memiliki website &amp; iklan profesional.</span>
-              </h2>
-
-              {/* SUBTITLE */}
-              <p className="cta-main-subtitle">
-                Konsultasikan kebutuhan pembuatan website dan campaign iklan Google Ads bisnis Anda sekarang bersama tim spesialis <strong>Hostingwebid</strong>.
-              </p>
-
-              {/* BUTTONS */}
-              <div className="cta-action-buttons">
-                <a href="#pricing" className="cta-btn-primary">
-                  Lihat Paket Website
-                  <span>→</span>
-                </a>
-                <a
-                  href={getWhatsAppUrl("Halo Admin HostingWeb, saya ingin konsultasi jasa pembuatan website dan iklan Google Ads.")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="cta-btn-whatsapp"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e">
-                    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.974.53 1.77.813 2.796.814h.005c3.18 0 5.766-2.587 5.767-5.766 0-1.541-.6-2.99-1.69-4.081-1.09-1.09-2.539-1.691-4.082-1.691zm7.135 1.541c1.47 1.47 2.28 3.424 2.28 5.503 0 4.288-3.489 7.777-7.777 7.777-1.306 0-2.583-.332-3.714-.963l-4.14 1.085 1.107-4.037c-.702-1.182-1.074-2.534-1.074-3.862 0-4.288 3.489-7.778 7.777-7.778 2.079 0 4.033.81 5.541 2.275zm-3.08 7.828c-.198-.099-1.171-.578-1.353-.644-.182-.066-.314-.099-.446.099-.133.198-.513.644-.629.777-.116.132-.232.149-.43.05-.198-.099-.838-.309-1.597-.986-.591-.528-.99-1.18-1.106-1.378-.116-.198-.012-.306.087-.404.089-.089.198-.232.298-.348.099-.116.132-.198.198-.33.066-.132.033-.248-.017-.348-.05-.099-.446-1.074-.612-1.471-.161-.387-.326-.334-.446-.34-.116-.006-.248-.007-.38-.007s-.348.05-.529.248c-.182.198-.694.678-.694 1.653s.711 1.917.81 2.05c.099.132 1.399 2.136 3.39 2.994.474.204.844.326 1.132.418.476.151.909.13 1.251.079.382-.057 1.171-.479 1.337-.942.165-.463.165-.86.116-.942-.049-.082-.181-.132-.379-.231z"/>
-                  </svg>
-                  Chat WhatsApp
-                </a>
-              </div>
-
-              {/* BOTTOM TRUST CHECKLIST */}
-              <div className="cta-trust-checklist">
-                <span className="cta-check-item">
-                  <span className="cta-item-icon">⚡</span> Pengerjaan 1-3 Hari
-                </span>
-                <span className="cta-dot-separator">•</span>
-                <span className="cta-check-item">
-                  <span className="cta-item-icon">🛡️</span> Garansi Halaman 1 Google
-                </span>
-                <span className="cta-dot-separator">•</span>
-                <span className="cta-check-item">
-                  <span className="cta-item-icon">💬</span> Konsultasi &amp; Support 24/7
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* =====================================================
           FAQ SECTION

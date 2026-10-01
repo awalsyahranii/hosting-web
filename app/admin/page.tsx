@@ -1426,33 +1426,66 @@
 
 
         {/* =================================================
-            ERROR
+            ERROR & SESSION EXPIRED BANNER
         ================================================= */}
 
         {dashboardError && (
+          <div className="admin-error" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", padding: "14px 20px", borderRadius: "14px", backgroundColor: "#fef2f2", border: "1px solid #fecaca", color: "#991b1b" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "20px" }}>⚠️</span>
+              <div>
+                <strong style={{ display: "block", fontSize: "14px", fontWeight: "700" }}>
+                  {dashboardError.toLowerCase().includes("belum login")
+                    ? "Sesi Login Admin Telah Berakhir"
+                    : "Gagal Mengambil Data Dashboard"}
+                </strong>
+                <span style={{ fontSize: "12.5px", color: "#b91c1c" }}>
+                  {dashboardError.toLowerCase().includes("belum login")
+                    ? "Sesi server Anda telah kedaluwarsa. Silakan masuk / login ulang untuk memuat seluruh data dashboard."
+                    : dashboardError}
+                </span>
+              </div>
+            </div>
 
-          <div className="admin-error">
-
-            <strong>
-              Gagal mengambil data dashboard
-            </strong>
-
-            <span>
-              {dashboardError}
-            </span>
-
-
-            <button
-              type="button"
-              onClick={
-                loadDashboardData
-              }
-            >
-              Coba Lagi
-            </button>
-
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {dashboardError.toLowerCase().includes("belum login") ? (
+                <Link
+                  href="/login"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "8px 16px",
+                    borderRadius: "10px",
+                    backgroundColor: "#dc2626",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    textDecoration: "none",
+                  }}
+                >
+                  <span>🔐 Login Ulang Sekarang</span>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={loadDashboardData}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "10px",
+                    backgroundColor: "#dc2626",
+                    color: "#ffffff",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Coba Lagi
+                </button>
+              )}
+            </div>
           </div>
-
         )}
 
 
