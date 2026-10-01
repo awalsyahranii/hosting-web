@@ -466,7 +466,20 @@ function CheckoutContent() {
         let itemExtension = "Hosting & Domain";
         let basePrice = 150000;
 
-        if (typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))) {
+        if (typeParam === "theme" || typeParam === "tema" || (packageParam && packageParam.toLowerCase().includes("tema")) || (domainParam && domainParam.toLowerCase().startsWith("tema:"))) {
+          const themeCleanName = packageParam || (domainParam.startsWith("Tema:") ? domainParam.replace(/^Tema:\s*/i, "") : "Tema Website Premium");
+          basePrice = Number(priceParam) || 350000;
+          itemName = `Tema Website: ${themeCleanName}`;
+          itemExtension = "Lisensi Template Website Siap Pakai • Sekali Bayar (Akses Selamanya Tanpa Batas Waktu)";
+          orderPayload = {
+            package_name: `Tema: ${themeCleanName}`,
+            domain_name: domainParam || `Tema: ${themeCleanName}`,
+            service_category: "Tema Website",
+            price: basePrice,
+            duration_years: 1,
+            payment_method: "transfer",
+          };
+        } else if (typeParam === "website" || (packageParam && packageParam.toLowerCase().includes("website"))) {
           const packageName = packageParam || "Jasa Pembuatan Website";
           basePrice = Number(priceParam) || 750000;
           itemName = packageName;
@@ -1066,15 +1079,26 @@ function CheckoutContent() {
     }
   };
 
+  const isTheme = Boolean(
+    typeParam === "theme" ||
+    typeParam === "tema" ||
+    (packageParam && packageParam.toLowerCase().includes("tema")) ||
+    (checkout?.items[0]?.domain_name && checkout?.items[0]?.domain_name.toLowerCase().includes("tema")) ||
+    (domainParam && domainParam.toLowerCase().startsWith("tema:"))
+  );
+
   const whatsappUrl = useMemo(() => {
     const ordNum = createdOrderNumber || "ORD-TERBARU";
     const payNum = paymentNumber || "PAY-TERBARU";
     const amt = rupiah(calculatedTotal);
     const itemName = checkout?.items[0]?.domain_name || "Layanan Hosting / Website";
     const itemSpecs = checkout?.items[0]?.extension || "";
-    const text = `Halo Admin HostingWeb, saya ingin konfirmasi pemesanan & pembayaran:\n\n📦 *Layanan:* ${itemName}\nℹ️ *Detail:* ${itemSpecs}\n🔢 *Nomor Order:* ${ordNum}\n💳 *Nomor Payment:* ${payNum}\n💰 *Total Pembayaran:* ${amt} (${durationYears} Tahun)\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk segera diproses & diaktifkan. Terima kasih!`;
+    const durText = isTheme
+      ? "Sekali Bayar / Akses Selamanya Tanpa Batas Waktu"
+      : `${durationYears} Tahun`;
+    const text = `Halo Admin HostingWeb, saya ingin konfirmasi pemesanan & pembayaran:\n\n📦 *Layanan:* ${itemName}\nℹ️ *Detail:* ${itemSpecs}\n🔢 *Nomor Order:* ${ordNum}\n💳 *Nomor Payment:* ${payNum}\n💰 *Total Pembayaran:* ${amt} (${durText})\n\nBerikut saya lampirkan bukti struk transfer. Mohon bantuannya untuk segera diproses & diaktifkan. Terima kasih!`;
     return getWhatsAppUrl(text);
-  }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears, checkout]);
+  }, [createdOrderNumber, paymentNumber, calculatedTotal, durationYears, checkout, isTheme]);
 
   if (loading) {
     return (
@@ -1179,7 +1203,9 @@ function CheckoutContent() {
                 <div className="service-item-box">
                   <div className="service-item-left">
                     <div className="service-icon-wrap">
-                      {paketParam
+                      {isTheme
+                        ? "🎨"
+                        : paketParam
                         ? "🔥"
                         : adsParam
                         ? "🎯"
@@ -1195,7 +1221,9 @@ function CheckoutContent() {
                           {primaryItem?.domain_name || "Cloud Hosting & Domain"}
                         </strong>
                         <span className="service-tag">
-                          {paketParam
+                          {isTheme
+                            ? "Tema Website"
+                            : paketParam
                             ? "Hosting"
                             : adsParam
                             ? "Google Ads"
@@ -1209,30 +1237,39 @@ function CheckoutContent() {
                         </span>
                       </div>
                       <p className="service-desc">
-                        {primaryItem?.extension || `Pendaftaran Domain ${durationYears} Tahun`}
+                        {primaryItem?.extension || (isTheme ? "Lisensi Template Website Siap Pakai • Sekali Bayar" : `Pendaftaran Domain ${durationYears} Tahun`)}
                       </p>
                     </div>
                   </div>
 
                   {/* DURASI DROPDOWN & PRICE */}
                   <div className="service-item-right">
-                    <div className="duration-dropdown-wrap">
-                      <label className="duration-mini-label">Durasi Domain</label>
-                      <div className="duration-select-pill">
-                        <select
-                          className="duration-select"
-                          value={durationYears}
-                          onChange={(e) => setDurationYears(Number(e.target.value))}
-                        >
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
-                            <option key={yr} value={yr}>
-                              {yr} Tahun
-                            </option>
-                          ))}
-                        </select>
-                        <span className="select-arrow">▼</span>
+                    {isTheme ? (
+                      <div className="duration-dropdown-wrap">
+                        <label className="duration-mini-label">Masa Berlaku</label>
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 font-extrabold text-xs border border-emerald-200">
+                          <span>♾️</span> Akses Selamanya
+                        </span>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="duration-dropdown-wrap">
+                        <label className="duration-mini-label">Durasi Layanan</label>
+                        <div className="duration-select-pill">
+                          <select
+                            className="duration-select"
+                            value={durationYears}
+                            onChange={(e) => setDurationYears(Number(e.target.value))}
+                          >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((yr) => (
+                              <option key={yr} value={yr}>
+                                {yr} Tahun
+                              </option>
+                            ))}
+                          </select>
+                          <span className="select-arrow">▼</span>
+                        </div>
+                      </div>
+                    )}
                     <strong className="service-price">
                       {rupiah(subtotal)}
                     </strong>

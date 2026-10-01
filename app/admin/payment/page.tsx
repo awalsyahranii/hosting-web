@@ -72,7 +72,7 @@ function paymentName(payment: Payment) {
 /**
  * Accurately determines if payment is for Hosting, Domain, or Google Ads.
  */
-function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ads" | "seo" | "website" {
+function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ads" | "seo" | "website" | "theme" {
   const cat = (payment.service_category || "").toLowerCase();
   const dom = (
     payment.domain_name ||
@@ -82,6 +82,18 @@ function getPaymentCategory(payment: Payment): "hosting" | "domain" | "google_ad
     ""
   ).toLowerCase();
   const amt = Number(payment.amount ?? payment.total ?? 0);
+
+  // 0. Explicit Theme keywords
+  if (
+    cat.includes("tema") ||
+    cat.includes("theme") ||
+    cat.includes("template") ||
+    dom.includes("tema") ||
+    dom.includes("theme") ||
+    dom.includes("template")
+  ) {
+    return "theme";
+  }
 
   // 1. Explicit Google Ads keywords
   if (
@@ -155,6 +167,13 @@ function paymentDomain(payment: Payment) {
     payment.items?.map((item) => item.domain_name).filter(Boolean).join(", ");
   const cat = getPaymentCategory(payment);
   const amt = Number(payment.amount ?? payment.total ?? 0);
+
+  if (cat === "theme") {
+    if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
+      return `🎨 ${dom.replace(/^domain:\s*/i, "").replace(/^tema:\s*/i, "")}`;
+    }
+    return "🎨 Template & Tema Website";
+  }
 
   if (cat === "google_ads") {
     if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
@@ -244,7 +263,7 @@ export default function AdminPaymentPage() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Payment | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain" | "google_ads" | "seo" | "website">("all");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "hosting" | "domain" | "google_ads" | "seo" | "website" | "theme">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid">("all");
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -413,6 +432,7 @@ export default function AdminPaymentPage() {
   const adsCount = payments.filter((p) => getPaymentCategory(p) === "google_ads").length;
   const seoCount = payments.filter((p) => getPaymentCategory(p) === "seo").length;
   const websiteCount = payments.filter((p) => getPaymentCategory(p) === "website").length;
+  const themeCount = payments.filter((p) => getPaymentCategory(p) === "theme").length;
   const pendingCount = payments.filter((p) => statusLabel(p.status) === "Pending").length;
   const paidCount = payments.filter((p) => statusLabel(p.status) === "Paid").length;
 
@@ -741,6 +761,19 @@ export default function AdminPaymentPage() {
             >
               <span>💻 Website</span>
               <span className="pill-badge" style={{ background: "#16a34a", color: "#fff" }}>{websiteCount}</span>
+            </button>
+            <button
+              type="button"
+              className={`filter-pill ${categoryFilter === "theme" ? "active" : ""}`}
+              style={{
+                borderColor: categoryFilter === "theme" ? "#d97706" : undefined,
+                background: categoryFilter === "theme" ? "#fef3c7" : undefined,
+                color: categoryFilter === "theme" ? "#b45309" : undefined,
+              }}
+              onClick={() => setCategoryFilter("theme")}
+            >
+              <span>🎨 Tema Website</span>
+              <span className="pill-badge" style={{ background: "#d97706", color: "#fff" }}>{themeCount}</span>
             </button>
           </div>
 
