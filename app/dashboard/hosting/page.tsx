@@ -56,7 +56,15 @@ export default function HostingPage() {
 
   const hostingList = services.filter((s) => {
     const text = `${s.domain_name || ""} ${s.plan_name || ""} ${s.service_category || ""}`.toLowerCase();
-    if (text.includes("google") || text.includes("ads") || text.includes("iklan") || text.includes("kampanye")) {
+    if (
+      text.includes("google") ||
+      text.includes("ads") ||
+      text.includes("iklan") ||
+      text.includes("kampanye") ||
+      text.includes("tema") ||
+      text.includes("theme") ||
+      text.includes("template")
+    ) {
       return false;
     }
     if (!search) return true;

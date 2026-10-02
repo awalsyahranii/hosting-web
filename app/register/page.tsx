@@ -120,7 +120,11 @@ function RegisterForm() {
             })
           );
 
-          window.location.href = "/dashboard";
+          if (redirectParam) {
+            window.location.href = redirectParam;
+          } else {
+            window.location.href = "/dashboard";
+          }
           return;
         }
       } catch (loginErr) {
@@ -305,7 +309,7 @@ function RegisterForm() {
           <div className="auth-bottom-section">
             <div className="auth-register-text">
               Sudah punya akun?{" "}
-              <Link href="/login" className="auth-register-link">
+              <Link href={redirectParam ? `/login?redirect=${encodeURIComponent(redirectParam)}` : "/login"} className="auth-register-link">
                 Masuk sekarang
               </Link>
             </div>

@@ -194,15 +194,19 @@ export default function DashboardPage() {
     return "Menunggu";
   }
 
-  const hostingList = hostings.length > 0 ? hostings : userServices.filter(s => {
+  const hostingList = (hostings.length > 0 ? hostings : userServices).filter(s => {
     const cat = (s.service_category || "").toLowerCase();
     const dom = (s.domain_name || "").toLowerCase();
+    const isTheme = cat.includes("tema") || cat.includes("theme") || dom.includes("tema") || dom.includes("theme");
+    if (isTheme) return false;
     return cat.includes("hosting") || cat.includes("paket") || dom.includes("hosting") || dom.includes("paket");
   });
 
-  const domainList = domains.length > 0 ? domains : userServices.filter(s => {
+  const domainList = (domains.length > 0 ? domains : userServices).filter(s => {
     const cat = (s.service_category || "").toLowerCase();
     const dom = (s.domain_name || "").toLowerCase();
+    const isTheme = cat.includes("tema") || cat.includes("theme") || dom.includes("tema") || dom.includes("theme");
+    if (isTheme) return false;
     return (cat.includes("domain") || dom.includes(".")) && !cat.includes("hosting");
   });
 

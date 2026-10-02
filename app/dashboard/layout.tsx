@@ -62,6 +62,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const [hostings, setHostings] = useState<any[]>([]);
   const [domains, setDomains] = useState<any[]>([]);
+  const [themesCount, setThemesCount] = useState(0);
   const [ordersCount, setOrdersCount] = useState(0);
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -87,14 +88,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   async function fetchUserServices() {
     try {
-      const [resHosting, resDomain, resOrder] = await Promise.all([
+      const [resHosting, resDomain, resOrder, resInternalOrders] = await Promise.all([
         fetch("/api/backend/service/index.php?type=hosting", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
         fetch("/api/backend/service/index.php?type=domain", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
         fetch("/api/backend/dashboardusers/order/index.php", { method: "GET", credentials: "include" }).then(r => r.json()).catch(() => null),
+        fetch("/api/orders", { cache: "no-store" }).then(r => r.json()).catch(() => null),
       ]);
 
       if (resHosting?.status === "success" && Array.isArray(resHosting.data)) {
-        setHostings(resHosting.data);
+        // Filter out theme services from hosting
+        setHostings(resHosting.data.filter((h: any) => {
+          const txt = `${h.domain_name || ""} ${h.plan_name || ""} ${h.service_category || ""}`.toLowerCase();
+          return !txt.includes("tema") && !txt.includes("theme");
+        }));
       }
       if (resDomain?.status === "success" && Array.isArray(resDomain.data)) {
         setDomains(resDomain.data);
@@ -103,6 +109,32 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         const list = resOrder.data?.orders || (Array.isArray(resOrder.data) ? resOrder.data : []);
         setOrdersCount(list.length);
       }
+
+      // Count active themes from /api/orders & localStorage
+      const deletedOrders: string[] = [];
+      try {
+        if (typeof window !== "undefined") {
+          const rawDel = localStorage.getItem("hostingweb_deleted_orders");
+          if (rawDel) deletedOrders.push(...JSON.parse(rawDel));
+        }
+      } catch {}
+      const deletedSet = new Set(deletedOrders.map((d) => String(d).toLowerCase().trim()));
+
+      const orderList: any[] = resInternalOrders?.data || [];
+      const activeServerThemes = orderList.filter((o) => {
+        const ordNum = String(o.order_number || "").trim().toLowerCase();
+        const ordId = String(o.id || o.order_id || "").trim().toLowerCase();
+        if (ordNum && deletedSet.has(ordNum)) return false;
+        if (ordId && (deletedSet.has(ordId) || deletedSet.has(`ord-${ordId}`))) return false;
+
+        const cat = String(o.service_category || "").toLowerCase();
+        const dom = String(o.domain_name || o.domain || o.package_name || "").toLowerCase();
+        const isTheme = cat.includes("tema") || cat.includes("theme") || dom.includes("tema") || dom.includes("theme");
+        const isPaid = ["paid", "active", "success", "completed"].includes(String(o.status || "").toLowerCase());
+        return isTheme && isPaid;
+      }).length;
+
+      setThemesCount(activeServerThemes || 0);
     } catch (error) {
       console.error("Gagal mengambil data service:", error);
     }
@@ -180,6 +212,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (pathname === "/dashboard") return "Ringkasan Akun";
     if (pathname.startsWith("/dashboard/hosting")) return "Hosting Saya";
     if (pathname.startsWith("/dashboard/domain")) return "Domain Saya";
+    if (pathname.startsWith("/dashboard/ads")) return "Google Ads";
+    if (pathname.startsWith("/dashboard/tema")) return "Tema Website Saya";
     if (pathname.startsWith("/dashboard/invoices")) return "Tagihan / Invoice";
     if (pathname.startsWith("/dashboard/orders")) return "Riwayat Pesanan";
     if (pathname.startsWith("/dashboard/profile")) return "Profil Saya";
@@ -310,6 +344,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <span>Google Ads</span>
               </div>
               <span className="dash-badge-count" style={{ background: "#ea580c", color: "#fff" }}>Ads</span>
+            </Link>
+
+            <Link
+              href="/dashboard/tema"
+              className={`dash-nav-link ${pathname.startsWith("/dashboard/tema") ? "active" : ""}`}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <div className="dash-nav-link-left">
+                <span className="dash-nav-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+                    <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+                    <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+                    <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+                  </svg>
+                </span>
+                <span>Tema Saya</span>
+              </div>
+              <span className="dash-badge-count" style={{ background: "#d97706", color: "#fff" }}>
+                {themesCount > 0 ? themesCount : "Tema"}
+              </span>
             </Link>
           </div>
 

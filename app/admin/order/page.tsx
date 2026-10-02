@@ -67,23 +67,55 @@ export default function AdminOrderPage() {
         const combinedList: OrderLog[] = [];
         const seenOrderNumbers = new Set<string>();
 
+        // 1. Fetch server-side orders from /api/orders
+        try {
+          const resInternal = await fetch("/api/orders", {
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          }).catch(() => null);
+          const jsonInternal = resInternal ? await resInternal.json().catch(() => null) : null;
+          const internalList: any[] = jsonInternal?.data || [];
+
+          internalList.forEach((o: any) => {
+            const ordNum = o.order_number || (o.order_id ? `ORD-${o.order_id}` : "-");
+            const isPaid = ["paid", "success", "completed", "active"].includes((o.status || "").toLowerCase());
+            combinedList.push({
+              id: Number(o.id || o.order_id || Date.now()),
+              order_id: o.order_id || o.id,
+              order_number: ordNum,
+              username: o.username || o.user_name || "Pelanggan",
+              email: o.email || o.user_email || "-",
+              domain_name: o.domain_name || o.domain || o.package_name || "Layanan HostingWeb",
+              service_category: o.service_category || "Hosting",
+              order_total: o.amount || o.total || 0,
+              order_status: isPaid ? "completed" : (o.status || "pending"),
+              order_date: o.created_at || o.order_date || "-",
+            });
+            if (ordNum !== "-") seenOrderNumbers.add(ordNum);
+          });
+        } catch {}
+
+        // 2. Fetch report services
         rawServices.forEach((s: any) => {
           const ordNum = s.order_number || (s.order_id ? `ORD-${s.order_id}` : "-");
-          combinedList.push({
-            id: Number(s.id || Math.floor(Math.random() * 10000)),
-            order_id: s.order_id,
-            order_number: ordNum,
-            username: s.username || s.user_name || "Pelanggan",
-            email: s.email || "-",
-            domain_name: s.domain_name || "Paket Hosting / Domain",
-            service_category: s.service_category || "Hosting",
-            order_total: s.order_total || s.price || 0,
-            order_status: s.order_status || s.service_status || "active",
-            order_date: s.order_date || s.start_date || "-",
-          });
-          if (ordNum !== "-") seenOrderNumbers.add(ordNum);
+          if (!seenOrderNumbers.has(ordNum) && ordNum !== "-") {
+            combinedList.push({
+              id: Number(s.id || Math.floor(Math.random() * 10000)),
+              order_id: s.order_id,
+              order_number: ordNum,
+              username: s.username || s.user_name || "Pelanggan",
+              email: s.email || "-",
+              domain_name: s.domain_name || "Paket Hosting / Domain",
+              service_category: s.service_category || "Hosting",
+              order_total: s.order_total || s.price || 0,
+              order_status: s.order_status || s.service_status || "active",
+              order_date: s.order_date || s.start_date || "-",
+            });
+            seenOrderNumbers.add(ordNum);
+          }
         });
 
+        // 3. Fetch backend payments
         rawPayments.forEach((p: any) => {
           const ordNum = p.order_number || (p.order_id ? `ORD-${p.order_id}` : "-");
           if (!seenOrderNumbers.has(ordNum) && ordNum !== "-") {
@@ -103,6 +135,38 @@ export default function AdminOrderPage() {
             seenOrderNumbers.add(ordNum);
           }
         });
+
+        // 4. Merge from localStorage cache
+        try {
+          if (typeof window !== "undefined") {
+            const localOrders: any[] = JSON.parse(localStorage.getItem("hostingweb_all_orders") || "[]");
+            const activePayRaw = localStorage.getItem("hostingweb_checkout_payment");
+            if (activePayRaw) {
+              try {
+                localOrders.unshift(JSON.parse(activePayRaw));
+              } catch {}
+            }
+            localOrders.forEach((lo: any) => {
+              const ordNum = lo.orderNumber || lo.order_number || (lo.orderId || lo.order_id ? `ORD-${lo.orderId || lo.order_id}` : "");
+              if (ordNum && !seenOrderNumbers.has(ordNum)) {
+                const isPaid = ["paid", "success", "completed"].includes((lo.status || "").toLowerCase());
+                combinedList.push({
+                  id: Number(lo.orderId || lo.id || Date.now()),
+                  order_id: lo.orderId || lo.id,
+                  order_number: ordNum,
+                  username: lo.username || lo.user_name || "Pelanggan",
+                  email: lo.email || lo.user_email || "-",
+                  domain_name: lo.itemName || lo.domain_name || lo.package_name || "Layanan HostingWeb",
+                  service_category: lo.service_category || "Tema Website",
+                  order_total: lo.amount || lo.total || 0,
+                  order_status: isPaid ? "completed" : (lo.status || "pending"),
+                  order_date: lo.created_at || new Date().toISOString(),
+                });
+                seenOrderNumbers.add(ordNum);
+              }
+            });
+          }
+        } catch {}
 
         setOrders(combinedList);
       } catch (err) {

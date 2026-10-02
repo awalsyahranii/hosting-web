@@ -17,6 +17,7 @@ type Payment = {
   email?: string;
   domain?: string;
   domain_name?: string;
+  package_name?: string;
   amount?: number | string;
   total?: number | string;
   payment_method?: string;
@@ -317,11 +318,72 @@ export default function AdminPaymentPage() {
       const mergedList: Payment[] = [];
       const seenPaymentNumbers = new Set<string>();
 
+      // Get deleted orders list to ensure deleted orders stay hidden
+      const deletedOrders: string[] = [];
+      try {
+        if (typeof window !== "undefined") {
+          const rawDel = localStorage.getItem("hostingweb_deleted_orders");
+          if (rawDel) deletedOrders.push(...JSON.parse(rawDel));
+        }
+      } catch {}
+      const deletedSet = new Set(deletedOrders.map((d) => String(d).toLowerCase().trim()));
+
+      const isItemDeleted = (p: any) => {
+        const idStr = String(p.id || p.payment_id || p.order_id || "").toLowerCase().trim();
+        const ordStr = String(p.order_number || "").toLowerCase().trim();
+        const payStr = String(p.payment_number || "").toLowerCase().trim();
+        return (idStr && deletedSet.has(idStr)) || (ordStr && deletedSet.has(ordStr)) || (payStr && deletedSet.has(payStr));
+      };
+
+      // 1. Fetch server-side orders from /api/orders
+      try {
+        const resInternalOrders = await fetch("/api/orders", {
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        }).catch(() => null);
+        const jsonInternal = resInternalOrders ? await resInternalOrders.json().catch(() => null) : null;
+        const internalList: any[] = jsonInternal?.data || [];
+
+        internalList.forEach((o: any) => {
+          if (isItemDeleted(o)) return;
+          const pNum = o.payment_number || `PAY-${o.order_number || o.id}`;
+          const ordNum = o.order_number || (o.order_id ? `ORD-${o.order_id}` : "-");
+          mergedList.push({
+            id: o.id,
+            payment_id: o.payment_id || o.id,
+            payment_number: pNum,
+            order_id: o.order_id || o.id,
+            order_number: ordNum,
+            username: o.username || o.user_name || "Pelanggan",
+            user_name: o.user_name || o.username || "Pelanggan",
+            email: o.email || o.user_email || "-",
+            domain_name: o.domain_name || o.domain || o.package_name,
+            domain: o.domain || o.domain_name || o.package_name,
+            package_name: o.package_name,
+            service_category: o.service_category,
+            amount: o.amount || o.total || 0,
+            total: o.total || o.amount || 0,
+            payment_method: o.payment_method || "transfer",
+            status: o.status || "pending",
+            created_at: o.created_at,
+            paid_at: o.paid_at,
+            confirmation_requested_at: o.confirmation_requested_at,
+            billing_period: o.billing_period,
+            items: o.items,
+          });
+          seenPaymentNumbers.add(pNum);
+          if (ordNum !== "-") seenPaymentNumbers.add(ordNum);
+        });
+      } catch {}
+
+      // 2. Fetch from backend payments
       apiPayments.forEach((p) => {
+        if (isItemDeleted(p)) return;
         const pNum = p.payment_number || `PAY-${paymentId(p)}`;
         const ordRef = p.order_number || String(p.order_id || "");
-        const matchedService = serviceMap.get(ordRef);
+        if (seenPaymentNumbers.has(pNum) || (ordRef && seenPaymentNumbers.has(ordRef))) return;
 
+        const matchedService = serviceMap.get(ordRef);
         const domainName =
           p.domain_name ||
           p.domain ||
@@ -342,8 +404,9 @@ export default function AdminPaymentPage() {
         if (ordRef) seenPaymentNumbers.add(ordRef);
       });
 
-      // Also merge any services from report that may not have direct payment row
+      // 3. Also merge any services from report that may not have direct payment row
       services.forEach((s: any) => {
+        if (isItemDeleted(s)) return;
         const ordNum = s.order_number || (s.order_id ? `ORD-${s.order_id}` : "");
         const payNum = s.payment_number || (ordNum ? `PAY-${ordNum}` : `PAY-SRV-${s.id}`);
         if (!seenPaymentNumbers.has(payNum) && (!ordNum || !seenPaymentNumbers.has(ordNum))) {
@@ -371,7 +434,7 @@ export default function AdminPaymentPage() {
         }
       });
 
-      // Also merge user orders endpoint so all active/pending orders appear
+      // 4. Also merge user orders endpoint
       try {
         const resUserOrders = await fetch(
           "/api/backend/dashboardusers/order/index.php",
@@ -381,6 +444,7 @@ export default function AdminPaymentPage() {
         const userOrders: any[] = jsonUserOrders?.data?.orders || (Array.isArray(jsonUserOrders?.data) ? jsonUserOrders.data : []);
 
         userOrders.forEach((o: any) => {
+          if (isItemDeleted(o)) return;
           const ordNum = o.order_number || (o.id ? `ORD-${o.id}` : "");
           const payNum = o.payment_number || `PAY-${ordNum}`;
           if (!seenPaymentNumbers.has(payNum) && (!ordNum || !seenPaymentNumbers.has(ordNum))) {
@@ -405,6 +469,54 @@ export default function AdminPaymentPage() {
           }
         });
       } catch { }
+
+      // 5. Merge from client localStorage cache
+      try {
+        if (typeof window !== "undefined") {
+          const localOrders: any[] = JSON.parse(localStorage.getItem("hostingweb_all_orders") || "[]");
+          const activePayRaw = localStorage.getItem("hostingweb_checkout_payment");
+          if (activePayRaw) {
+            try {
+              const activeP = JSON.parse(activePayRaw);
+              localOrders.unshift(activeP);
+            } catch {}
+          }
+
+          localOrders.forEach((lo: any) => {
+            if (isItemDeleted(lo)) return;
+            const ordNum = lo.orderNumber || lo.order_number || (lo.orderId || lo.order_id ? `ORD-${lo.orderId || lo.order_id}` : "");
+            const payNum = lo.paymentNumber || lo.payment_number || (ordNum ? `PAY-${ordNum}` : "");
+            if (payNum && !seenPaymentNumbers.has(payNum) && (!ordNum || !seenPaymentNumbers.has(ordNum))) {
+              const idVal = Number(lo.paymentId || lo.payment_id || lo.orderId || lo.order_id || Date.now());
+              mergedList.push({
+                id: idVal,
+                payment_id: idVal,
+                payment_number: payNum,
+                order_id: lo.orderId || lo.order_id || idVal,
+                order_number: ordNum || `ORD-${idVal}`,
+                username: lo.username || lo.user_name || "Pelanggan",
+                email: lo.email || lo.user_email || "-",
+                domain_name: lo.itemName || lo.domain_name || lo.package_name || "Layanan HostingWeb",
+                domain: lo.itemName || lo.domain_name || lo.package_name || "Layanan HostingWeb",
+                service_category: lo.service_category || (lo.itemName && lo.itemName.toLowerCase().includes("tema") ? "Tema Website" : "hosting"),
+                amount: lo.amount || lo.total || 0,
+                status: lo.status || "pending",
+                created_at: lo.created_at || new Date().toISOString(),
+                billing_period: lo.billing_period || "Akses Selamanya",
+              });
+              seenPaymentNumbers.add(payNum);
+              if (ordNum) seenPaymentNumbers.add(ordNum);
+            }
+          });
+        }
+      } catch {}
+
+      // Sort by newest
+      mergedList.sort((a, b) => {
+        const timeA = new Date(String(a.created_at || a.payment_date || "").replace(" ", "T")).getTime() || Number(a.id) || 0;
+        const timeB = new Date(String(b.created_at || b.payment_date || "").replace(" ", "T")).getTime() || Number(b.id) || 0;
+        return timeB - timeA;
+      });
 
       setPayments(mergedList);
     } catch (err) {
@@ -503,13 +615,38 @@ export default function AdminPaymentPage() {
       setConfirming(true);
       setError("");
       setNotice("");
+
+      // 1. Backend confirm
       const response = await fetch(CONFIRM_API, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ payment_id: id }),
-      });
-      await readResponse(response);
+      }).catch(() => null);
+
+      // 2. Server-side /api/orders sync
+      await fetch("/api/orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          order_number: selectedPayment.order_number,
+          payment_number: selectedPayment.payment_number,
+          status: "paid",
+        }),
+      }).catch(() => null);
+
+      // 3. LocalStorage sync
+      try {
+        const allOrders: any[] = JSON.parse(localStorage.getItem("hostingweb_all_orders") || "[]");
+        const idx = allOrders.findIndex((o) => o.order_number === selectedPayment.order_number || o.payment_number === selectedPayment.payment_number || o.id === id);
+        if (idx >= 0) {
+          allOrders[idx].status = "paid";
+          localStorage.setItem("hostingweb_all_orders", JSON.stringify(allOrders));
+          window.dispatchEvent(new Event("storage"));
+        }
+      } catch {}
+
       setNotice("Pembayaran berhasil dikonfirmasi.");
       setSelectedPayment({ ...selectedPayment, status: "paid" });
       await loadPayments();
@@ -580,6 +717,16 @@ export default function AdminPaymentPage() {
           credentials: "include",
           headers: { "Content-Type": "application/json", Accept: "application/json" },
           body: JSON.stringify({
+            order_id: targetOrderId,
+            order_number: targetOrderNum,
+            payment_number: targetPaymentNum,
+          }),
+        }).catch(() => null),
+        fetch("/api/orders", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: targetId,
             order_id: targetOrderId,
             order_number: targetOrderNum,
             payment_number: targetPaymentNum,

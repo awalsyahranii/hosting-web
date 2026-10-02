@@ -1,0 +1,107 @@
+[
+  {
+    "id": 183,
+    "order_id": 183,
+    "order_number": "ORD-20261002-DD65D5",
+    "payment_id": 152,
+    "payment_number": "PAY-20261002-DD65EB",
+    "username": "testuser",
+    "user_name": "testuser",
+    "email": "testuser@example.com",
+    "phone": "-",
+    "domain": "Paket Bisnis Pro (Tahunan / 1 Tahun)",
+    "domain_name": "Paket Bisnis Pro (Tahunan / 1 Tahun)",
+    "package_name": "Paket Bisnis Pro",
+    "service_category": "hosting",
+    "amount": 1665000,
+    "total": 1665000,
+    "subtotal": 1500000,
+    "ppn": 165000,
+    "discount": 0,
+    "payment_method": "transfer",
+    "status": "pending",
+    "service_status": "pending",
+    "billing_period": "Tahunan (12 Bulan)",
+    "created_at": "2026-10-02T02:32:29.904Z",
+    "paid_at": null,
+    "confirmation_requested_at": null,
+    "items": [
+      {
+        "domain_name": "Paket Bisnis Pro (Tahunan / 1 Tahun)",
+        "description": "Hosting 10GB NVMe High Speed • Termasuk Domain .com • FREE 30 Artikel SEO • LiteSpeed Turbo",
+        "price": 1500000,
+        "billing_period": "1 Tahun"
+      }
+    ]
+  },
+  {
+    "id": 151,
+    "order_id": 182,
+    "order_number": "ORD-20261002-03DB2C",
+    "payment_id": 151,
+    "payment_number": "PAY-20261002-03DB36",
+    "username": "testuser",
+    "user_name": "testuser",
+    "email": "testuser@example.com",
+    "phone": "-",
+    "domain": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "domain_name": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "package_name": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "service_category": "Tema Website",
+    "amount": 166500,
+    "total": 166500,
+    "subtotal": 150000,
+    "ppn": 16500,
+    "discount": 0,
+    "payment_method": "transfer",
+    "status": "paid",
+    "service_status": "active",
+    "billing_period": "Akses Selamanya (Sekali Bayar)",
+    "created_at": "2026-10-02T01:13:20.265Z",
+    "paid_at": "2026-10-02T01:13:46.752Z",
+    "confirmation_requested_at": "2026-10-02T01:13:26.121Z",
+    "items": [
+      {
+        "domain_name": "Tema Website: Dealer V1 - Showroom & Sales Mobil",
+        "description": "Lisensi Template Website Siap Pakai • Sekali Bayar (Akses Selamanya Tanpa Batas Waktu)",
+        "price": 150000,
+        "billing_period": "Akses Selamanya"
+      }
+    ]
+  },
+  {
+    "id": 149,
+    "order_id": 180,
+    "order_number": "ORD-20261002-B92560",
+    "payment_id": 149,
+    "payment_number": "PAY-20261002-B9256B",
+    "username": "testuser",
+    "user_name": "testuser",
+    "email": "testuser@example.com",
+    "phone": "-",
+    "domain": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "domain_name": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "package_name": "Tema: Dealer V1 - Showroom & Sales Mobil",
+    "service_category": "Tema Website",
+    "amount": 388500,
+    "total": 388500,
+    "subtotal": 350000,
+    "ppn": 38500,
+    "discount": 0,
+    "payment_method": "transfer",
+    "status": "paid",
+    "service_status": "active",
+    "billing_period": "Akses Selamanya (Sekali Bayar)",
+    "created_at": "2026-10-02T01:02:03.615Z",
+    "paid_at": "2026-10-02T01:03:36.641Z",
+    "confirmation_requested_at": "2026-10-02T01:02:07.830Z",
+    "items": [
+      {
+        "domain_name": "Tema Website: Dealer V1 - Showroom & Sales Mobil",
+        "description": "Lisensi Template Website Siap Pakai • Sekali Bayar (Akses Selamanya Tanpa Batas Waktu)",
+        "price": 350000,
+        "billing_period": "Akses Selamanya"
+      }
+    ]
+  }
+]

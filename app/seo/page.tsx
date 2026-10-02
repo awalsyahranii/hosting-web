@@ -7,6 +7,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { getSeoPackages, SeoPackage } from "../lib/seoStore";
 import { getWhatsAppUrl, SITE_CONFIG } from "../lib/siteConfig";
+import { navigateWithAuthCheck } from "../lib/authHelper";
 
 export default function JasaSeoPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function JasaSeoPage() {
     const targetUrl = `/checkout?type=seo&package=${encodeURIComponent(
       pkg.name
     )}&price=${pkg.price}&domain=${encodeURIComponent(`Paket ${pkg.name}`)}`;
-    router.push(targetUrl);
+    navigateWithAuthCheck(router.push, targetUrl);
   };
 
   useEffect(() => {

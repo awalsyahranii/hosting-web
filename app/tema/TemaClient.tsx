@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { getWhatsAppUrl } from "../lib/siteConfig";
 import { ThemeItem } from "../lib/themeStore";
+import { navigateWithAuthCheck } from "../lib/authHelper";
 
 interface Props {
   initialThemes: ThemeItem[];
@@ -64,7 +65,7 @@ export default function TemaClient({ initialThemes }: Props) {
     const targetUrl = `/checkout?type=theme&package=${encodeURIComponent(
       theme.name
     )}&price=${theme.price}&domain=${encodeURIComponent(`Tema: ${theme.name}`)}`;
-    router.push(targetUrl);
+    navigateWithAuthCheck(router.push, targetUrl);
   };
 
   function rupiah(val: number) {

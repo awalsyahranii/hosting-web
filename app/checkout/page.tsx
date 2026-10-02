@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getWhatsAppUrl, SITE_CONFIG } from "../lib/siteConfig";
+import { getActiveUser, isUserLoggedIn } from "../lib/authHelper";
 
 /* =========================================================
    TYPE DEFINITIONS
@@ -339,6 +340,19 @@ function CheckoutContent() {
 
   // Security & Transfer Confirmation Checkbox State (Default false di awal)
   const [isRobotVerified, setIsRobotVerified] = useState<boolean>(false);
+  const [authVerified, setAuthVerified] = useState<boolean>(false);
+
+  useEffect(() => {
+    const user = getActiveUser();
+    if (!user) {
+      if (typeof window !== "undefined") {
+        const currentUrl = window.location.pathname + window.location.search;
+        window.location.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
+      }
+    } else {
+      setAuthVerified(true);
+    }
+  }, []);
 
   useEffect(() => {
     const storageKey = `hostingwebid_deadline_${createdOrderNumber || "default"}`;
@@ -383,34 +397,17 @@ function CheckoutContent() {
         setLoading(true);
         setError("");
 
-        let savedUser = typeof window !== "undefined" ? localStorage.getItem("hostingwebid_user") : null;
-        if (!savedUser && typeof window !== "undefined") {
-          const authRaw = localStorage.getItem("hostingweb_auth");
-          if (authRaw) {
-            try {
-              const parsedAuth = JSON.parse(authRaw);
-              if (parsedAuth?.loggedIn && parsedAuth?.email) {
-                savedUser = JSON.stringify({
-                  id: parsedAuth.id || 0,
-                  name: parsedAuth.name || parsedAuth.username || parsedAuth.email.split("@")[0],
-                  email: parsedAuth.email,
-                  role: parsedAuth.role || "user",
-                });
-                localStorage.setItem("hostingwebid_user", savedUser);
-              }
-            } catch {}
+        const activeUser = getActiveUser();
+        if (!activeUser) {
+          // User belum login: arahkan ke halaman login terlebih dahulu dengan membawa parameter checkout
+          if (typeof window !== "undefined") {
+            const currentUrl = window.location.pathname + window.location.search;
+            router.replace(`/login?redirect=${encodeURIComponent(currentUrl)}`);
           }
+          return;
         }
 
-        // Fallback user jika belum login
-        if (!savedUser && typeof window !== "undefined") {
-          savedUser = JSON.stringify({
-            id: 0,
-            name: "Pelanggan",
-            email: "pelanggan@hostingwebid.com",
-            role: "user",
-          });
-        }
+        const savedUser = JSON.stringify(activeUser);
 
         // 1. Existing Order from Riwayat Pesanan (/checkout?order_number=ORD-...)
         if (orderNumberParam && !adsParam && !paketParam && !seoParam && !typeParam && !packageParam && !domainParam) {
@@ -616,6 +613,55 @@ function CheckoutContent() {
           };
 
           localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
+
+          // Sync globally to server-side /api/orders and localStorage
+          const globalOrderPayload = {
+            id: ordId,
+            order_id: ordId,
+            order_number: fallbackOrdNum,
+            payment_id: ordId,
+            payment_number: fallbackPayNum,
+            username: parsedUser?.name || parsedUser?.username || "Pelanggan",
+            user_name: parsedUser?.name || parsedUser?.username || "Pelanggan",
+            email: parsedUser?.email || "pelanggan@hostingwebid.com",
+            user_email: parsedUser?.email || "pelanggan@hostingwebid.com",
+            domain: domainParam || itemName,
+            domain_name: domainParam || itemName,
+            package_name: orderPayload?.package_name || packageParam || itemName,
+            service_category: orderPayload?.service_category || (typeParam === "theme" || typeParam === "tema" ? "Tema Website" : "hosting"),
+            amount: finalTotal,
+            total: finalTotal,
+            subtotal: basePrice,
+            ppn: ppnVal,
+            discount: 0,
+            payment_method: "transfer",
+            status: "pending",
+            billing_period: typeParam === "theme" || typeParam === "tema" ? "Akses Selamanya (Sekali Bayar)" : "Tahunan (12 Bulan)",
+            created_at: new Date().toISOString(),
+            items: [
+              {
+                domain_name: itemName,
+                description: itemExtension,
+                price: basePrice,
+                billing_period: typeParam === "theme" || typeParam === "tema" ? "Akses Selamanya" : "1 Tahun",
+              },
+            ],
+          };
+
+          void fetch("/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(globalOrderPayload),
+          }).catch(() => null);
+
+          try {
+            const allOrders: any[] = JSON.parse(localStorage.getItem("hostingweb_all_orders") || "[]");
+            const idx = allOrders.findIndex((o) => o.order_number === fallbackOrdNum || o.payment_number === fallbackPayNum);
+            if (idx >= 0) allOrders[idx] = { ...allOrders[idx], ...globalOrderPayload };
+            else allOrders.unshift(globalOrderPayload);
+            localStorage.setItem("hostingweb_all_orders", JSON.stringify(allOrders));
+            window.dispatchEvent(new Event("storage"));
+          } catch {}
         } else {
           const d = createResult.data;
           const ordId = Number(d.order_id);
@@ -643,6 +689,55 @@ function CheckoutContent() {
           };
 
           localStorage.setItem("hostingweb_checkout_payment", JSON.stringify(savedData));
+
+          // Sync globally to server-side /api/orders and localStorage
+          const globalOrderPayload = {
+            id: ordId,
+            order_id: ordId,
+            order_number: ordNum,
+            payment_id: payId,
+            payment_number: payNum,
+            username: parsedUser?.name || parsedUser?.username || "Pelanggan",
+            user_name: parsedUser?.name || parsedUser?.username || "Pelanggan",
+            email: parsedUser?.email || "pelanggan@hostingwebid.com",
+            user_email: parsedUser?.email || "pelanggan@hostingwebid.com",
+            domain: domainParam || itemName,
+            domain_name: domainParam || itemName,
+            package_name: orderPayload?.package_name || packageParam || itemName,
+            service_category: orderPayload?.service_category || (typeParam === "theme" || typeParam === "tema" ? "Tema Website" : "hosting"),
+            amount: finalTotal,
+            total: finalTotal,
+            subtotal: basePrice,
+            ppn: ppnVal,
+            discount: 0,
+            payment_method: "transfer",
+            status: "pending",
+            billing_period: typeParam === "theme" || typeParam === "tema" ? "Akses Selamanya (Sekali Bayar)" : "Tahunan (12 Bulan)",
+            created_at: new Date().toISOString(),
+            items: [
+              {
+                domain_name: itemName,
+                description: itemExtension,
+                price: basePrice,
+                billing_period: typeParam === "theme" || typeParam === "tema" ? "Akses Selamanya" : "1 Tahun",
+              },
+            ],
+          };
+
+          void fetch("/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(globalOrderPayload),
+          }).catch(() => null);
+
+          try {
+            const allOrders: any[] = JSON.parse(localStorage.getItem("hostingweb_all_orders") || "[]");
+            const idx = allOrders.findIndex((o) => o.order_number === ordNum || o.payment_number === payNum);
+            if (idx >= 0) allOrders[idx] = { ...allOrders[idx], ...globalOrderPayload };
+            else allOrders.unshift(globalOrderPayload);
+            localStorage.setItem("hostingweb_all_orders", JSON.stringify(allOrders));
+            window.dispatchEvent(new Event("storage"));
+          } catch {}
         }
       } catch (err) {
         console.error("Checkout Error:", err);
@@ -1073,7 +1168,17 @@ function CheckoutContent() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      }).catch(() => null);
+
+      await fetch("/api/orders", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order_number: createdOrderNumber,
+          payment_number: paymentNumber,
+          confirmation_requested_at: new Date().toISOString(),
+        }),
+      }).catch(() => null);
     } catch (err) {
       console.error("Gagal kirim notifikasi konfirmasi ke backend:", err);
     }
@@ -1112,6 +1217,20 @@ function CheckoutContent() {
   const isOrderPlaced = Boolean(paymentNumber || createdOrderNumber);
   const primaryItem = checkout?.items[0];
   const displayTotal = calculatedTotal;
+
+  if (!authVerified) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ background: "#fff", padding: "32px", borderRadius: "24px", border: "1px solid #e2e8f0", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)", maxWidth: "380px", width: "100%", textAlign: "center" }}>
+          <div style={{ fontSize: "28px", marginBottom: "12px" }}>⏳</div>
+          <h2 style={{ fontSize: "16px", fontWeight: "800", color: "#0f172a", margin: "0 0 6px 0" }}>Memeriksa Sesi Akun...</h2>
+          <p style={{ fontSize: "12px", color: "#64748b", margin: 0, lineHeight: 1.5 }}>
+            Silakan masuk terlebih dahulu untuk melanjutkan ke pembayaran. Mengarahkan ke halaman login...
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="unified-checkout-page">

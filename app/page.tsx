@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "./components/Navbar";
 import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
+import { navigateWithAuthCheck } from "./lib/authHelper";
 
 interface PlanFeature {
   text: string;
@@ -880,7 +881,7 @@ export default function Home() {
   }, []);
 
   const navigateWithAuth = (targetUrl: string) => {
-    router.push(targetUrl);
+    navigateWithAuthCheck(router.push, targetUrl);
   };
 
   const handleBuyAds = (pkg: GoogleAdsPackage) => {

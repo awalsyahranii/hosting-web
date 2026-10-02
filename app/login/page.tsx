@@ -118,6 +118,8 @@ function LoginForm() {
         backendUser.role === "superadmin"
       ) {
         window.location.href = "/admin";
+      } else if (redirectParam) {
+        window.location.href = redirectParam;
       } else {
         window.location.href = "/dashboard";
       }
@@ -290,15 +292,15 @@ function LoginForm() {
 
           {/* JIKA MEMILIKI REDIRECT CHECKOUT / PESANAN */}
           {redirectParam && (
-            <div className="mt-4 p-3 rounded-2xl bg-orange-50 border border-orange-200 text-orange-950 text-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold">Ingin langsung bayar tanpa login?</span>
-                <a
-                  href={redirectParam}
-                  className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs whitespace-nowrap shadow-xs transition"
-                >
-                  Langsung Checkout →
-                </a>
+            <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200/80 text-orange-950 text-xs flex items-start gap-2.5">
+              <span className="text-base">🛒</span>
+              <div>
+                <strong className="font-bold text-orange-900 block mb-0.5">
+                  Langkah Pembelian Layanan
+                </strong>
+                <p className="text-[11px] text-orange-800 leading-relaxed">
+                  Silakan masuk atau buat akun baru terlebih dahulu. Setelah berhasil masuk, Anda akan langsung dialihkan ke halaman checkout &amp; pembayaran.
+                </p>
               </div>
             </div>
           )}
