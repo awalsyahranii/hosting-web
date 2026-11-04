@@ -126,7 +126,7 @@ export default function AdminSidebar({
         {/* =========================================================
             SECTION 2: LAYANAN & PRODUK
         ========================================================= */}
-        <div className="admin-nav-title" style={{ marginTop: "14px" }}>
+        <div className="admin-nav-title" style={{ marginTop: "8px" }}>
           LAYANAN &amp; PRODUK
         </div>
 
@@ -215,7 +215,7 @@ export default function AdminSidebar({
         {/* =========================================================
             SECTION 3: TRANSAKSI & BILLING
         ========================================================= */}
-        <div className="admin-nav-title" style={{ marginTop: "14px" }}>
+        <div className="admin-nav-title" style={{ marginTop: "8px" }}>
           TRANSAKSI &amp; BILLING
         </div>
 
@@ -276,7 +276,7 @@ export default function AdminSidebar({
         {/* =========================================================
             SECTION 4: PENGGUNA & PROMO
         ========================================================= */}
-        <div className="admin-nav-title" style={{ marginTop: "14px" }}>
+        <div className="admin-nav-title" style={{ marginTop: "8px" }}>
           PENGGUNA &amp; PROMO
         </div>
 
@@ -330,7 +330,7 @@ export default function AdminSidebar({
         {/* =========================================================
             SECTION 5: SUPER ADMIN MASTER
         ========================================================= */}
-        <div className="admin-nav-title font-black flex items-center gap-1 text-amber-500" style={{ marginTop: "14px" }}>
+        <div className="admin-nav-title font-black flex items-center gap-1 text-amber-500" style={{ marginTop: "8px" }}>
           <span>👑</span> SUPER ADMIN
         </div>
 

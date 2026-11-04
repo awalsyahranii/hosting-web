@@ -9405,7 +9405,7 @@ img {
 }
 
 .admin-nav {
-  padding: 18px 12px;
+  padding: 10px 10px;
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -9414,12 +9414,16 @@ img {
 }
 
 .admin-nav::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 
 .admin-nav::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #cbd5e1;
   border-radius: 4px;
+}
+
+.admin-nav::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .admin-nav-title {
@@ -9428,17 +9432,17 @@ img {
   letter-spacing: 1.2px;
   text-transform: uppercase;
   color: #94a3b8;
-  padding: 4px 10px;
-  margin-bottom: 4px;
+  padding: 3px 8px;
+  margin-bottom: 2px;
 }
 
 .admin-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 9px 12px;
-  border-radius: 10px;
+  padding: 7.5px 10px;
+  border-radius: 8px;
   color: #475569;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
