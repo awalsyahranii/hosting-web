@@ -13,7 +13,9 @@ const NO_CACHE_HEADERS = {
   "Surrogate-Control": "no-store",
 };
 
-const MYSQL_API_URL = "http://localhost:8080/hosting_webid/api/v1/portfolio.php";
+const MYSQL_API_URL = process.env.NODE_ENV === "production"
+  ? "https://order.hostingwebid.com/api/v1/portfolio.php"
+  : (process.env.BACKEND_API_URL ? `${process.env.BACKEND_API_URL}/portfolio.php` : "http://localhost:8080/hosting_webid/api/v1/portfolio.php");
 
 function getDataFilePath() {
   const dir = path.join(process.cwd(), "data");

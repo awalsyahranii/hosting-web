@@ -173,7 +173,7 @@ export function savePortfolios(portfolios: PortfolioItem[]): void {
 
 export async function fetchPortfoliosAsync(): Promise<PortfolioItem[]> {
   try {
-    const res = await fetch("/api/portfolios", { cache: "no-store" });
+    const res = await fetch(`/api/portfolios?_t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const data = await res.json();
     if (data.success && Array.isArray(data.portfolios) && data.portfolios.length > 0) {
