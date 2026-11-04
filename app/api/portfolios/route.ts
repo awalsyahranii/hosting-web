@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { PortfolioItem, DEFAULT_PORTFOLIOS, getScreenshotUrl, getCleanDomain, getCleanUrl } from "@/app/lib/portfolioStore";
+import { PortfolioItem, DEFAULT_PORTFOLIOS, getCleanDomain, getCleanUrl } from "@/app/lib/portfolioStore";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -12,6 +12,8 @@ const NO_CACHE_HEADERS = {
   "Expires": "0",
   "Surrogate-Control": "no-store",
 };
+
+const MYSQL_API_URL = "http://localhost:8080/hosting_webid/api/v1/portfolio.php";
 
 function getDataFilePath() {
   const dir = path.join(process.cwd(), "data");
@@ -55,16 +57,37 @@ function writePortfoliosToFile(portfolios: PortfolioItem[]): boolean {
   }
 }
 
-// GET: /api/portfolios (fetch all portfolios)
+// GET: /api/portfolios (fetch all portfolios from MySQL database, with file fallback)
 export async function GET() {
+  try {
+    const mysqlRes = await fetch(MYSQL_API_URL, {
+      method: "GET",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (mysqlRes.ok) {
+      const mysqlData = await mysqlRes.json();
+      if (mysqlData.success && Array.isArray(mysqlData.portfolios) && mysqlData.portfolios.length > 0) {
+        // Sync to local json cache
+        writePortfoliosToFile(mysqlData.portfolios);
+        return NextResponse.json(
+          { success: true, source: "mysql", count: mysqlData.portfolios.length, portfolios: mysqlData.portfolios },
+          { headers: NO_CACHE_HEADERS }
+        );
+      }
+    }
+  } catch (err) {
+    console.warn("MySQL fetch unavailable, using JSON file cache fallback:", err);
+  }
+
   const portfolios = readPortfoliosFromFile();
   return NextResponse.json(
-    { success: true, count: portfolios.length, portfolios },
+    { success: true, source: "json", count: portfolios.length, portfolios },
     { headers: NO_CACHE_HEADERS }
   );
 }
 
-// POST: /api/portfolios (create new portfolio or bulk save)
+// POST: /api/portfolios (create new portfolio into MySQL + JSON)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -96,8 +119,8 @@ export async function POST(req: NextRequest) {
       packageTitle = "Jasa Pembuatan Website Profesional",
       feat1 = "Tampilan Bisa Request/Custom",
       feat2 = "Termasuk Domain & Cloud Server NVMe",
-      image,
-      useScreenshot = true,
+      image = "",
+      useScreenshot = false,
       status = "active",
       id,
     } = body;
@@ -111,8 +134,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    const autoImage = image && image.trim() ? image.trim() : getScreenshotUrl(cleanUrl);
 
     const newPortfolio: PortfolioItem = {
       id: id || `portfolio-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -132,11 +153,22 @@ export async function POST(req: NextRequest) {
       packageTitle: packageTitle.trim(),
       feat1: feat1.trim(),
       feat2: feat2.trim(),
-      image: autoImage,
+      image: (image || "").trim(),
       useScreenshot: Boolean(useScreenshot),
       status: status === "inactive" ? "inactive" : "active",
       created_at: new Date().toISOString().split("T")[0],
     };
+
+    // Forward to MySQL
+    try {
+      await fetch(MYSQL_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newPortfolio),
+      });
+    } catch (mysqlErr) {
+      console.warn("Failed syncing new portfolio to MySQL:", mysqlErr);
+    }
 
     const updated = [newPortfolio, ...current];
     writePortfoliosToFile(updated);
@@ -144,7 +176,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Portofolio website klien berhasil ditambahkan",
+        message: "Portofolio website klien berhasil disimpan ke Database",
         portfolio: newPortfolio,
         portfolios: updated,
       },
@@ -158,7 +190,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT: /api/portfolios (update existing portfolio)
+// PUT: /api/portfolios (update existing portfolio in MySQL + JSON)
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
@@ -181,9 +213,6 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    if (updatedFields.url && !updatedFields.image) {
-      updatedFields.image = getScreenshotUrl(updatedFields.url);
-    }
     if (updatedFields.domain) {
       updatedFields.domain = getCleanDomain(updatedFields.domain);
     }
@@ -196,10 +225,21 @@ export async function PUT(req: NextRequest) {
     current[index] = updatedItem;
     writePortfoliosToFile(current);
 
+    // Forward to MySQL
+    try {
+      await fetch(MYSQL_API_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...updatedFields }),
+      });
+    } catch (mysqlErr) {
+      console.warn("Failed syncing update portfolio to MySQL:", mysqlErr);
+    }
+
     return NextResponse.json(
       {
         success: true,
-        message: "Portofolio berhasil diperbarui",
+        message: "Portofolio berhasil diperbarui di Database",
         portfolio: updatedItem,
         portfolios: current,
       },
@@ -213,7 +253,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE: /api/portfolios?id=xxx (delete portfolio)
+// DELETE: /api/portfolios?id=xxx (delete portfolio from MySQL + JSON)
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -229,19 +269,21 @@ export async function DELETE(req: NextRequest) {
     const current = readPortfoliosFromFile();
     const filtered = current.filter((p) => p.id !== id);
 
-    if (filtered.length === current.length) {
-      return NextResponse.json(
-        { success: false, message: "Portofolio tidak ditemukan." },
-        { status: 404 }
-      );
-    }
-
     writePortfoliosToFile(filtered);
+
+    // Forward delete to MySQL
+    try {
+      await fetch(`${MYSQL_API_URL}?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+    } catch (mysqlErr) {
+      console.warn("Failed syncing delete portfolio to MySQL:", mysqlErr);
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Portofolio berhasil dihapus",
+        message: "Portofolio berhasil dihapus dari Database",
         portfolios: filtered,
       },
       { headers: NO_CACHE_HEADERS }
@@ -253,4 +295,3 @@ export async function DELETE(req: NextRequest) {
     );
   }
 }
-

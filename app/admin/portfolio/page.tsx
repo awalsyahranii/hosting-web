@@ -544,41 +544,50 @@ export default function AdminPortfolioPage() {
                     className="relative h-44 p-3 text-white flex flex-col justify-between overflow-hidden group"
                     style={{
                       background: item.gradient || "linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)",
-                      backgroundImage: item.useScreenshot !== false && screenshotImg
-                        ? `linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.85)), url(${screenshotImg})`
-                        : undefined,
-                      backgroundSize: "cover",
-                      backgroundPosition: "top center",
                     }}
                   >
+                    {/* Live screenshot image overlay */}
+                    {item.useScreenshot && item.image && item.image.trim() && (
+                      <img
+                        src={item.image}
+                        alt={item.domain}
+                        className="absolute inset-0 w-full h-full object-cover object-top opacity-35 group-hover:opacity-50 group-hover:scale-105 transition-all duration-500 pointer-events-none"
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    )}
+                    {/* Dark gradient overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
                     {/* BROWSER BAR */}
-                    <div className="flex items-center justify-between gap-2 z-10">
+                    <div className="flex items-center justify-between gap-2 z-10 relative">
                       <div className="flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-rose-400" />
                         <span className="w-2 h-2 rounded-full bg-amber-400" />
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       </div>
-                      <span className="text-[10px] font-mono text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-sm truncate max-w-[170px]">
+                      <span className="text-[10px] font-mono text-white/95 bg-black/50 px-2 py-0.5 rounded-md backdrop-blur-sm truncate max-w-[170px] shadow-xs">
                         {item.domain}
                       </span>
                     </div>
 
                     {/* BADGES */}
-                    <div className="flex items-center justify-between gap-2 z-10 mt-1">
-                      <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded bg-white/20 backdrop-blur-md">
+                    <div className="flex items-center justify-between gap-2 z-10 relative mt-1">
+                      <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded bg-white/25 backdrop-blur-md text-white shadow-xs">
                         {item.categoryTag}
                       </span>
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-rose-600 text-white">
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-rose-600 text-white shadow-xs">
                         {item.promoTag}
                       </span>
                     </div>
 
                     {/* BANNER TEXT */}
-                    <div className="z-10 mt-auto pt-2">
-                      <h4 className="text-xs font-black line-clamp-1 text-white leading-tight">
+                    <div className="z-10 relative mt-auto pt-2">
+                      <h4 className="text-xs font-black line-clamp-1 text-white leading-tight drop-shadow-sm">
                         {item.bannerTitle}
                       </h4>
-                      <p className="text-[10px] text-white/80 line-clamp-1 mt-0.5">
+                      <p className="text-[10px] text-white/90 line-clamp-1 mt-0.5 drop-shadow-sm">
                         {item.bannerDesc}
                       </p>
                     </div>
@@ -710,14 +719,22 @@ export default function AdminPortfolioPage() {
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-3">
                             <div
-                              className="w-16 h-11 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-900 relative"
-                              style={{
-                                backgroundImage: `url(${screenshotImg})`,
-                                backgroundSize: "cover",
-                                backgroundPosition: "top",
-                              }}
+                              className="w-16 h-11 rounded-lg overflow-hidden border border-slate-200 flex-shrink-0 relative flex items-center justify-center text-[10px] font-bold text-white shadow-xs"
+                              style={{ background: item.gradient || "#0f172a" }}
                             >
-                              <div className="absolute inset-0 bg-black/20" />
+                              {item.image && item.image.trim() && (
+                                <img
+                                  src={item.image}
+                                  alt={item.domain}
+                                  className="absolute inset-0 w-full h-full object-cover object-top opacity-50"
+                                  onError={(e) => {
+                                    (e.target as HTMLElement).style.display = "none";
+                                  }}
+                                />
+                              )}
+                              <span className="relative z-10 text-[9px] drop-shadow font-extrabold uppercase px-1 py-0.5 rounded bg-black/40">
+                                {item.categoryTag?.slice(0, 8) || item.domain.slice(0, 4)}
+                              </span>
                             </div>
                             <div>
                               <div className="font-black text-slate-900">{item.domain}</div>
@@ -1125,27 +1142,36 @@ export default function AdminPortfolioPage() {
                           className="relative h-44 p-3 text-white flex flex-col justify-between overflow-hidden"
                           style={{
                             background: formData.gradient,
-                            backgroundImage: formData.useScreenshot && previewScreenshot
-                              ? `linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.85)), url(${previewScreenshot})`
-                              : undefined,
-                            backgroundSize: "cover",
-                            backgroundPosition: "top center",
                           }}
                         >
+                          {/* Live screenshot preview overlay */}
+                          {formData.useScreenshot && previewScreenshot && (
+                            <img
+                              src={previewScreenshot}
+                              alt={previewDomain}
+                              className="absolute inset-0 w-full h-full object-cover object-top opacity-35 transition-all pointer-events-none"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
+                            />
+                          )}
+                          {/* Dark subtle overlay for contrast */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
+
                           {/* TOP BROWSER DOTS & DOMAIN */}
-                          <div className="flex items-center justify-between gap-2 z-10">
+                          <div className="flex items-center justify-between gap-2 z-10 relative">
                             <div className="flex items-center gap-1">
                               <span className="w-2 h-2 rounded-full bg-rose-400" />
                               <span className="w-2 h-2 rounded-full bg-amber-400" />
                               <span className="w-2 h-2 rounded-full bg-emerald-400" />
                             </div>
-                            <span className="text-[10px] font-mono text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-sm truncate max-w-[170px]">
+                            <span className="text-[10px] font-mono text-white/95 bg-black/50 px-2 py-0.5 rounded-md backdrop-blur-sm truncate max-w-[170px]">
                               {previewDomain}
                             </span>
                           </div>
 
                           {/* BADGES */}
-                          <div className="flex items-center justify-between gap-2 z-10">
+                          <div className="flex items-center justify-between gap-2 z-10 relative">
                             <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded bg-white/20 backdrop-blur-md">
                               {formData.categoryTag || "PRODUKSI & JASA"}
                             </span>
@@ -1155,11 +1181,11 @@ export default function AdminPortfolioPage() {
                           </div>
 
                           {/* TEXT OVERLAY */}
-                          <div className="z-10 mt-auto pt-2">
-                            <h4 className="text-xs font-black line-clamp-1 text-white">
+                          <div className="z-10 relative mt-auto pt-2">
+                            <h4 className="text-xs font-black line-clamp-1 text-white drop-shadow-sm">
                               {formData.bannerTitle || `Website ${previewDomain}`}
                             </h4>
-                            <p className="text-[10px] text-white/80 line-clamp-1 mt-0.5">
+                            <p className="text-[10px] text-white/90 line-clamp-1 mt-0.5 drop-shadow-sm">
                               {formData.bannerDesc || "Kusen aluminium, pintu sliding & partisi kantor"}
                             </p>
                           </div>

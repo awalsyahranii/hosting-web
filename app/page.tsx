@@ -2016,18 +2016,27 @@ export default function Home() {
                     <div className="slider-card" key={item.domain + index}>
                       {/* CARD PREVIEW BANNER */}
                       <div
-                        className="slider-card-banner"
+                        className="slider-card-banner relative overflow-hidden group"
                         style={{
                           background: item.gradient || "linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)",
-                          backgroundImage:
-                            item.useScreenshot !== false && (item.image || item.domain)
-                              ? `linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.82)), url(${item.image || `https://s0.wp.com/mshots/v1/https%3A%2F%2F${encodeURIComponent(item.domain)}?w=800`})`
-                              : undefined,
-                          backgroundSize: "cover",
-                          backgroundPosition: "top center",
                         }}
                       >
-                        <div className="banner-browser-top">
+                        {/* Live screenshot image overlay */}
+                        {item.useScreenshot && item.image && item.image.trim() && (
+                          <img
+                            src={item.image}
+                            alt={item.domain}
+                            className="absolute inset-0 w-full h-full object-cover object-top opacity-35 group-hover:opacity-50 group-hover:scale-105 transition-all duration-500 pointer-events-none"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        )}
+                        {/* Dark subtle gradient overlay for text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
+
+                        <div className="banner-browser-top relative z-10">
                           <div className="banner-dots">
                             <span className="dot dot-red" />
                             <span className="dot dot-yellow" />
@@ -2036,12 +2045,12 @@ export default function Home() {
                           <span className="banner-domain">{item.domain}</span>
                         </div>
 
-                        <div className="banner-badges-row">
+                        <div className="banner-badges-row relative z-10">
                           <span className="banner-category-badge">{item.categoryTag}</span>
                           <span className="banner-promo-badge">{item.promoTag}</span>
                         </div>
 
-                        <div className="banner-main-text">
+                        <div className="banner-main-text relative z-10">
                           <h4 className="banner-title">{item.bannerTitle}</h4>
                           <p className="banner-desc">{item.bannerDesc}</p>
                         </div>
