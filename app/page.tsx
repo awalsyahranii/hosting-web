@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "./components/Navbar";
 import { getWhatsAppUrl, SITE_CONFIG } from "./lib/siteConfig";
 import { navigateWithAuthCheck } from "./lib/authHelper";
+import { PortfolioItem, DEFAULT_PORTFOLIOS, fetchPortfoliosAsync } from "./lib/portfolioStore";
 
 interface PlanFeature {
   text: string;
@@ -748,6 +749,7 @@ export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const router = useRouter();
+  const [livePortfolioItems, setLivePortfolioItems] = useState<PortfolioItem[]>(DEFAULT_PORTFOLIOS);
   const [portfolioCategory, setPortfolioCategory] = useState("Semua");
   const [portfolioSearch, setPortfolioSearch] = useState("");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
@@ -786,6 +788,16 @@ export default function Home() {
     } catch {
       // ignore
     }
+
+    // Fetch latest portfolios for Homepage showcase
+    fetchPortfoliosAsync()
+      .then((items) => {
+        if (Array.isArray(items) && items.length > 0) {
+          const activeOnly = items.filter((p) => (p.status || "active") === "active");
+          setLivePortfolioItems(activeOnly);
+        }
+      })
+      .catch((err) => console.error("Gagal memuat portofolio beranda:", err));
 
     // Fetch 6 latest articles for Homepage
     fetch("/api/backend/article/index.php?limit=6")
@@ -1902,7 +1914,13 @@ export default function Home() {
           {/* FILTER TABS & SEARCH BAR */}
           <div className="portfolio-controls">
             <div className="portfolio-tabs">
-              {portfolioCategories.map((cat) => (
+              {Array.from(
+                new Set([
+                  "Semua",
+                  ...portfolioCategories.filter((c) => c !== "Semua"),
+                  ...livePortfolioItems.map((p) => p.category).filter(Boolean),
+                ])
+              ).map((cat) => (
                 <button
                   key={cat}
                   type="button"
@@ -1940,7 +1958,7 @@ export default function Home() {
           </div>
 
           {/* SLIDER ROW (1 BARIS) */}
-          {allPortfolioItems.filter((item) => {
+          {livePortfolioItems.filter((item) => {
             const matchesCategory =
               portfolioCategory === "Semua" || item.category === portfolioCategory;
             const matchesSearch =
@@ -1981,7 +1999,7 @@ export default function Home() {
               </div>
 
               <div className="slider-track" id="slider-row-main" ref={portfolioTrackRef}>
-                {allPortfolioItems
+                {livePortfolioItems
                   .filter((item) => {
                     const matchesCategory =
                       portfolioCategory === "Semua" || item.category === portfolioCategory;
@@ -1999,7 +2017,15 @@ export default function Home() {
                       {/* CARD PREVIEW BANNER */}
                       <div
                         className="slider-card-banner"
-                        style={{ background: item.gradient }}
+                        style={{
+                          background: item.gradient || "linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)",
+                          backgroundImage:
+                            item.useScreenshot !== false && (item.image || item.domain)
+                              ? `linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.82)), url(${item.image || `https://s0.wp.com/mshots/v1/https%3A%2F%2F${encodeURIComponent(item.domain)}?w=800`})`
+                              : undefined,
+                          backgroundSize: "cover",
+                          backgroundPosition: "top center",
+                        }}
                       >
                         <div className="banner-browser-top">
                           <div className="banner-dots">
@@ -2051,7 +2077,7 @@ export default function Home() {
 
                         <div className="slider-card-actions">
                           <a
-                            href={`https://${item.domain}`}
+                            href={item.url || `https://${item.domain}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="slider-btn-detail"
@@ -2075,7 +2101,7 @@ export default function Home() {
           )}
 
           {/* EMPTY STATE */}
-          {allPortfolioItems.filter((item) => {
+          {livePortfolioItems.filter((item) => {
             const matchesCategory =
               portfolioCategory === "Semua" || item.category === portfolioCategory;
             const matchesSearch =
