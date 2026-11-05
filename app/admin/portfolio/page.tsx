@@ -69,6 +69,7 @@ export default function AdminPortfolioPage() {
   ];
 
   const categoryPresets = [
+    "Website Desa",
     "Bisnis & Jasa",
     "Otomotif",
     "Media & Berita",
@@ -266,14 +267,14 @@ export default function AdminPortfolioPage() {
       if (editingItem) {
         const res = await updatePortfolioAsync(editingItem.id, payload);
         if (res.success) {
-          showToast("✅ Portofolio berhasil diperbarui!");
+          showToast("Portofolio berhasil diperbarui!");
         } else {
           alert("Gagal memperbarui: " + (res.message || "Error"));
         }
       } else {
         const res = await addPortfolioAsync(payload);
         if (res.success) {
-          showToast("🎉 Portofolio website klien baru berhasil ditambahkan!");
+          showToast("Portofolio website klien baru berhasil ditambahkan!");
         } else {
           alert("Gagal menambahkan: " + (res.message || "Error"));
         }
@@ -294,7 +295,7 @@ export default function AdminPortfolioPage() {
     try {
       const res = await deletePortfolioAsync(id);
       if (res.success) {
-        showToast("🗑️ Portofolio berhasil dihapus.");
+        showToast("Portofolio berhasil dihapus.");
       } else {
         alert("Gagal menghapus: " + (res.message || "Error"));
       }
@@ -351,7 +352,10 @@ export default function AdminPortfolioPage() {
       <main className="admin-content">
         {/* TOAST ALERT */}
         {toastMessage && (
-          <div className="fixed top-6 right-6 z-50 bg-slate-900 text-white text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-3 flex items-center gap-2">
+          <div className="fixed top-6 right-6 z-50 bg-slate-900 text-white text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 animate-in fade-in slide-in-from-top-3 flex items-center gap-2.5">
+            <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
             <span>{toastMessage}</span>
           </div>
         )}
@@ -369,16 +373,25 @@ export default function AdminPortfolioPage() {
             <Link
               href="/#portfolio"
               target="_blank"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm"
             >
-              <span>👁️</span> Lihat di Beranda ↗
+              <svg className="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              <span>Lihat di Beranda</span>
             </Link>
             <button
               type="button"
               onClick={handleOpenCreate}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25"
             >
-              <span>➕</span> Tambah Portofolio Klien
+              <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span>Tambah Portofolio Klien</span>
             </button>
           </div>
         </header>
@@ -386,8 +399,12 @@ export default function AdminPortfolioPage() {
         {/* QUICK STATS CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 text-2xl">
-              🌐
+            <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900">{portfolios.length}</div>
@@ -396,8 +413,11 @@ export default function AdminPortfolioPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl">
-              ✅
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900">{activeCount}</div>
@@ -406,8 +426,12 @@ export default function AdminPortfolioPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-2xl">
-              📸
+            <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900">
@@ -418,8 +442,11 @@ export default function AdminPortfolioPage() {
           </div>
 
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 text-2xl">
-              🏷️
+            <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
             </div>
             <div>
               <div className="text-2xl font-black text-slate-900">{categoriesList.length}</div>
@@ -433,9 +460,10 @@ export default function AdminPortfolioPage() {
           <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
             {/* SEARCH */}
             <div className="relative flex-1 min-w-[220px]">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                🔍
-              </span>
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
               <input
                 type="text"
                 placeholder="Cari domain, judul website, atau paket..."
@@ -476,24 +504,38 @@ export default function AdminPortfolioPage() {
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                 viewMode === "grid"
                   ? "bg-white text-slate-900 shadow-sm"
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              📱 Grid Card
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Grid Card</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("table")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
                 viewMode === "table"
                   ? "bg-white text-slate-900 shadow-sm"
                   : "text-slate-500 hover:text-slate-900"
               }`}
             >
-              📋 Tabel
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6"/>
+                <line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+                <line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/>
+                <line x1="3" y1="18" x2="3.01" y2="18"/>
+              </svg>
+              <span>Tabel</span>
             </button>
           </div>
         </div>
@@ -509,7 +551,13 @@ export default function AdminPortfolioPage() {
         {/* EMPTY STATE */}
         {!loading && filteredPortfolios.length === 0 && (
           <div className="bg-white rounded-2xl p-16 text-center border border-slate-200">
-            <span className="text-4xl mb-3 block">🌐</span>
+            <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 mx-auto mb-4 flex items-center justify-center">
+              <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
             <h3 className="text-base font-black text-slate-800">Tidak ada portofolio ditemukan</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-5">
               Coba sesuaikan kata kunci pencarian atau filter kategori, atau tambahkan portofolio website baru sekarang.
@@ -517,9 +565,13 @@ export default function AdminPortfolioPage() {
             <button
               type="button"
               onClick={handleOpenCreate}
-              className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25"
             >
-              ➕ Tambah Portofolio Baru
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              <span>Tambah Portofolio Baru</span>
             </button>
           </div>
         )}
@@ -597,9 +649,14 @@ export default function AdminPortfolioPage() {
                       href={liveUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute inset-0 bg-slate-950/70 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-bold text-xs z-20"
+                      className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white font-bold text-xs z-20"
                     >
-                      <span>🌐 Buka Website Asli ↗</span>
+                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                      </svg>
+                      <span>Buka Website Asli</span>
                     </a>
                   </div>
 
@@ -671,18 +728,25 @@ export default function AdminPortfolioPage() {
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(item)}
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors inline-flex items-center gap-1.5"
                           title="Edit Portofolio"
                         >
-                          ✏️ Edit
+                          <svg className="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                          <span>Edit</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setDeleteConfirmId(item.id)}
-                          className="px-2 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition-colors"
+                          className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition-colors inline-flex items-center justify-center"
                           title="Hapus Portofolio"
                         >
-                          🗑️
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                          </svg>
                         </button>
                       </div>
                     </div>
@@ -786,24 +850,41 @@ export default function AdminPortfolioPage() {
                             <button
                               type="button"
                               onClick={() => handleToggleStatus(item)}
-                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs"
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs inline-flex items-center justify-center"
                               title={isActive ? "Non-aktifkan" : "Aktifkan"}
                             >
-                              {isActive ? "⏸️" : "▶️"}
+                              {isActive ? (
+                                <svg className="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="currentColor">
+                                  <rect x="6" y="4" width="4" height="16" rx="1"/>
+                                  <rect x="14" y="4" width="4" height="16" rx="1"/>
+                                </svg>
+                              ) : (
+                                <svg className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="currentColor">
+                                  <polygon points="5 3 19 12 5 21 5 3"/>
+                                </svg>
+                              )}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleOpenEdit(item)}
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs inline-flex items-center gap-1"
                             >
-                              Edit
+                              <svg className="w-3 h-3 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                              <span>Edit</span>
                             </button>
                             <button
                               type="button"
                               onClick={() => setDeleteConfirmId(item.id)}
-                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs"
+                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs inline-flex items-center justify-center"
+                              title="Hapus"
                             >
-                              🗑️
+                              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                              </svg>
                             </button>
                           </div>
                         </td>
@@ -826,7 +907,7 @@ export default function AdminPortfolioPage() {
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
                 <div>
                   <h3 className="text-base font-black text-slate-900">
-                    {editingItem ? "✏️ Edit Portofolio Website Klien" : "➕ Tambah Portofolio Klien Baru"}
+                    {editingItem ? "Edit Portofolio Website Klien" : "Tambah Portofolio Klien Baru"}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Masukkan URL / link website, sistem akan otomatis mengambil tampilan layar home website klien.
@@ -863,13 +944,16 @@ export default function AdminPortfolioPage() {
                         <button
                           type="button"
                           onClick={handleAutoFill}
-                          className="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold flex items-center gap-1 shadow-sm whitespace-nowrap"
+                          className="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm whitespace-nowrap"
                         >
-                          ⚡ Auto-Lengkapi
+                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                          </svg>
+                          <span>Auto-Lengkapi</span>
                         </button>
                       </div>
                       <p className="text-[10px] text-orange-700 mt-1.5">
-                        💡 Masukkan URL lengkap atau nama domain untuk langsung memunculkan preview Layar Home secara otomatis.
+                        Masukkan URL lengkap atau nama domain untuk langsung memunculkan preview Layar Home secara otomatis.
                       </p>
                     </div>
 
@@ -1110,7 +1194,12 @@ export default function AdminPortfolioPage() {
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                          <span>📸</span> Live Layar Home &amp; Mockup
+                          <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                          </svg>
+                          <span>Live Layar Home &amp; Mockup</span>
                         </h4>
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                           Real-time
@@ -1224,7 +1313,7 @@ export default function AdminPortfolioPage() {
 
                           <div className="pt-2 flex items-center gap-2">
                             <div className="flex-1 py-1.5 rounded-lg border border-slate-200 text-slate-700 text-[11px] font-bold text-center">
-                              👁️ Lihat Detail
+                              Lihat Detail
                             </div>
                             <div className="flex-1 py-1.5 rounded-lg bg-orange-600 text-white text-[11px] font-bold text-center">
                               {formData.orderPrice}
@@ -1293,7 +1382,21 @@ export default function AdminPortfolioPage() {
                         <span>Menyimpan...</span>
                       </>
                     ) : (
-                      <span>{editingItem ? "💾 Simpan Perubahan" : "➕ Tambah Portofolio"}</span>
+                      <>
+                        {editingItem ? (
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                          </svg>
+                        )}
+                        <span>{editingItem ? "Simpan Perubahan" : "Tambah Portofolio"}</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -1308,7 +1411,14 @@ export default function AdminPortfolioPage() {
         {deleteConfirmId && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center border border-slate-200 shadow-2xl animate-in fade-in zoom-in-95">
-              <span className="text-4xl block mb-2">🗑️</span>
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 mx-auto mb-3 flex items-center justify-center">
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </div>
               <h3 className="text-base font-black text-slate-900">Hapus Portofolio Klien?</h3>
               <p className="text-xs text-slate-500 mt-1 mb-6">
                 Data portofolio ini akan dihapus dari sistem dan tidak akan tampil lagi di halaman beranda.

@@ -720,6 +720,7 @@ const allPortfolioItems = [...popularRow1, ...popularRow2];
 
 const portfolioCategories = [
   "Semua",
+  "Website Desa",
   "Bisnis & Jasa",
   "Otomotif",
   "Media & Berita",
@@ -2091,7 +2092,12 @@ export default function Home() {
                             rel="noopener noreferrer"
                             className="slider-btn-detail"
                           >
-                            👁️ Lihat Detail
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                              <polyline points="15 3 21 3 21 9"/>
+                              <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            <span>Lihat Detail</span>
                           </a>
 
                           <button
@@ -2123,7 +2129,12 @@ export default function Home() {
             return matchesCategory && matchesSearch;
           }).length === 0 && (
             <div className="portfolio-empty">
-              <span className="empty-icon">🔍</span>
+              <span className="empty-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+              </span>
               <h4>Tidak ada website ditemukan</h4>
               <p>Coba kata kunci lain atau pilih kategori &quot;Semua&quot;.</p>
               <button

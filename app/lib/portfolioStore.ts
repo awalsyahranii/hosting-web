@@ -309,12 +309,14 @@ export function generatePortfolioDefaultsFromUrl(rawUrl: string): {
 } {
   const cleanUrl = getCleanUrl(rawUrl);
   const domain = getCleanDomain(rawUrl);
-  const nameBase = domain.replace(/\.(com|id|my\.id|co\.id|net|org|xyz|io|biz|site)$/i, "");
+  const nameBase = domain.replace(/\.(com|id|desa\.id|my\.id|co\.id|net|org|xyz|io|biz|site)$/i, "");
   const words = nameBase.replace(/[-_.]/g, " ").trim();
   const capitalized = words
     .split(" ")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+
+  const isDesa = /(desa|kampung|kelurahan|nagari|gampong)/i.test(domain);
 
   const gradients = [
     "linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)",
@@ -325,6 +327,28 @@ export function generatePortfolioDefaultsFromUrl(rawUrl: string): {
     "linear-gradient(135deg, #0c4a6e 0%, #0284c7 50%, #0369a1 100%)",
   ];
   const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+
+  if (isDesa) {
+    return {
+      domain: domain || "desacontoh.id",
+      url: cleanUrl || `https://${domain}`,
+      category: "Website Desa",
+      categoryTag: "PORTAL DESA",
+      promoTag: "Resmi & Lengkap",
+      gradient: "linear-gradient(135deg, #064e3b 0%, #047857 50%, #065f46 100%)",
+      bannerTitle: capitalized ? `Website Resmi ${capitalized}` : "Website Resmi Pemerintah Desa",
+      bannerDesc: "Portal informasi publik, transparansi anggaran & administrasi kependudukan desa",
+      packageTitle: capitalized ? `Jasa Pembuatan Website ${capitalized}` : "Jasa Pembuatan Website Desa Resmi",
+      feat1: "Sistem Informasi Desa & Layanan Surat",
+      feat2: "Termasuk Domain .desa.id / .id + Server NVMe",
+      rating: "5.0/5 - 45 Ulasan",
+      originalPrice: "Rp 2.000.000",
+      discountBadge: "Hemat 50%",
+      price: "Mulai Rp 999.000",
+      orderPrice: "Pesan Rp 999rb",
+      image: getScreenshotUrl(cleanUrl || domain),
+    };
+  }
 
   return {
     domain: domain || "contohdomain.com",
