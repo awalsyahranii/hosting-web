@@ -162,7 +162,7 @@ function RegisterForm() {
               <span className="auth-badge-dot"></span>
               Registrasi Akun Baru
             </div>
-            <h1 className="auth-main-title">Buat Akun HostingWeb 🚀</h1>
+            <h1 className="auth-main-title">Buat Akun HostingWeb</h1>
             <p className="auth-sub-title">
               Daftar sekarang dan mulai bangun website bisnis impian kamu.
             </p>

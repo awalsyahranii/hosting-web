@@ -171,21 +171,21 @@ function paymentDomain(payment: Payment) {
 
   if (cat === "theme") {
     if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
-      return `🎨 ${dom.replace(/^domain:\s*/i, "").replace(/^tema:\s*/i, "")}`;
+      return dom.replace(/^domain:\s*/i, "").replace(/^tema:\s*/i, "");
     }
-    return "🎨 Template & Tema Website";
+    return "Template & Tema Website";
   }
 
   if (cat === "google_ads") {
     if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
-      return `🎯 ${dom.replace(/^domain:\s*/i, "")}`;
+      return dom.replace(/^domain:\s*/i, "");
     }
-    if (amt >= 3000000) return "🎯 Paket Bisnis 30 Hari Google Ads";
-    if (amt >= 2000000) return "🎯 Paket Bisnis 20 Hari Google Ads";
-    if (amt >= 1500000) return "🎯 Paket Pemula 30 Hari / Bisnis 15 Hari Google Ads";
-    if (amt >= 1000000) return "🎯 Paket Pemula 20 Hari / Bisnis 10 Hari Google Ads";
-    if (amt >= 700000) return "🎯 Paket Pemula 14 Hari Google Ads";
-    return "🎯 Kampanye Iklan Google Ads";
+    if (amt >= 3000000) return "Paket Bisnis 30 Hari Google Ads";
+    if (amt >= 2000000) return "Paket Bisnis 20 Hari Google Ads";
+    if (amt >= 1500000) return "Paket Pemula 30 Hari / Bisnis 15 Hari Google Ads";
+    if (amt >= 1000000) return "Paket Pemula 20 Hari / Bisnis 10 Hari Google Ads";
+    if (amt >= 700000) return "Paket Pemula 14 Hari Google Ads";
+    return "Kampanye Iklan Google Ads";
   }
 
   if (cat === "hosting") {
@@ -193,22 +193,22 @@ function paymentDomain(payment: Payment) {
       return dom;
     }
     if (amt >= 1900000 && amt <= 2500000) {
-      return "🌟 Paket Elite Enterprise (Tahunan)";
+      return "Paket Elite Enterprise (Tahunan)";
     }
     if (amt >= 1400000 && amt <= 1800000) {
-      return "🔥 Paket Bisnis Pro (Tahunan)";
+      return "Paket Bisnis Pro (Tahunan)";
     }
     if (amt >= 700000 && amt <= 950000) {
-      return "✨ Paket Starter Website (Tahunan)";
+      return "Paket Starter Website (Tahunan)";
     }
-    return "☁️ Paket Cloud Hosting NVMe";
+    return "Paket Cloud Hosting NVMe";
   }
 
   // Domain Category
   if (dom && dom !== "-" && !dom.startsWith("PAY-") && !dom.startsWith("ORD-")) {
-    return `🌐 Domain: ${dom}`;
+    return `Domain: ${dom}`;
   }
-  return "🌐 Pendaftaran Domain Web";
+  return "Pendaftaran Domain Web";
 }
 
 function statusLabel(status?: string) {
@@ -837,8 +837,11 @@ export default function AdminPaymentPage() {
               </strong>
             )}
           </div>
-          <button className="admin-payment-refresh" type="button" onClick={loadPayments}>
-            🔄 Muat ulang
+          <button className="admin-payment-refresh inline-flex items-center gap-1.5" type="button" onClick={loadPayments}>
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span>Muat ulang</span>
           </button>
         </div>
 
@@ -859,7 +862,7 @@ export default function AdminPaymentPage() {
               className={`filter-pill hosting ${categoryFilter === "hosting" ? "active" : ""}`}
               onClick={() => setCategoryFilter("hosting")}
             >
-              <span>🔥 Hosting</span>
+              <span>Hosting</span>
               <span className="pill-badge">{hostingCount}</span>
             </button>
             <button
@@ -867,7 +870,7 @@ export default function AdminPaymentPage() {
               className={`filter-pill domain ${categoryFilter === "domain" ? "active" : ""}`}
               onClick={() => setCategoryFilter("domain")}
             >
-              <span>🌐 Domain</span>
+              <span>Domain</span>
               <span className="pill-badge">{domainCount}</span>
             </button>
             <button
@@ -880,7 +883,7 @@ export default function AdminPaymentPage() {
               }}
               onClick={() => setCategoryFilter("google_ads")}
             >
-              <span>🎯 Google Ads</span>
+              <span>Google Ads</span>
               <span className="pill-badge" style={{ background: "#ea580c", color: "#fff" }}>{adsCount}</span>
             </button>
             <button
@@ -893,7 +896,7 @@ export default function AdminPaymentPage() {
               }}
               onClick={() => setCategoryFilter("seo")}
             >
-              <span>🚀 Jasa SEO</span>
+              <span>Jasa SEO</span>
               <span className="pill-badge" style={{ background: "#7c3aed", color: "#fff" }}>{seoCount}</span>
             </button>
             <button
@@ -906,7 +909,7 @@ export default function AdminPaymentPage() {
               }}
               onClick={() => setCategoryFilter("website")}
             >
-              <span>💻 Website</span>
+              <span>Website</span>
               <span className="pill-badge" style={{ background: "#16a34a", color: "#fff" }}>{websiteCount}</span>
             </button>
             <button
@@ -919,7 +922,7 @@ export default function AdminPaymentPage() {
               }}
               onClick={() => setCategoryFilter("theme")}
             >
-              <span>🎨 Tema Website</span>
+              <span>Tema Website</span>
               <span className="pill-badge" style={{ background: "#d97706", color: "#fff" }}>{themeCount}</span>
             </button>
           </div>
@@ -984,27 +987,27 @@ export default function AdminPaymentPage() {
                         <td>
                           {cat === "hosting" ? (
                             <span className="badge-category hosting">
-                              🔥 HOSTING
+                              HOSTING
                             </span>
                           ) : cat === "google_ads" ? (
                             <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
-                              🎯 GOOGLE ADS
+                              GOOGLE ADS
                             </span>
                           ) : cat === "seo" ? (
                             <span className="badge-category" style={{ background: "#f5f3ff", color: "#6d28d9", border: "1px solid #ddd6fe" }}>
-                              🚀 JASA SEO
+                              JASA SEO
                             </span>
                           ) : cat === "website" ? (
                             <span className="badge-category" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
-                              💻 WEBSITE
+                              WEBSITE
                             </span>
                           ) : cat === "theme" ? (
                             <span className="badge-category" style={{ background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a" }}>
-                              🎨 TEMA WEBSITE
+                              TEMA WEBSITE
                             </span>
                           ) : (
                             <span className="badge-category domain">
-                              🌐 DOMAIN
+                              DOMAIN
                             </span>
                           )}
                         </td>
@@ -1045,8 +1048,11 @@ export default function AdminPaymentPage() {
                             {statusLabel(payment.status)}
                           </span>
                           {payment.confirmation_requested_at && statusLabel(payment.status) === "Pending" && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 mt-1 block w-fit animate-pulse">
-                              💬 Konfirmasi WA
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 mt-1 block w-fit animate-pulse">
+                              <svg className="w-3 h-3 fill-emerald-700" viewBox="0 0 24 24">
+                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.586 1.838.896 2.791.896 3.182 0 5.769-2.587 5.77-5.766.001-3.182-2.585-5.782-5.77-5.782zm9.969 5.766c0 5.514-4.486 10-10 10-1.803 0-3.491-.482-4.957-1.321l-5.043 1.383 1.399-4.923c-.917-1.517-1.429-3.279-1.429-5.139 0-5.514 4.486-10 10-10s10 4.486 10 10z"/>
+                              </svg>
+                              <span>Konfirmasi WA</span>
                             </span>
                           )}
                         </td>
@@ -1060,12 +1066,16 @@ export default function AdminPaymentPage() {
                               Detail
                             </button>
                             <button
-                              className="admin-payment-delete-btn"
+                              className="admin-payment-delete-btn inline-flex items-center gap-1"
                               type="button"
                               title="Hapus data pembayaran ini"
                               onClick={() => setDeleteTarget(payment)}
                             >
-                              🗑️ Hapus
+                              <svg className="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              </svg>
+                              <span>Hapus</span>
                             </button>
                           </div>
                         </td>
@@ -1116,25 +1126,25 @@ export default function AdminPaymentPage() {
                     <dt>Tipe Layanan</dt>
                     <dd>
                       {getPaymentCategory(selectedPayment) === "hosting" ? (
-                        <span className="badge-category hosting">🔥 HOSTING SERVER</span>
+                        <span className="badge-category hosting">HOSTING SERVER</span>
                       ) : getPaymentCategory(selectedPayment) === "google_ads" ? (
                         <span className="badge-category" style={{ background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>
-                          🎯 GOOGLE ADS
+                          GOOGLE ADS
                         </span>
                       ) : getPaymentCategory(selectedPayment) === "seo" ? (
                         <span className="badge-category" style={{ background: "#f5f3ff", color: "#6d28d9", border: "1px solid #ddd6fe" }}>
-                          🚀 JASA SEO
+                          JASA SEO
                         </span>
                       ) : getPaymentCategory(selectedPayment) === "website" ? (
                         <span className="badge-category" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
-                          💻 WEBSITE
+                          WEBSITE
                         </span>
                       ) : getPaymentCategory(selectedPayment) === "theme" ? (
                         <span className="badge-category" style={{ background: "#fef3c7", color: "#b45309", border: "1px solid #fde68a" }}>
-                          🎨 TEMA WEBSITE
+                          TEMA WEBSITE
                         </span>
                       ) : (
-                        <span className="badge-category domain">🌐 DOMAIN WEB</span>
+                        <span className="badge-category domain">DOMAIN WEB</span>
                       )}
                     </dd>
                   </div>
@@ -1245,18 +1255,27 @@ export default function AdminPaymentPage() {
                       boxShadow: "0 2px 6px rgba(234, 88, 12, 0.2)",
                     }}
                   >
-                    <span>📥</span> Unduh Invoice PDF
+                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Unduh Invoice PDF</span>
                   </button>
                   <button
                     type="button"
-                    className="admin-payment-modal-delete-btn"
+                    className="admin-payment-modal-delete-btn inline-flex items-center gap-1.5"
                     onClick={() => {
                       const t = selectedPayment;
                       setSelectedPayment(null);
                       setDeleteTarget(t);
                     }}
                   >
-                    <span>🗑️</span> Hapus
+                    <svg className="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    <span>Hapus</span>
                   </button>
                 </div>
               </>
@@ -1279,7 +1298,12 @@ export default function AdminPaymentPage() {
             aria-modal="true"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="admin-delete-modal-icon">🗑️</div>
+            <div className="admin-delete-modal-icon">
+              <svg className="w-8 h-8 text-rose-600 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </div>
             <h3>Hapus Data Pembayaran?</h3>
             <p>
               Apakah Anda yakin ingin menghapus data pembayaran{" "}

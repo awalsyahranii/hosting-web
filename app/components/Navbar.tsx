@@ -258,7 +258,9 @@ export default function Navbar({ activeMenu }: NavbarProps) {
                           className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
                         >
                           <span>Kami tunggu Sekarang</span>
-                          <span>💬</span>
+                          <svg className="w-3.5 h-3.5 fill-emerald-600" viewBox="0 0 24 24">
+                            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.586 1.838.896 2.791.896 3.182 0 5.769-2.587 5.77-5.766.001-3.182-2.585-5.782-5.77-5.782zm9.969 5.766c0 5.514-4.486 10-10 10-1.803 0-3.491-.482-4.957-1.321l-5.043 1.383 1.399-4.923c-.917-1.517-1.429-3.279-1.429-5.139 0-5.514 4.486-10 10-10s10 4.486 10 10z"/>
+                          </svg>
                         </a>
                       </div>
                     </div>
@@ -306,10 +308,19 @@ export default function Navbar({ activeMenu }: NavbarProps) {
             {user ? (
               <Link
                 href={isAdmin ? "/admin" : "/dashboard"}
-                className="nav-button"
-                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                className="nav-button inline-flex items-center gap-2"
               >
-                <span>{isAdmin ? "⚡ Panel Admin" : "👤 Dashboard Saya"}</span>
+                {isAdmin ? (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                ) : (
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                )}
+                <span>{isAdmin ? "Panel Admin" : "Dashboard Saya"}</span>
               </Link>
             ) : (
               <>
@@ -534,7 +545,6 @@ export default function Navbar({ activeMenu }: NavbarProps) {
               >
                 <span className="flex items-center gap-1.5">
                   <span>Promo Spesial</span>
-                  <span>🔥</span>
                 </span>
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-600">
                   Hemat s.d 60%
@@ -551,7 +561,7 @@ export default function Navbar({ activeMenu }: NavbarProps) {
                     className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold text-sm shadow-md hover:shadow-orange-500/25 transition-all"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span>{isAdmin ? "⚡ Panel Admin" : "👤 Dashboard Saya"}</span>
+                    <span>{isAdmin ? "Panel Admin" : "Dashboard Saya"}</span>
                     <span>→</span>
                   </Link>
                   <button

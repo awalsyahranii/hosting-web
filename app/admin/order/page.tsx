@@ -265,12 +265,12 @@ export default function AdminOrderPage() {
           <div className="flex gap-2 flex-wrap">
             {[
               { key: "all", label: "Semua Kategori" },
-              { key: "hosting", label: "🔥 Hosting" },
-              { key: "domain", label: "🌐 Domain" },
-              { key: "google_ads", label: "🎯 Google Ads" },
-              { key: "seo", label: "🚀 SEO" },
-              { key: "website", label: "💻 Website" },
-              { key: "theme", label: "🎨 Tema" },
+              { key: "hosting", label: "Hosting" },
+              { key: "domain", label: "Domain" },
+              { key: "google_ads", label: "Google Ads" },
+              { key: "seo", label: "SEO" },
+              { key: "website", label: "Website" },
+              { key: "theme", label: "Tema Website" },
             ].map((ct) => (
               <button
                 key={ct.key}

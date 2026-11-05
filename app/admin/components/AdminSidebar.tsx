@@ -88,12 +88,18 @@ export default function AdminSidebar({
         <Link href="/admin" className="flex flex-col items-start gap-1">
           <img src="/logo.png" alt="HostingWebID" />
           {currentUser?.role === "super_admin" || currentUser?.role === "superadmin" ? (
-            <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
-              👑 SUPER ADMIN
+            <span className="mt-1 inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
+              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
+              </svg>
+              <span>SUPER ADMIN</span>
             </span>
           ) : (
-            <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              🛡️ ADMIN PANEL
+            <span className="mt-1 inline-flex items-center gap-1.5 rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <svg className="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <span>ADMIN PANEL</span>
             </span>
           )}
         </Link>
@@ -330,8 +336,11 @@ export default function AdminSidebar({
         {/* =========================================================
             SECTION 5: SUPER ADMIN MASTER
         ========================================================= */}
-        <div className="admin-nav-title font-black flex items-center gap-1 text-amber-500" style={{ marginTop: "8px" }}>
-          <span>👑</span> SUPER ADMIN
+        <div className="admin-nav-title font-black flex items-center gap-1.5 text-amber-500" style={{ marginTop: "8px" }}>
+          <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5v-2z"/>
+          </svg>
+          <span>SUPER ADMIN</span>
         </div>
 
         {/* 10. Master Control & System Hub */}
