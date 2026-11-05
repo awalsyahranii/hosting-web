@@ -10,14 +10,14 @@ import { PortfolioItem, DEFAULT_PORTFOLIOS, fetchPortfoliosAsync } from "./lib/p
 
 interface PlanFeature {
   text: string;
-  icon: string;
+  icon?: string;
   checkColor: string;
   highlight?: boolean;
 }
 
 interface PlanItem {
   id: string;
-  icon: string;
+  icon?: string;
   name: string;
   description: string;
   priceLabel: string;
@@ -37,7 +37,6 @@ interface PlanItem {
 const plans: PlanItem[] = [
   {
     id: "starter",
-    icon: "✨",
     name: "Paket Starter Website",
     description: "Cocok untuk UMKM, portofolio profil usaha & landing page bisnis pemula.",
     priceLabel: "HARGA MULAI DARI",
@@ -50,19 +49,18 @@ const plans: PlanItem[] = [
     btnClass: "plan-btn-outline",
     featuresHeader: "YANG KAMU DAPATKAN:",
     features: [
-      { text: "Website Profesional Siap Pakai", icon: "🚀", checkColor: "teal" },
-      { text: "Termasuk Domain .com / .my.id", icon: "🌐", checkColor: "teal" },
-      { text: "Cloud Server NVMe Cepat", icon: "💻", checkColor: "teal" },
-      { text: "Desain Mobile Friendly & Responsive", icon: "📱", checkColor: "teal" },
-      { text: "Integrasi Tombol WhatsApp", icon: "💬", checkColor: "teal" },
-      { text: "Setting Dasar SEO On-Page", icon: "✔️", checkColor: "teal" },
-      { text: "SSL Certificate Keamanan Gratis", icon: "🔒", checkColor: "teal" },
-      { text: "Garansi Bebas Error & Maintenance", icon: "🛡️", checkColor: "teal" },
+      { text: "Website Profesional Siap Pakai", checkColor: "teal" },
+      { text: "Termasuk Domain .com / .my.id", checkColor: "teal" },
+      { text: "Cloud Server NVMe Cepat", checkColor: "teal" },
+      { text: "Desain Mobile Friendly & Responsive", checkColor: "teal" },
+      { text: "Integrasi Tombol WhatsApp", checkColor: "teal" },
+      { text: "Setting Dasar SEO On-Page", checkColor: "teal" },
+      { text: "SSL Certificate Keamanan Gratis", checkColor: "teal" },
+      { text: "Garansi Bebas Error & Maintenance", checkColor: "teal" },
     ],
   },
   {
     id: "business-pro",
-    icon: "🔥",
     name: "Paket Bisnis Pro Website",
     description: "Untuk bisnis & toko online yang ingin berkembang pesat dan konversi penjualan tinggi.",
     popularBadge: "PALING POPULER",
@@ -77,19 +75,18 @@ const plans: PlanItem[] = [
     featuresHeader: "YANG KAMU DAPATKAN:",
     featuresHeaderBadge: "ALL-IN-ONE",
     features: [
-      { text: "Website Bisnis Premium Siap Pakai", icon: "🚀", checkColor: "orange" },
-      { text: "Termasuk Domain .com Resmi", icon: "🌐", checkColor: "orange" },
-      { text: "High Speed Server NVMe Turbo", icon: "💻", checkColor: "orange" },
-      { text: "FREE 30 Artikel SEO Berkualitas", icon: "📝", highlight: true, checkColor: "orange" },
-      { text: "FREE Riset Kata Kunci Bisnis", icon: "🔍", highlight: true, checkColor: "orange" },
-      { text: "Setup Siap Iklan Google Ads Ready", icon: "🎯", highlight: true, checkColor: "orange" },
-      { text: "Form Pemesanan & Integrasi WA", icon: "📲", checkColor: "orange" },
-      { text: "Garansi & Prioritas Support", icon: "🛡️", checkColor: "orange" },
+      { text: "Website Bisnis Premium Siap Pakai", checkColor: "orange" },
+      { text: "Termasuk Domain .com Resmi", checkColor: "orange" },
+      { text: "High Speed Server NVMe Turbo", checkColor: "orange" },
+      { text: "FREE 30 Artikel SEO Berkualitas", highlight: true, checkColor: "orange" },
+      { text: "FREE Riset Kata Kunci Bisnis", highlight: true, checkColor: "orange" },
+      { text: "Setup Siap Iklan Google Ads Ready", highlight: true, checkColor: "orange" },
+      { text: "Form Pemesanan & Integrasi WA", checkColor: "orange" },
+      { text: "Garansi & Prioritas Support", checkColor: "orange" },
     ],
   },
   {
     id: "elite-enterprise",
-    icon: "🌟",
     name: "Paket Elite Enterprise Website",
     description: "Solusi terlengkap untuk perusahaan, instansi, & portal bisnis berskala besar.",
     priceLabel: "HARGA MULAI DARI",
@@ -102,14 +99,14 @@ const plans: PlanItem[] = [
     btnClass: "plan-btn-outline",
     featuresHeader: "YANG KAMU DAPATKAN:",
     features: [
-      { text: "Website Custom Multi-Halaman Eksklusif", icon: "🚀", checkColor: "teal" },
-      { text: "Termasuk Domain .com Resmi", icon: "🌐", checkColor: "teal" },
-      { text: "Cloud Server NVMe Skala Besar", icon: "💻", checkColor: "teal" },
-      { text: "FREE 30 Artikel SEO & Riset Keyword", icon: "📝", checkColor: "teal" },
-      { text: "Setup Google Ads & Conversion Tracking", icon: "🎯", checkColor: "teal" },
-      { text: "Optimasi SEO Organik Maksimal", icon: "📈", checkColor: "teal" },
-      { text: "Fitur Custom Sesuai Request", icon: "⚡", checkColor: "teal" },
-      { text: "Garansi & Pendampingan 24/7", icon: "🛡️", checkColor: "teal" },
+      { text: "Website Custom Multi-Halaman Eksklusif", checkColor: "teal" },
+      { text: "Termasuk Domain .com Resmi", checkColor: "teal" },
+      { text: "Cloud Server NVMe Skala Besar", checkColor: "teal" },
+      { text: "FREE 30 Artikel SEO & Riset Keyword", checkColor: "teal" },
+      { text: "Setup Google Ads & Conversion Tracking", checkColor: "teal" },
+      { text: "Optimasi SEO Organik Maksimal", checkColor: "teal" },
+      { text: "Fitur Custom Sesuai Request", checkColor: "teal" },
+      { text: "Garansi & Pendampingan 24/7", checkColor: "teal" },
     ],
   },
 ];
@@ -266,9 +263,57 @@ const googleAdsPackages: GoogleAdsPackage[] = [
   },
 ];
 
+function renderFeatureSvg(theme: string) {
+  switch (theme) {
+    case "yellow":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+        </svg>
+      );
+    case "pink":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+      );
+    case "orange":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+        </svg>
+      );
+    case "purple":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+          <polyline points="17 6 23 6 23 12"/>
+        </svg>
+      );
+    case "blue":
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      );
+    case "indigo":
+    default:
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      );
+  }
+}
+
 const features = [
   {
-    icon: "🚀",
+    icon: "",
     badge: "1-3 Hari Jadi",
     theme: "yellow",
     title: "Website Cepat & Siap Pakai",
@@ -284,7 +329,7 @@ const features = [
     ],
   },
   {
-    icon: "🎯",
+    icon: "",
     badge: "Garansi Hal 1",
     theme: "pink",
     title: "Google Ads & Tracking Ready",
@@ -300,7 +345,7 @@ const features = [
     ],
   },
   {
-    icon: "🌐",
+    icon: "",
     badge: "All-in-One Include",
     theme: "orange",
     title: "Domain & Server Termasuk",
@@ -316,7 +361,7 @@ const features = [
     ],
   },
   {
-    icon: "📈",
+    icon: "",
     badge: "SEO On-Page Ready",
     theme: "purple",
     title: "Optimasi SEO Google",
@@ -332,7 +377,7 @@ const features = [
     ],
   },
   {
-    icon: "🛡️",
+    icon: "",
     badge: "Garansi 100%",
     theme: "blue",
     title: "Garansi Bebas Error & Aman",
@@ -348,7 +393,7 @@ const features = [
     ],
   },
   {
-    icon: "💬",
+    icon: "",
     badge: "Respon < 5 Menit",
     theme: "indigo",
     title: "Support & Konsultasi 24/7",
@@ -1047,7 +1092,7 @@ export default function Home() {
           <div className="container flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold text-white text-center">
             <span>
               {systemSettings?.broadcastBannerText ||
-                "🔥 PROMO SPESIAL: Jasa Pembuatan Website Siap Pakai + Bonus Setup Iklan Google Ads Diskon s/d 50%!"}
+                "PROMO SPESIAL: Jasa Pembuatan Website Siap Pakai + Bonus Setup Iklan Google Ads Diskon s/d 50%!"}
             </span>
             <a
               href={systemSettings?.broadcastBannerLink || "#pricing"}
@@ -1355,7 +1400,9 @@ export default function Home() {
             <div className="speed-card">
 
               <div className="speed-icon">
-                ⚡
+                <svg className="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
               </div>
 
               <div>
@@ -1369,7 +1416,7 @@ export default function Home() {
             <div className="domain-promo-card">
 
               <div className="promo-top">
-                <span>🔥</span>
+                <span className="w-2 h-2 rounded-full bg-orange-500 inline-block mr-1" />
                 <strong>Website Siap Pakai</strong>
               </div>
 
@@ -2172,7 +2219,7 @@ export default function Home() {
           {/* SECTION HEADER */}
           <div className="pricing-header-center">
             <div className="pricing-top-badge">
-              <span className="pricing-top-badge-icon">🚀</span>
+              <span className="pricing-top-badge-dot" />
               <span>PILIHAN PAKET JASA PEMBUATAN WEBSITE</span>
             </div>
 
@@ -2211,7 +2258,7 @@ export default function Home() {
                 {/* POPULAR TOP FLOATING BADGE */}
                 {plan.popular && (
                   <div className="popular-top-pill">
-                    <span className="popular-pill-icon">🔥</span>
+                    <span className="popular-pill-dot" />
                     <span>PALING POPULER</span>
                   </div>
                 )}
@@ -2219,7 +2266,6 @@ export default function Home() {
                 {/* CARD HEADER */}
                 <div className="plan-card-header">
                   <div className="plan-title-row">
-                    <span className="plan-title-icon">{plan.icon}</span>
                     <h3 className="plan-name-text">{plan.name}</h3>
                   </div>
                   <p className="plan-desc-text">{plan.description}</p>
@@ -2273,7 +2319,6 @@ export default function Home() {
                       >
                         <span className={`feature-check-icon ${feature.checkColor}`}>✓</span>
                         <span className="feature-text-content">
-                          <span className="feature-emoji">{feature.icon}</span>
                           {feature.text}
                         </span>
                       </li>
@@ -2309,13 +2354,23 @@ export default function Home() {
             {/* TRUST PILLS */}
             <div className="gads-trust-pills-row">
               <span className="gads-trust-pill">
-                <span>🛡️</span> Garansi Halaman 1 Google
+                <svg className="w-3.5 h-3.5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Garansi Halaman 1 Google</span>
               </span>
               <span className="gads-trust-pill">
-                <span>⚡</span> Proses Cepat 1 Hari Selesai
+                <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>Proses Cepat 1 Hari Selesai</span>
               </span>
               <span className="gads-trust-pill">
-                <span>💳</span> Bayar Setelah Iklan Tayang
+                <svg className="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                  <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+                <span>Bayar Setelah Iklan Tayang</span>
               </span>
             </div>
 
@@ -2346,7 +2401,12 @@ export default function Home() {
               </div>
 
               <span className="gads-notice-pill">
-                <span>ℹ️</span> Semua harga sudah mencakup saldo alokasi harian Google + jasa setting riset lengkap
+                <svg className="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Semua harga sudah mencakup saldo alokasi harian Google + jasa setting riset lengkap</span>
               </span>
             </div>
           </div>
@@ -2395,7 +2455,13 @@ export default function Home() {
                   {/* META TOP */}
                   <div className="gads-card-meta-top">
                     <span className="gads-badge-duration">
-                      <span>📅</span> {pkg.durationLabel}
+                      <svg className="w-3 h-3 text-orange-600 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      {pkg.durationLabel}
                     </span>
                     <span className="gads-badge-category">{pkg.categoryLabel}</span>
                   </div>
@@ -2433,7 +2499,9 @@ export default function Home() {
 
                   {/* BOTTOM GUARANTEE */}
                   <div className="gads-guarantee-box">
-                    <span>🛡️</span>
+                    <svg className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
                     <span>PROSES 1 HARI • BAYAR SETELAH IKLAN TAYANG</span>
                   </div>
 
@@ -2444,14 +2512,23 @@ export default function Home() {
                       onClick={() => setSelectedAdsDetail(pkg)}
                       className="gads-btn-detail"
                     >
-                      <span>🔍</span> Lihat Detail
+                      <svg className="w-3.5 h-3.5 text-slate-600 inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <span>Lihat Detail</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => handleBuyAds(pkg)}
                       className="gads-btn-buy"
                     >
-                      <span>🛍️</span> {pkg.priceFormatted}
+                      <svg className="w-3.5 h-3.5 text-white inline mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                      </svg>
+                      <span>{pkg.priceFormatted}</span>
                     </button>
                   </div>
                 </div>
@@ -2518,12 +2595,20 @@ export default function Home() {
                 {/* DETAILS ACCORDION / SPECIFICATION */}
                 <div className="gads-modal-section">
                   <h3 className="gads-modal-section-title">
-                    <span>✨</span> Rincian Fasilitas &amp; Layanan yang Anda Dapatkan:
+                    <svg className="w-4 h-4 text-orange-600 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"/>
+                      <line x1="8" y1="12" x2="21" y2="12"/>
+                      <line x1="8" y1="18" x2="21" y2="18"/>
+                      <line x1="3" y1="6" x2="3.01" y2="6"/>
+                      <line x1="3" y1="12" x2="3.01" y2="12"/>
+                      <line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                    <span>Rincian Fasilitas &amp; Layanan yang Anda Dapatkan:</span>
                   </h3>
                   <div className="gads-modal-features-grid">
                     {selectedAdsDetail.features.map((feat, idx) => (
                       <div key={idx} className={`gads-modal-feat-item ${feat.includes("Belum termasuk") ? "is-excluded" : ""}`}>
-                        <span className="feat-icon">{feat.includes("Belum termasuk") ? "ℹ️" : "✅"}</span>
+                        <span className="feat-icon">{feat.includes("Belum termasuk") ? "−" : "✓"}</span>
                         <span className="feat-text">{feat}</span>
                       </div>
                     ))}
@@ -2533,7 +2618,10 @@ export default function Home() {
                 {/* WORKFLOW / CARA KERJA */}
                 <div className="gads-modal-section">
                   <h3 className="gads-modal-section-title">
-                    <span>🚀</span> Tahapan Pemasangan &amp; Skema Iklan:
+                    <svg className="w-4 h-4 text-orange-600 inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    <span>Tahapan Pemasangan &amp; Skema Iklan:</span>
                   </h3>
                   <div className="gads-modal-steps">
                     <div className="gads-step-card">
@@ -2562,20 +2650,24 @@ export default function Home() {
 
                 {/* SUITABLE FOR */}
                 <div className="gads-modal-target-box">
-                  <div className="target-box-title">🎯 Sangat Cocok untuk Berbagai Bidang Usaha:</div>
+                  <div className="target-box-title">Sangat Cocok untuk Berbagai Bidang Usaha:</div>
                   <div className="target-tags">
-                    <span className="target-tag">🏪 Toko Online &amp; Retail</span>
-                    <span className="target-tag">🚗 Rental Mobil &amp; Travel</span>
-                    <span className="target-tag">🛠️ Jasa Service / Kontraktor</span>
-                    <span className="target-tag">🩺 Klinik, Salon &amp; Skincare</span>
-                    <span className="target-tag">🏢 B2B, Legalitas &amp; Konsultan</span>
-                    <span className="target-tag">🏠 Properti &amp; Interior</span>
+                    <span className="target-tag">Toko Online &amp; Retail</span>
+                    <span className="target-tag">Rental Mobil &amp; Travel</span>
+                    <span className="target-tag">Jasa Service / Kontraktor</span>
+                    <span className="target-tag">Klinik, Salon &amp; Skincare</span>
+                    <span className="target-tag">B2B, Legalitas &amp; Konsultan</span>
+                    <span className="target-tag">Properti &amp; Interior</span>
                   </div>
                 </div>
 
                 {/* GUARANTEE BOX */}
                 <div className="gads-modal-guarantee">
-                  <div className="guarantee-icon">🛡️</div>
+                  <div className="guarantee-icon">
+                    <svg className="w-6 h-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                  </div>
                   <div className="guarantee-text">
                     <strong>Garansi Transparansi 100%</strong>
                     <p>Iklan disetting langsung sesuai standar Google Partner. Proses kilat 1 hari kerja, Anda dapat memantau tayangan iklan secara langsung di Google!</p>
@@ -2594,7 +2686,12 @@ export default function Home() {
                   }}
                   className="gads-modal-btn-buy"
                 >
-                  <span>🛍️</span> Pesan Paket Ini ({selectedAdsDetail.priceFormatted})
+                  <svg className="w-4 h-4 text-white inline mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                  <span>Pesan Paket Ini ({selectedAdsDetail.priceFormatted})</span>
                 </button>
               </div>
             </div>
@@ -2657,7 +2754,7 @@ export default function Home() {
                 {/* TOP ROW: ICON + BADGE */}
                 <div className="feature-card-top-row">
                   <div className={`feature-icon-box ${feature.theme}`}>
-                    {feature.icon}
+                    {renderFeatureSvg(feature.theme)}
                   </div>
 
                   <span className={`feature-pill-badge ${feature.theme}`}>
@@ -2714,7 +2811,7 @@ export default function Home() {
               </button>
 
               <div className="feature-modal-icon">
-                {selectedFeature.icon}
+                {renderFeatureSvg(selectedFeature.theme)}
               </div>
 
               <span className="section-label">
@@ -2874,7 +2971,7 @@ export default function Home() {
                 <div className="why-item-body">
                   <div className="why-item-title-row">
                     <strong>Desain Elegan &amp; Menjual</strong>
-                    <span className="why-badge-tag yellow">⚡ HIGH CONVERTING</span>
+                    <span className="why-badge-tag yellow">HIGH CONVERTING</span>
                   </div>
                   <p>Tampilan website modern yang responsif di smartphone, cepat diakses, dan dirancang untuk meyakinkan calon pelanggan agar langsung menghubungi WhatsApp Anda.</p>
                 </div>
@@ -2886,7 +2983,7 @@ export default function Home() {
                 <div className="why-item-body">
                   <div className="why-item-title-row">
                     <strong>All-in-One Terima Beres</strong>
-                    <span className="why-badge-tag green">🔒 FREE DOMAIN &amp; SERVER</span>
+                    <span className="why-badge-tag green">FREE DOMAIN &amp; SERVER</span>
                   </div>
                   <p>Sudah termasuk nama domain resmi, cloud server NVMe, SSL gratis, copywriting, dan setting tombol WhatsApp tanpa biaya tersembunyi.</p>
                 </div>
@@ -2898,7 +2995,7 @@ export default function Home() {
                 <div className="why-item-body">
                   <div className="why-item-title-row">
                     <strong>Google Ads &amp; Pendampingan</strong>
-                    <span className="why-badge-tag red">🎯 GARANSI HALAMAN 1</span>
+                    <span className="why-badge-tag red">GARANSI HALAMAN 1</span>
                   </div>
                   <p>Dukungan tim spesialis periklanan Google Ads untuk memastikan website Anda berada di halaman 1 pencarian dan menghasilkan orderan nyata.</p>
                 </div>
@@ -3038,7 +3135,10 @@ export default function Home() {
           {/* SECTION HEADER */}
           <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14 space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200 text-xs font-bold shadow-xs">
-              <span>📝</span>
+              <svg className="w-3.5 h-3.5 text-orange-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
               <span>PUSAT EDUKASI &amp; ARTIKEL PILIHAN</span>
             </div>
 
@@ -3174,9 +3274,9 @@ export default function Home() {
                   {/* CONTENT */}
                   <div className="p-5 sm:p-6 space-y-2.5">
                     <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                      <span>📅 {art.created_at.slice(0, 10)}</span>
+                      <span>{art.created_at.slice(0, 10)}</span>
                       <span>•</span>
-                      <span>⏱️ 3 mnt baca</span>
+                      <span>3 mnt baca</span>
                     </div>
 
                     <Link href={`/blog/${art.slug}`}>
@@ -3217,7 +3317,7 @@ export default function Home() {
               href="/blog"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-900 font-bold text-xs sm:text-sm border border-slate-300/80 shadow-sm hover:shadow-md transition transform hover:-translate-y-0.5 active:translate-y-0"
             >
-              <span>📚 Lihat Semua Artikel &amp; Panduan di Blog</span>
+              <span>Lihat Semua Artikel &amp; Panduan di Blog</span>
               <span className="text-orange-600 font-extrabold">→</span>
             </Link>
           </div>
@@ -3250,7 +3350,11 @@ export default function Home() {
 
             {/* HELP CARD */}
             <div className="faq-help-card">
-              <div className="faq-help-icon-box">💬</div>
+              <div className="faq-help-icon-box">
+                <svg className="w-5 h-5 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
               <div className="faq-help-content">
                 <strong>Ada pertanyaan khusus?</strong>
                 <p>Konsultasikan kebutuhan website &amp; target iklan Anda secara gratis dengan tim kami.</p>
@@ -3317,7 +3421,11 @@ export default function Home() {
 
             <div className="footer-top-features">
               <div className="footer-feat-pill">
-                <div className="feat-icon-box feat-red">⚡</div>
+                <div className="feat-icon-box feat-red">
+                  <svg className="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                </div>
                 <div className="feat-text">
                   <span className="feat-label">Kecepatan</span>
                   <strong className="feat-value">NVMe Cepat</strong>
@@ -3325,7 +3433,13 @@ export default function Home() {
               </div>
 
               <div className="footer-feat-pill">
-                <div className="feat-icon-box feat-orange">🎯</div>
+                <div className="feat-icon-box feat-orange">
+                  <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="6"/>
+                    <circle cx="12" cy="12" r="2"/>
+                  </svg>
+                </div>
                 <div className="feat-text">
                   <span className="feat-label">Google Ads</span>
                   <strong className="feat-value">Garansi Hal 1</strong>
@@ -3333,7 +3447,12 @@ export default function Home() {
               </div>
 
               <div className="footer-feat-pill">
-                <div className="feat-icon-box feat-teal">🎧</div>
+                <div className="feat-icon-box feat-teal">
+                  <svg className="w-4 h-4 text-teal-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+                  </svg>
+                </div>
                 <div className="feat-text">
                   <span className="feat-label">Bantuan</span>
                   <strong className="feat-value">24/7 Siap Sigap</strong>
@@ -3355,7 +3474,11 @@ export default function Home() {
 
               <div className="footer-contact-stack">
                 <div className="contact-row">
-                  <div className="contact-icon-box">📞</div>
+                  <div className="contact-icon-box">
+                    <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                  </div>
                   <div className="contact-meta">
                     <span className="contact-meta-label">Telepon:</span>
                     <a href={`tel:${SITE_CONFIG.phone.replace(/[^0-9]/g, "")}`} className="contact-meta-val">
@@ -3365,7 +3488,11 @@ export default function Home() {
                 </div>
 
                 <div className="contact-row">
-                  <div className="contact-icon-box contact-wa-icon">💬</div>
+                  <div className="contact-icon-box contact-wa-icon">
+                    <svg className="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                  </div>
                   <div className="contact-meta">
                     <span className="contact-meta-label">WhatsApp:</span>
                     <a
@@ -3380,7 +3507,12 @@ export default function Home() {
                 </div>
 
                 <div className="contact-row">
-                  <div className="contact-icon-box">✉️</div>
+                  <div className="contact-icon-box">
+                    <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                  </div>
                   <div className="contact-meta">
                     <span className="contact-meta-label">Email Resmi:</span>
                     <a href={`mailto:${SITE_CONFIG.email}`} className="contact-meta-val">
@@ -3390,7 +3522,12 @@ export default function Home() {
                 </div>
 
                 <div className="contact-row">
-                  <div className="contact-icon-box">📍</div>
+                  <div className="contact-icon-box">
+                    <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
                   <div className="contact-meta">
                     <span className="contact-meta-label">Alamat Kantor:</span>
                     <span className="contact-meta-val">Ruko No. 2A/11, Jl. Tamalate II</span>
@@ -3399,7 +3536,12 @@ export default function Home() {
                 </div>
 
                 <div className="contact-row">
-                  <div className="contact-icon-box">🕒</div>
+                  <div className="contact-icon-box">
+                    <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </div>
                   <div className="contact-meta">
                     <span className="contact-meta-label">Jam Operasional:</span>
                     <span className="contact-meta-val">Senin - Sabtu Pkl. 08.00 - 17.00 WIB</span>
@@ -3464,7 +3606,12 @@ export default function Home() {
                 {/* 2. SSL SECURED 256-BIT */}
                 <div className="security-card">
                   <div className="sec-card-left">
-                    <div className="ssl-lock-box">🔒</div>
+                    <div className="ssl-lock-box">
+                      <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                    </div>
                     <div className="sec-card-info">
                       <div className="sec-card-title">SSL SECURED 256-BIT</div>
                       <span className="sec-card-desc">End-to-End Encryption Protocol</span>
@@ -3505,7 +3652,9 @@ export default function Home() {
         aria-label="Chat WhatsApp"
       >
 
-        <span>☏</span>
+        <svg className="w-5 h-5 text-white flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
 
         <div>
           <strong>
