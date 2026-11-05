@@ -1111,7 +1111,7 @@
             <div className="admin-search">
 
               <span>
-                🔍
+                <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               </span>
 
 
@@ -1160,7 +1160,7 @@
             >
               {darkMode
                 ? "☀️"
-                : "🌙"}
+                : (<svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>)}
             </button>
 
 
@@ -1177,7 +1177,7 @@
                 title="Notifikasi"
                 type="button"
               >
-                🔔
+                <svg className="w-4 h-4 text-slate-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 {notificationCount > 0 && (
                   <span className="notification-badge">
                     {notificationCount}
@@ -1200,7 +1200,7 @@
                         className="notification-item"
                         style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
                       >
-                        <span style={{ fontSize: "16px" }}>💳</span>
+                        <svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                         <div>
                           <strong>{pendingPaymentCount} Pembayaran Menunggu</strong>
                           <small>Ada pembayaran pelanggan perlu diverifikasi.</small>
@@ -1215,7 +1215,7 @@
                         className="notification-item"
                         style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
                       >
-                        <span style={{ fontSize: "16px" }}>🧾</span>
+                        <svg className="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         <div>
                           <strong>{pendingOrders} Pesanan Pending</strong>
                           <small>Pesanan pelanggan menunggu diproses.</small>
@@ -1230,7 +1230,7 @@
                         className="notification-item"
                         style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
                       >
-                        <span style={{ fontSize: "16px" }}>🎫</span>
+                        <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/></svg>
                         <div>
                           <strong>{dashboardData?.new_tickets} Tiket Baru</strong>
                           <small>Tiket bantuan pelanggan perlu direspon.</small>
@@ -1314,11 +1314,11 @@
                   </Link>
 
                   <Link href="/admin/payment" onClick={() => setShowProfile(false)}>
-                    💳 Manajemen Pembayaran
+                    Manajemen Pembayaran
                   </Link>
 
                   <Link href="/dashboard" onClick={() => setShowProfile(false)}>
-                    👤 Dashboard User
+                    Dashboard User
                   </Link>
 
                   <button onClick={logout} type="button">
@@ -1340,7 +1340,7 @@
           <div>
 
             <span>
-              SELAMAT DATANG 👋
+              SELAMAT DATANG
             </span>
 
 
@@ -1464,7 +1464,7 @@
                     textDecoration: "none",
                   }}
                 >
-                  <span>🔐 Login Ulang Sekarang</span>
+                  <span>Login Ulang Sekarang</span>
                 </Link>
               ) : (
                 <button

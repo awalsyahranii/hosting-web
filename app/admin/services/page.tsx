@@ -243,15 +243,13 @@ export default function AdminServicesPage() {
     e.preventDefault();
     if (!webProgressModal) return;
     const cleanPhone = webProgressModal.phone.replace(/[^0-9]/g, "").replace(/^0/, "62");
-    const message = `Halo Kak/Tim *${webProgressModal.client}*, 👋
+    const message = `Halo Kak/Tim *${webProgressModal.client}*, Berikut *Update Progres Pengerjaan Website* Anda:
+*Domain:* ${webProgressModal.domain}
 
-Berikut *Update Progres Pengerjaan Website* Anda:
-🌐 *Domain:* ${webProgressModal.domain}
-
-📊 *Progres:* ${webProgressModal.progress}% Selesai
-🛠️ *Tahapan Saat Ini:* ${webProgressModal.stage}
-🎯 *Target Selesai:* ${webProgressModal.deadline}
-📝 *Catatan:* ${webProgressModal.notes || "-"}
+*Progres:* ${webProgressModal.progress}% Selesai
+*Tahapan Saat Ini:* ${webProgressModal.stage}
+*Target Selesai:* ${webProgressModal.deadline}
+*Catatan:* ${webProgressModal.notes || "-"}
 ────────────────────────
 Website Anda terus kami kerjakan dengan standar kecepatan dan keamanan terbaik. ⚡
 
@@ -295,19 +293,15 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
         ? "✅ AKTIF & TAYANG (Halaman 1 Google)"
         : `⚡ ${dailyReportModal.statusTayang}`;
 
-    const message = `Halo Kak/Tim *${dailyReportModal.client}*, 👋
+    const message = `Halo Kak/Tim *${dailyReportModal.client}*, Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
+*Website:* ${dailyReportModal.website}
 
-Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
-🌐 *Website:* ${dailyReportModal.website}
-
-📅 *Tanggal:* ${dailyReportModal.date}
-🟢 *Status Iklan Tayang:* ${statusLabel}
+*Tanggal:* ${dailyReportModal.date}
+*Status Iklan Tayang:* ${statusLabel}
 ⚡ *Performa:* Berjalan Optimal & Menjangkau Calon Pembeli
-📝 *Keterangan:* ${dailyReportModal.keterangan || "-"}
+*Keterangan:* ${dailyReportModal.keterangan || "-"}
 ────────────────────────
-Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. 🚀
-
-Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
+Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
 
     const waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
     window.open(waLink, "_blank");
@@ -739,7 +733,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <span>🎯</span> Kampanye Google Ads ({adsCampaigns.length})
+              <span></span> Kampanye Google Ads ({adsCampaigns.length})
             </button>
             <button
               type="button"
@@ -753,7 +747,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <span>💻</span> Progres Pembuatan Website ({webProjects.length})
+              <span></span> Progres Pembuatan Website ({webProjects.length})
             </button>
           </div>
 
@@ -815,7 +809,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
               </div>
               <div className="p-4 bg-blue-50/60 rounded-xl border border-blue-200 shadow-sm">
                 <span className="text-xs font-bold text-blue-700 uppercase flex items-center gap-1">
-                  🔍 Menunggu Tayang / Review
+                  Menunggu Tayang / Review
                 </span>
                 <div className="text-2xl font-extrabold text-blue-800 mt-1">{reviewAdsCount}</div>
               </div>
@@ -903,7 +897,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                                   {item.packageType}
                                 </strong>
                                 <span className="text-[11px] text-orange-600 font-mono font-semibold">
-                                  🌐 {item.domain}
+                                  {item.domain}
                                 </span>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                   <small className="text-slate-400 font-mono">#{item.order_number}</small>
@@ -942,7 +936,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                                 )}
                                 {!exp.isExpired && !exp.isExpiringSoon && exp.daysRemaining !== null && (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600">
-                                    🟢 {exp.statusText}
+                                    {exp.statusText}
                                   </span>
                                 )}
                               </td>
@@ -977,7 +971,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                                     className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold inline-flex items-center gap-1 shadow-sm transition"
                                     title="Kirim Laporan Harian Iklan Tayang ke WhatsApp Pelanggan"
                                   >
-                                    <span>📊</span>
+                                    <span></span>
                                     <span>Laporan Tayang WA</span>
                                   </button>
 
@@ -1027,7 +1021,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span className="px-2.5 py-0.5 rounded-md bg-orange-50 text-orange-700 font-bold text-[11px] border border-orange-200">
-                            🎯 {ads.packageType}
+                            {ads.packageType}
                           </span>
                           <span
                             className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
@@ -1043,7 +1037,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                         </div>
 
                         <h3 className="text-base font-extrabold text-slate-900 mt-1">{ads.client}</h3>
-                        <p className="text-xs text-orange-600 font-mono font-bold mt-0.5">🌐 {ads.domain}</p>
+                        <p className="text-xs text-orange-600 font-mono font-bold mt-0.5">{ads.domain}</p>
                         <small className="text-slate-400 font-mono block">#{ads.order_number}</small>
 
                         {/* METRICS ROW */}
@@ -1113,7 +1107,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                             onClick={() => openDailyReportModal(ads)}
                             className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition"
                           >
-                            <span>📊</span> Laporan Tayang WA
+                            <span></span> Laporan Tayang WA
                           </button>
                           <button
                             type="button"
@@ -1149,7 +1143,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
               </div>
               <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200 shadow-sm">
                 <span className="text-xs font-bold text-amber-700 uppercase flex items-center gap-1">
-                  🔍 Review &amp; Approval
+                  Review &amp; Approval
                 </span>
                 <div className="text-2xl font-extrabold text-amber-800 mt-1">{reviewWebCount}</div>
               </div>
@@ -1225,7 +1219,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                               <td className="p-3.5">
                                 <strong className="text-slate-900 block font-bold">{item.websiteType}</strong>
                                 <span className="text-[11px] text-orange-600 font-mono font-semibold">
-                                  🌐 {item.domain}
+                                  {item.domain}
                                 </span>
                                 <small className="text-slate-400 font-mono block">#{item.order_number}</small>
                               </td>
@@ -1279,7 +1273,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                                     className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition inline-flex items-center gap-1 shadow-sm"
                                     title="Kirim Laporan Progres Website ke WhatsApp Klien"
                                   >
-                                    <span>🚀</span>
+                                    <span></span>
                                     <span>Update Progres WA</span>
                                   </button>
                                   <button
@@ -1359,7 +1353,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
                           onClick={() => openWebProgressModal(project)}
                           className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-sm transition"
                         >
-                          <span>🚀</span> Update Progres WA
+                          <span></span> Update Progres WA
                         </button>
                         <button
                           type="button"
@@ -1723,7 +1717,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in max-h-[95vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-xl">📊</span>
+                <span className="text-xl"></span>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900">Kirim Laporan Harian Iklan Tayang</h3>
                   <p className="text-[11px] text-slate-500">Format otomatis ke WhatsApp Pelanggan (Admin Only)</p>
@@ -1814,27 +1808,23 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`;
               {/* PREVIEW PESAN WA */}
               <div className="mt-2 p-3.5 bg-emerald-950 text-emerald-100 rounded-xl font-mono text-[11px] leading-relaxed border border-emerald-800 shadow-inner">
                 <div className="flex items-center justify-between text-emerald-400 font-bold mb-2 pb-1 border-b border-emerald-800">
-                  <span>📱 Preview Teks WhatsApp:</span>
+                  <span>Preview Teks WhatsApp:</span>
                   <span className="text-[10px] bg-emerald-800 px-1.5 py-0.5 rounded text-emerald-200">Auto-Format</span>
                 </div>
                 <div className="whitespace-pre-line text-xs">
-                  {`Halo Kak/Tim *${dailyReportModal.client || "PELANGGAN"}*, 👋
+                  {`Halo Kak/Tim *${dailyReportModal.client || "PELANGGAN"}*, Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
+*Website:* ${dailyReportModal.website || "https://..."}
 
-Berikut *Update Laporan Harian Iklan Google Ads* untuk website Anda:
-🌐 *Website:* ${dailyReportModal.website || "https://..."}
-
-📅 *Tanggal:* ${dailyReportModal.date}
-🟢 *Status Iklan Tayang:* ${
+*Tanggal:* ${dailyReportModal.date}
+*Status Iklan Tayang:* ${
                     dailyReportModal.statusTayang === "Ya"
                       ? "✅ AKTIF & TAYANG (Halaman 1 Google)"
                       : `⚡ ${dailyReportModal.statusTayang}`
                   }
 ⚡ *Performa:* Berjalan Optimal & Menjangkau Calon Pembeli
-📝 *Keterangan:* ${dailyReportModal.keterangan || "-"}
+*Keterangan:* ${dailyReportModal.keterangan || "-"}
 ────────────────────────
-Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. 🚀
-
-Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
+Kampanye iklan Anda terus kami pantau & optimasi agar menghasilkan leads dan penjualan maksimal. Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
                 </div>
               </div>
 
@@ -1850,7 +1840,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
                   type="submit"
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-md transition"
                 >
-                  <span>📲</span>
+                  <span></span>
                   <span>Kirim ke WhatsApp (Buka Chat)</span>
                 </button>
               </div>
@@ -1866,7 +1856,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in max-h-[95vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-xl">🚀</span>
+                <span className="text-xl"></span>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-900">Kirim Update Progres Website</h3>
                   <p className="text-[11px] text-slate-500">Format milestone otomatis ke WhatsApp Klien</p>
@@ -1971,19 +1961,17 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
               {/* PREVIEW PESAN WA */}
               <div className="mt-2 p-3.5 bg-slate-950 text-slate-100 rounded-xl font-mono text-[11px] leading-relaxed border border-slate-800 shadow-inner">
                 <div className="flex items-center justify-between text-orange-400 font-bold mb-2 pb-1 border-b border-slate-800">
-                  <span>📱 Preview Teks WhatsApp:</span>
+                  <span>Preview Teks WhatsApp:</span>
                   <span className="text-[10px] bg-orange-950 px-1.5 py-0.5 rounded text-orange-200">Auto-Format</span>
                 </div>
                 <div className="whitespace-pre-line text-xs">
-                  {`Halo Kak/Tim *${webProgressModal.client || "PELANGGAN"}*, 👋
+                  {`Halo Kak/Tim *${webProgressModal.client || "PELANGGAN"}*, Berikut *Update Progres Pengerjaan Website* Anda:
+*Domain:* ${webProgressModal.domain || "website-klien.id"}
 
-Berikut *Update Progres Pengerjaan Website* Anda:
-🌐 *Domain:* ${webProgressModal.domain || "website-klien.id"}
-
-📊 *Progres:* ${webProgressModal.progress}% Selesai
-🛠️ *Tahapan Saat Ini:* ${webProgressModal.stage}
-🎯 *Target Selesai:* ${webProgressModal.deadline}
-📝 *Catatan:* ${webProgressModal.notes || "-"}
+*Progres:* ${webProgressModal.progress}% Selesai
+*Tahapan Saat Ini:* ${webProgressModal.stage}
+*Target Selesai:* ${webProgressModal.deadline}
+*Catatan:* ${webProgressModal.notes || "-"}
 ────────────────────────
 Website Anda terus kami kerjakan dengan standar kecepatan dan keamanan terbaik. ⚡
 
@@ -2003,7 +1991,7 @@ Terima kasih atas kepercayaannya bersama *HostingWeb.id*! ✨`}
                   type="submit"
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1.5 shadow-md transition"
                 >
-                  <span>📲</span>
+                  <span></span>
                   <span>Kirim Update ke WhatsApp Klien</span>
                 </button>
               </div>

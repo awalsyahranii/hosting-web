@@ -198,7 +198,7 @@ export default function HostingPage() {
             })
           ) : (
             <div className="dash-empty-state">
-              <div className="dash-empty-icon">📦</div>
+              <div className="dash-empty-icon"></div>
               <h4>Belum Ada Layanan Hosting</h4>
               <p>Anda belum memiliki paket cloud hosting aktif.</p>
               <a href="/?scroll=pricing#pricing" className="dash-empty-action-btn">

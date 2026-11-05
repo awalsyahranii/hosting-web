@@ -295,7 +295,7 @@ function InvoicesContent() {
                     }}
                     className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
                   >
-                    <span>📄</span> Download PDF
+                    <span></span> Download PDF
                   </button>
 
                   <span
@@ -433,7 +433,7 @@ function InvoicesContent() {
                   }}
                   className="px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 whitespace-nowrap"
                 >
-                  <span>📥</span> Download PDF
+                  <span></span> Download PDF
                 </button>
               </div>
 
@@ -470,7 +470,7 @@ function InvoicesContent() {
                     rel="noopener noreferrer"
                     className="w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 mt-1"
                   >
-                    <span>💬</span> Konfirmasi Pembayaran via WhatsApp
+                    <span></span> Konfirmasi Pembayaran via WhatsApp
                   </a>
                 </div>
               )}

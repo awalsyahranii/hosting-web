@@ -218,7 +218,7 @@ export default function AdminTemaPage() {
         });
 
         if (res.success) {
-          showToast("🎉 Tema baru berhasil ditambahkan dan disimpan ke server!");
+          showToast("Tema baru berhasil ditambahkan dan disimpan ke server!");
         } else {
           alert("Gagal simpan ke server: " + (res.message || "Error"));
         }
@@ -238,7 +238,7 @@ export default function AdminTemaPage() {
     try {
       const res = await deleteThemeAsync(id);
       if (res.success) {
-        showToast("🗑️ Tema berhasil dihapus dari server.");
+        showToast("Tema berhasil dihapus dari server.");
       } else {
         alert("Gagal menghapus: " + (res.message || "Error"));
       }
@@ -304,7 +304,7 @@ export default function AdminTemaPage() {
               target="_blank"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors shadow-sm"
             >
-              <span>👁️</span> Lihat Halaman Publik ↗
+              <span></span> Lihat Halaman Publik ↗
             </Link>
             <button
               type="button"
@@ -352,7 +352,7 @@ export default function AdminTemaPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-orange-500"
               />
-              <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
+              <span className="absolute left-3 top-2.5 text-slate-400 text-xs"></span>
             </div>
 
             {/* CATEGORY FILTER */}
@@ -388,7 +388,7 @@ export default function AdminTemaPage() {
               className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold hover:bg-slate-100 flex items-center gap-1"
               title="Refresh Data dari Server"
             >
-              <span>🔄</span> Refresh
+              <span></span> Refresh
             </button>
             <span className="text-xs text-slate-500 font-medium">
               Menampilkan <strong>{filteredThemes.length}</strong> dari {themes.length} tema
@@ -462,7 +462,7 @@ export default function AdminTemaPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold hover:underline"
                           >
-                            <span>👁️ Buka Demo</span>
+                            <span>Buka Demo</span>
                             <span className="text-slate-400">↗</span>
                           </a>
                         ) : (
@@ -500,7 +500,7 @@ export default function AdminTemaPage() {
                             onClick={() => setDeleteConfirmId(theme.id)}
                             className="px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs"
                           >
-                            🗑️ Hapus
+                            Hapus
                           </button>
                         </div>
                       </td>
@@ -511,7 +511,7 @@ export default function AdminTemaPage() {
             </div>
           ) : (
             <div className="py-16 text-center">
-              <span className="text-3xl block mb-2">🎨</span>
+              <span className="text-3xl block mb-2"></span>
               <strong className="text-slate-700 text-sm block">Tidak ada tema ditemukan</strong>
               <p className="text-xs text-slate-400 mt-1">Coba sesuaikan kata kunci atau tambah tema baru.</p>
             </div>
@@ -564,7 +564,7 @@ export default function AdminTemaPage() {
                         rel="noopener noreferrer"
                         className="px-3.5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 shrink-0 flex items-center gap-1"
                       >
-                        <span>👁️ Uji Link</span>
+                        <span>Uji Link</span>
                       </a>
                     )}
                   </div>
@@ -666,7 +666,7 @@ export default function AdminTemaPage() {
                       onChange={(e) => setFormData({ ...formData, status: e.target.value as "active" | "inactive" })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none"
                     >
-                      <option value="active">🟢 Aktif (Tampil di Katalog)</option>
+                      <option value="active">Aktif (Tampil di Katalog)</option>
                       <option value="inactive">⚪ Nonaktif (Draft / Sembunyikan)</option>
                     </select>
                   </div>
@@ -716,7 +716,7 @@ export default function AdminTemaPage() {
                     className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-500/25 flex items-center gap-2"
                   >
                     {isSaving && <span className="animate-spin">⏳</span>}
-                    {editingTheme ? "💾 Simpan Perubahan" : "🚀 Publikasikan Tema"}
+                    {editingTheme ? "Simpan Perubahan" : "Publikasikan Tema"}
                   </button>
                 </div>
               </form>
@@ -728,7 +728,7 @@ export default function AdminTemaPage() {
         {deleteConfirmId && (
           <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 text-center animate-in fade-in zoom-in-95">
-              <span className="text-4xl block mb-3">🗑️</span>
+              <span className="text-4xl block mb-3"></span>
               <h4 className="text-base font-bold text-slate-900 mb-1">Hapus Tema Ini?</h4>
               <p className="text-xs text-slate-500 mb-5">
                 Tema ini akan dihapus dari katalog publik dan tidak dapat dikembalikan.

@@ -30,7 +30,7 @@ type CheckoutData = {
 const notifications = [
   {
     id: 1,
-    icon: "🔔",
+    icon: "bell",
     title: "Selamat datang di HostingWeb",
     description: "Akun Anda berhasil login.",
     time: "Baru saja",
@@ -38,7 +38,7 @@ const notifications = [
   },
   {
     id: 2,
-    icon: "📄",
+    icon: "file",
     title: "Invoice terbaru",
     description: "#INV-20260817-001 telah tersedia.",
     time: "17 Agustus 2026",
@@ -831,7 +831,7 @@ export default function CartPage() {
                   setCartOpen(false);
                 }}
               >
-                🔔
+                <svg className="w-4 h-4 text-slate-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
 
                 <span className="notification-badge">
                   2
@@ -865,7 +865,7 @@ export default function CartPage() {
                         >
 
                           <div className="notification-icon">
-                            {notification.icon}
+                            {notification.icon === "bell" ? (<svg className="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>) : (<svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>)}
                           </div>
 
                           <div className="notification-content">
@@ -987,7 +987,7 @@ export default function CartPage() {
                     href="/dashboard/profile"
                     onClick={closeAllDropdowns}
                   >
-                    <span>🔑</span>
+                    <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
                     Change Password
                   </Link>
 
@@ -995,7 +995,7 @@ export default function CartPage() {
                     href="/dashboard/profile"
                     onClick={closeAllDropdowns}
                   >
-                    <span>🛡</span>
+                    <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     Security Settings
                   </Link>
 
@@ -1003,7 +1003,7 @@ export default function CartPage() {
                     href="/dashboard/profile"
                     onClick={closeAllDropdowns}
                   >
-                    <span>✉</span>
+                    <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     Email History
                   </Link>
 
@@ -1040,7 +1040,7 @@ export default function CartPage() {
                   setProfileOpen(false);
                 }}
               >
-                🛒
+                <svg className="w-4 h-4 text-slate-600 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
 
               <span className="cart-badge">
                 {checkout?.items?.length || 0}
@@ -1068,9 +1068,7 @@ export default function CartPage() {
 
                   <div className="cart-empty">
 
-                    <div className="cart-empty-icon">
-                      🛒
-                    </div>
+                    <div className="cart-empty-icon"><svg className="w-8 h-8 text-slate-300 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
 
                     <strong>
                       Keranjang masih kosong
@@ -1355,7 +1353,7 @@ export default function CartPage() {
           href="/dashboard/orders"
           className="mobile-nav-active"
         >
-          <span>🛒</span>
+          <svg className="w-4 h-4 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
           Pesanan
         </Link>
 

@@ -22,7 +22,7 @@ export const DEFAULT_SEO_PACKAGES: SeoPackage[] = [
     originalPrice: 3500000,
     rating: 5,
     image: "/images/seo-package.jpg",
-    badge: "🔥 Best Seller",
+    badge: "Best Seller",
     features: [
       "50 PBN High DA 50+ & PA 40+",
       "100% Index Google Cepat & Permanen",

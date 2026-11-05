@@ -166,11 +166,11 @@ export default function DomainPage() {
             })
           ) : (
             <div className="dash-empty-state">
-              <div className="dash-empty-icon">🌐</div>
+              <div className="dash-empty-icon"></div>
               <h4>Belum Ada Domain Terdaftar</h4>
               <p>Anda belum memiliki nama domain terdaftar saat ini.</p>
               <a href="/?scroll=domain#domain" className="dash-empty-action-btn">
-                🔍 Cari &amp; Daftarkan Domain
+                Cari &amp; Daftarkan Domain
               </a>
             </div>
           )}

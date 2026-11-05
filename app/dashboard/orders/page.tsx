@@ -352,7 +352,7 @@ export default function OrdersPage() {
         ) : (
           <div className="dash-empty-state">
             <div className="dash-empty-icon">
-              {statusFilter === "paid" ? "📄" : statusFilter === "pending" ? "⏳" : "🛒"}
+              {statusFilter === "paid" ? "" : statusFilter === "pending" ? "⏳" : ""}
             </div>
             <h4>
               {statusFilter === "paid"

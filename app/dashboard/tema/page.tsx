@@ -335,7 +335,7 @@ export default function DashboardTemaPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 p-6 rounded-2xl text-white shadow-lg">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-bold mb-2">
-            <span>🎨</span> TEMA &amp; TEMPLATE WEBSITE SAYA
+            <span></span> TEMA &amp; TEMPLATE WEBSITE SAYA
           </div>
           <h1 className="text-2xl font-black">Koleksi Tema Website</h1>
           <p className="text-sm text-white/90 mt-1 max-w-xl">
@@ -350,7 +350,7 @@ export default function DashboardTemaPage() {
             rel="noopener noreferrer"
             className="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
           >
-            <span>💬</span> Bantuan Instalasi WA
+            <span></span> Bantuan Instalasi WA
           </a>
           <Link
             href="/tema"
@@ -365,8 +365,7 @@ export default function DashboardTemaPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-xl font-bold">
-            🎨
-          </div>
+            </div>
           <div>
             <span className="text-xs font-bold text-slate-500 block">TEMA TERVERIFIKASI AKTIF</span>
             <strong className="text-2xl font-black text-slate-900 block mt-0.5">{activeThemesCount} Tema</strong>
@@ -461,8 +460,7 @@ export default function DashboardTemaPage() {
           ) : filteredThemes.length === 0 ? (
             <div className="py-16 text-center max-w-md mx-auto">
               <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-3xl mx-auto mb-3">
-                🎨
-              </div>
+                </div>
               <h3 className="text-base font-bold text-slate-900">Tidak Ada Tema pada Kategori Ini</h3>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                 {statusTab === "pending"
@@ -548,7 +546,7 @@ export default function DashboardTemaPage() {
                               rel="noopener noreferrer"
                               className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-center text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs"
                             >
-                              <span>👁️</span> Demo Web
+                              <span></span> Demo Web
                             </a>
                           ) : (
                             <a
@@ -557,7 +555,7 @@ export default function DashboardTemaPage() {
                               rel="noopener noreferrer"
                               className="px-3 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 text-center text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs"
                             >
-                              <span>👁️</span> Demo
+                              <span></span> Demo
                             </a>
                           )}
 
@@ -569,7 +567,7 @@ export default function DashboardTemaPage() {
                             }}
                             className="px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-center text-xs font-bold transition shadow-xs flex items-center justify-center gap-1"
                           >
-                            <span>📥</span> Kelola &amp; Unduh
+                            <span></span> Kelola &amp; Unduh
                           </button>
                         </div>
                       ) : (
@@ -578,7 +576,7 @@ export default function DashboardTemaPage() {
                             href={`/checkout?type=theme&package=${encodeURIComponent(item.name)}&order_number=${item.order_number || ""}`}
                             className="flex-1 px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-center text-xs font-bold transition shadow-xs flex items-center justify-center gap-1"
                           >
-                            <span>💳</span> Bayar Sekarang
+                            <span></span> Bayar Sekarang
                           </Link>
                           <button
                             type="button"
@@ -586,8 +584,7 @@ export default function DashboardTemaPage() {
                             onClick={() => handleDeleteDraftTheme(item.order_number, item.id)}
                             className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 text-xs font-bold transition border border-slate-200"
                           >
-                            🗑️
-                          </button>
+                            </button>
                         </div>
                       )}
                     </div>
@@ -613,7 +610,7 @@ export default function DashboardTemaPage() {
             <div className="p-6 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-start justify-between">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-500/20 text-orange-300 text-[10px] font-extrabold uppercase tracking-wider mb-1">
-                  <span>🎨</span> Template &amp; Source Assets
+                  <span></span> Template &amp; Source Assets
                 </div>
                 <h3 className="text-lg font-black text-white">{selectedThemeModal.name}</h3>
                 <p className="text-xs text-slate-300 mt-0.5">
@@ -640,7 +637,7 @@ export default function DashboardTemaPage() {
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
-                📥 Unduh Paket Tema
+                Unduh Paket Tema
               </button>
               <button
                 type="button"
@@ -651,7 +648,7 @@ export default function DashboardTemaPage() {
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
-                📖 Panduan Instalasi
+                 Panduan Instalasi
               </button>
               <button
                 type="button"
@@ -662,7 +659,7 @@ export default function DashboardTemaPage() {
                     : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
-                🔑 Kunci Lisensi
+                Kunci Lisensi
               </button>
             </div>
 
@@ -671,7 +668,7 @@ export default function DashboardTemaPage() {
               {modalTab === "download" && (
                 <div className="space-y-4">
                   <div className="p-4 rounded-xl bg-orange-50 border border-orange-200/60 flex items-start gap-3">
-                    <span className="text-2xl">📦</span>
+                    <span className="text-2xl"></span>
                     <div>
                       <h4 className="text-xs font-bold text-orange-950">
                         Paket Source Code &amp; Aset Siap Pakai (.zip)
@@ -689,7 +686,7 @@ export default function DashboardTemaPage() {
                       rel="noopener noreferrer"
                       className="w-full py-3 px-4 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition flex items-center justify-center gap-2"
                     >
-                      <span>📥</span> Unduh File Master Tema (.ZIP) via Admin
+                      <span></span> Unduh File Master Tema (.ZIP) via Admin
                     </a>
 
                     {selectedThemeModal.demoUrl && (
@@ -699,7 +696,7 @@ export default function DashboardTemaPage() {
                         rel="noopener noreferrer"
                         className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-2"
                       >
-                        <span>👁️</span> Buka Demo Live Preview
+                        <span></span> Buka Demo Live Preview
                       </a>
                     )}
                   </div>
@@ -724,7 +721,7 @@ export default function DashboardTemaPage() {
                   </div>
 
                   <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900">
-                    <strong className="block mb-0.5">💡 Butuh Bantuan Instalasi?</strong>
+                    <strong className="block mb-0.5"> Butuh Bantuan Instalasi?</strong>
                     <p className="text-[11px]">Tim teknis HostingWeb siap membantu upload &amp; setting hingga website Anda live 100%.</p>
                   </div>
                 </div>
@@ -758,7 +755,7 @@ export default function DashboardTemaPage() {
                 rel="noopener noreferrer"
                 className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5"
               >
-                <span>💬</span> Hubungi Support WhatsApp
+                <span></span> Hubungi Support WhatsApp
               </a>
 
               <button

@@ -270,7 +270,7 @@ export default function DashboardPage() {
         <div className="dash-hero-content">
           <div className="dash-hero-pill">
             <span>SELAMAT DATANG</span>
-            <span>👑</span>
+            <span></span>
           </div>
           <h2 className="dash-hero-title">Halo, {userName}!</h2>
           <p className="dash-hero-desc">
@@ -553,7 +553,7 @@ export default function DashboardPage() {
               })
             ) : (
               <div className="dash-empty-state">
-                <div className="dash-empty-icon">📦</div>
+                <div className="dash-empty-icon"></div>
                 <h4>Belum Ada Layanan Hosting</h4>
                 <p>Anda belum memiliki layanan hosting aktif.</p>
                 <a href="/?scroll=pricing#pricing" className="dash-empty-action-btn">
@@ -660,11 +660,11 @@ export default function DashboardPage() {
               })
             ) : (
               <div className="dash-empty-state">
-                <div className="dash-empty-icon">🌐</div>
+                <div className="dash-empty-icon"></div>
                 <h4>Belum Ada Domain Terdaftar</h4>
                 <p>Daftarkan nama domain bisnis Anda sekarang.</p>
                 <a href="/?scroll=domain#domain" className="dash-empty-action-btn">
-                  🔍 Cari Domain Baru
+                  Cari Domain Baru
                 </a>
               </div>
             )}

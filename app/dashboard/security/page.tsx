@@ -19,8 +19,7 @@ export default function SecurityPage() {
         <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">
-              🛡️
-            </div>
+              </div>
             <div>
               <h4 className="text-sm font-bold text-slate-800">Two-Factor Authentication (2FA)</h4>
               <p className="text-xs text-slate-500">Memberikan lapisan perlindungan ganda saat login akun.</p>
@@ -44,8 +43,7 @@ export default function SecurityPage() {
         <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">
-              💻
-            </div>
+              </div>
             <div>
               <h4 className="text-sm font-bold text-slate-800">Sesi Login Saat Ini</h4>
               <p className="text-xs text-slate-500">Perangkat browser terdaftar dan terenkripsi TLS 1.3.</p>

@@ -125,7 +125,7 @@ export default function ArticleDetailPage() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 text-center space-y-4 shadow-sm">
-          <span className="text-4xl block">📄</span>
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400"><svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
           <h2 className="text-xl font-bold text-slate-900">Artikel Tidak Ditemukan</h2>
           <p className="text-xs text-slate-500">
             {error || "Artikel yang Anda tuju mungkin telah dipindahkan atau dihapus."}
@@ -190,7 +190,7 @@ export default function ArticleDetailPage() {
 
             <div className="flex items-center gap-3 text-xs text-slate-500">
               <span className="flex items-center gap-1">
-                <span>👁️</span> {article.views} Pembaca
+                <svg className="w-3.5 h-3.5 text-slate-400 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {article.views} Pembaca
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -241,28 +241,28 @@ export default function ArticleDetailPage() {
                   onClick={shareWhatsApp}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
                 >
-                  <span>💬</span> WhatsApp
+                  <svg className="w-3.5 h-3.5 fill-emerald-600 inline" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.586 1.838.896 2.791.896 3.182 0 5.769-2.587 5.77-5.766.001-3.182-2.585-5.782-5.77-5.782zm9.969 5.766c0 5.514-4.486 10-10 10-1.803 0-3.491-.482-4.957-1.321l-5.043 1.383 1.399-4.923c-.917-1.517-1.429-3.279-1.429-5.139 0-5.514 4.486-10 10-10s10 4.486 10 10z"/></svg> WhatsApp
                 </button>
                 <button
                   type="button"
                   onClick={shareTwitter}
                   className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
                 >
-                  <span>🐦</span> Twitter / X
+                  <svg className="w-3.5 h-3.5 fill-slate-700 inline" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> Twitter / X
                 </button>
                 <button
                   type="button"
                   onClick={shareFacebook}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
                 >
-                  <span>📘</span> Facebook
+                  <svg className="w-3.5 h-3.5 fill-blue-600 inline" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook
                 </button>
                 <button
                   type="button"
                   onClick={handleCopyLink}
                   className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-1.5"
                 >
-                  <span>🔗</span> {copied ? "✓ Tersalin!" : "Salin Link"}
+                  <svg className="w-3.5 h-3.5 text-slate-500 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> {copied ? "✓ Tersalin!" : "Salin Link"}
                 </button>
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function ArticleDetailPage() {
             <div className="bg-gradient-to-br from-orange-600 via-orange-600 to-amber-600 text-white rounded-3xl p-6 sm:p-7 shadow-lg space-y-4 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
               <span className="px-3 py-1 bg-white/20 text-white text-[10px] font-extrabold uppercase tracking-wider rounded-full inline-block">
-                🔥 Rekomendasi Terbaik
+                Rekomendasi Terbaik
               </span>
               <h3 className="text-xl font-black leading-snug">
                 Butuh Hosting Cepat untuk Website Anda?
@@ -296,7 +296,7 @@ export default function ArticleDetailPage() {
             {related.length > 0 && (
               <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-4">
                 <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                  <span>📑</span> Artikel Terkait
+                  <svg className="w-4 h-4 text-orange-500 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Artikel Terkait
                 </h4>
 
                 <div className="space-y-4">
@@ -329,7 +329,7 @@ export default function ArticleDetailPage() {
 
             {/* CONSULTATION BANNER */}
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-3 text-center">
-              <span className="text-3xl block">💬</span>
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
               <h4 className="text-sm font-black text-slate-900">Konsultasi Gratis</h4>
               <p className="text-xs text-slate-500">
                 Punya pertanyaan mengenai pembuatan website, hosting, atau iklan?

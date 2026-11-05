@@ -501,7 +501,7 @@ export function generateInvoiceHtml(data: InvoicePdfData): string {
       <span style="color: #64748b; font-size: 12px; margin-left: 8px;">Invoice #${invClean}</span>
     </div>
     <button class="btn-print" onclick="window.print()">
-      <span>🖨️</span> Simpan sebagai PDF / Cetak
+      <span></span> Simpan sebagai PDF / Cetak
     </button>
   </div>
 
@@ -569,7 +569,7 @@ export function generateInvoiceHtml(data: InvoicePdfData): string {
           <div style="color: #64748b; font-size: 11px; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
             <span>✉</span> ${data.email || "-"}
           </div>
-          ${data.phone ? `<div style="color: #64748b; font-size: 11px; margin-top: 2px;">📞 ${data.phone}</div>` : ""}
+          ${data.phone ? `<div style="color: #64748b; font-size: 11px; margin-top: 2px;">${data.phone}</div>` : ""}
           <div style="margin-top: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 12px;">
             <span style="font-style: italic; color: #94a3b8; font-size: 10.5px; display: block;">Alamat / Catatan Klien (Sesuai Akun Pelanggan)</span>
           </div>
@@ -841,18 +841,18 @@ export function generateWhatsAppInvoiceLink(data: InvoicePdfData, clientPhone?: 
     `Halo Kak *${data.username || "Pelanggan"}*,\n\n` +
     `Berikut adalah rincian tagihan invoice resmi Anda dari *HostingWebID*:\n` +
     `━━━━━━━━━━━━━━━━━━━━\n` +
-    `🧾 *No. Invoice:* #${data.invoice_number}\n` +
-    `📦 *Order ID:* #${data.order_number || data.invoice_number}\n` +
-    `💰 *Total Nominal:* ${rupiah(data.total)}\n` +
-    `📅 *Jatuh Tempo:* ${formatDate(data.due_date)}\n` +
-    `📌 *Status:* ${isPaid ? "✅ LUNAS" : "⏳ MENUNGGU PEMBAYARAN"}\n` +
+    `*No. Invoice:* #${data.invoice_number}\n` +
+    `*Order ID:* #${data.order_number || data.invoice_number}\n` +
+    `*Total Nominal:* ${rupiah(data.total)}\n` +
+    `*Jatuh Tempo:* ${formatDate(data.due_date)}\n` +
+    ` *Status:* ${isPaid ? "✅ LUNAS" : "⏳ MENUNGGU PEMBAYARAN"}\n` +
     `━━━━━━━━━━━━━━━━━━━━\n\n` +
     (!isPaid
       ? `Silakan melakukan transfer ke rekening resmi kami:\n` +
         `• *BCA:* 123-456-7890 (A/N HostingWeb Indonesia)\n` +
         `• *Mandiri:* 987-654-3210 (A/N HostingWeb Indonesia)\n\n` +
-        `Setelah melakukan transfer, silakan kirimkan bukti pembayaran di chat ini. Dokumen tagihan resmi PDF dapat diunduh pada link di atas. Terima kasih! 🙏`
-      : `Terima kasih atas pembayaran Anda. Layanan Anda telah aktif. 🙏`);
+        `Setelah melakukan transfer, silakan kirimkan bukti pembayaran di chat ini. Dokumen tagihan resmi PDF dapat diunduh pada link di atas. Terima kasih! `
+      : `Terima kasih atas pembayaran Anda. Layanan Anda telah aktif. `);
 
   const encoded = encodeURIComponent(message);
 

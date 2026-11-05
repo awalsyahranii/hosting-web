@@ -137,7 +137,7 @@ export function generateWhatsAppReminderUrl({
     urgencyText = `akan berakhir pada *${expiryDate}*`;
   }
 
-  const message = `Halo Kak *${clientName}*,\n\nKami dari tim *HostingWeb.id* ingin menginformasikan bahwa layanan *${serviceType}* untuk domain *${domainName}* ${urgencyText}.\n\nAgar website dan email bisnis Anda tetap berjalan normal tanpa gangguan, silakan lakukan perpanjangan layanan melalui dashboard:\n👉 https://hostingwebid.com/dashboard\n\nJika butuh bantuan faktur atau perpanjangan, silakan balas pesan ini ya Kak.\n\nTerima kasih! 🙏✨`;
+  const message = `Halo Kak *${clientName}*,\n\nKami dari tim *HostingWeb.id* ingin menginformasikan bahwa layanan *${serviceType}* untuk domain *${domainName}* ${urgencyText}.\n\nAgar website dan email bisnis Anda tetap berjalan normal tanpa gangguan, silakan lakukan perpanjangan layanan melalui dashboard:\nhttps://hostingwebid.com/dashboard\n\nJika butuh bantuan faktur atau perpanjangan, silakan balas pesan ini ya Kak.\n\nTerima kasih! ✨`;
 
   return `https://wa.me/${phoneParam}?text=${encodeURIComponent(message)}`;
 }

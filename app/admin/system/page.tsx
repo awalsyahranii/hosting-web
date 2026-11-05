@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS: SystemSettings = {
     "Website sedang dalam pemeliharaan sistem berkala. Kami akan segera kembali dalam beberapa saat.",
   broadcastBannerActive: true,
   broadcastBannerText:
-    "🔥 DISKON SPESIAL HARI INI: Dapatkan Diskon s/d 80% untuk Cloud Hosting & Gratis Domain .COM!",
+    "DISKON SPESIAL HARI INI: Dapatkan Diskon s/d 80% untuk Cloud Hosting & Gratis Domain .COM!",
   broadcastBannerLink: "#pricing",
   broadcastBannerBg: "linear-gradient(90deg, #ea580c 0%, #f97316 50%, #ea580c 100%)",
   primaryPhone: "085-333-555-976",
@@ -237,7 +237,7 @@ export default function SuperAdminMasterControlPage() {
       };
       setLogs((prev) => [newLog, ...prev]);
 
-      alert(`👑 Berhasil beralih sebagai User (${target}). Anda akan dialihkan ke Dashboard User.`);
+      alert(`Berhasil beralih sebagai User (${target}). Anda akan dialihkan ke Dashboard User.`);
       window.location.href = "/dashboard";
     } catch {
       alert("Gagal melakukan impersonasi user.");
@@ -272,8 +272,7 @@ export default function SuperAdminMasterControlPage() {
         >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20 text-lg sm:text-xl font-bold flex-shrink-0">
-              👑
-            </div>
+              </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-lg sm:text-xl font-extrabold tracking-tight truncate">
@@ -332,7 +331,7 @@ export default function SuperAdminMasterControlPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                   HAK AKSES SISTEM
                 </span>
-                <span className="text-base">👑</span>
+                <span className="text-base"></span>
               </div>
               <div className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 Super Admin
@@ -376,7 +375,7 @@ export default function SuperAdminMasterControlPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
                   MODE WEBSITE
                 </span>
-                <span className="text-base">🌐</span>
+                <span className="text-base"></span>
               </div>
               <div className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <span
@@ -403,7 +402,7 @@ export default function SuperAdminMasterControlPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
                   WHATSAPP GATEWAY
                 </span>
-                <span className="text-base">💬</span>
+                <span className="text-base"></span>
               </div>
               <div className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 {settings.primaryWhatsapp}
@@ -425,12 +424,12 @@ export default function SuperAdminMasterControlPage() {
             }
           >
             {[
-              { id: "general", label: "Identitas & Banner Promo", icon: "🌐" },
-              { id: "contact", label: "Kontak & WhatsApp CS", icon: "💬" },
-              { id: "payment", label: "Master Rekening & QRIS", icon: "💳" },
+              { id: "general", label: "Identitas & Banner Promo", icon: "" },
+              { id: "contact", label: "Kontak & WhatsApp CS", icon: "" },
+              { id: "payment", label: "Master Rekening & QRIS", icon: "" },
               { id: "permissions", label: "Impersonasi & Akses", icon: "⚡" },
-              { id: "audit", label: "Audit Log & Aktivitas", icon: "📜" },
-              { id: "health", label: "System Health & Cache", icon: "🛡️" },
+              { id: "audit", label: "Audit Log & Aktivitas", icon: "" },
+              { id: "health", label: "System Health & Cache", icon: "" },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -468,7 +467,7 @@ export default function SuperAdminMasterControlPage() {
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-orange-500">🏷️</span> Identitas Website &amp; SEO
+                    <span className="text-orange-500"></span> Identitas Website &amp; SEO
                   </h3>
                   <span className="text-[11px] font-semibold text-slate-400">Meta &amp; Profil</span>
                 </div>
@@ -574,7 +573,7 @@ export default function SuperAdminMasterControlPage() {
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-orange-500">📢</span> Broadcast Banner Pengumuman
+                    <span className="text-orange-500"></span> Broadcast Banner Pengumuman
                   </h3>
 
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -668,16 +667,16 @@ export default function SuperAdminMasterControlPage() {
                       }
                     >
                       <option value="linear-gradient(90deg, #ea580c 0%, #f97316 50%, #ea580c 100%)">
-                        🔥 Oranye Api (Default)
+                        Oranye Api (Default)
                       </option>
                       <option value="linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #7c3aed 100%)">
-                        💎 Ungu Royal
+                        Ungu Royal
                       </option>
                       <option value="linear-gradient(90deg, #059669 0%, #10b981 50%, #059669 100%)">
-                        🟢 Hijau Emerald
+                        Hijau Emerald
                       </option>
                       <option value="linear-gradient(90deg, #dc2626 0%, #ef4444 50%, #dc2626 100%)">
-                        🚨 Merah Peringatan
+                        Merah Peringatan
                       </option>
                     </select>
                   </div>
@@ -700,7 +699,7 @@ export default function SuperAdminMasterControlPage() {
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-emerald-500">📱</span> Nomor WhatsApp &amp; Telepon CS
+                    <span className="text-emerald-500"></span> Nomor WhatsApp &amp; Telepon CS
                   </h3>
                   <span className="text-[11px] font-semibold text-slate-400">Gateway WhatsApp</span>
                 </div>
@@ -780,7 +779,7 @@ export default function SuperAdminMasterControlPage() {
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-blue-500">📍</span> Jam Operasional &amp; Alamat Kantor
+                    <span className="text-blue-500"></span> Jam Operasional &amp; Alamat Kantor
                   </h3>
                   <span className="text-[11px] font-semibold text-slate-400">Lokasi Fisik</span>
                 </div>
@@ -838,7 +837,7 @@ export default function SuperAdminMasterControlPage() {
                     rel="noopener noreferrer"
                     className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition"
                   >
-                    <span>💬</span> Tes WhatsApp ({settings.primaryWhatsapp})
+                    <span></span> Tes WhatsApp ({settings.primaryWhatsapp})
                   </a>
                 </div>
               </div>
@@ -859,7 +858,7 @@ export default function SuperAdminMasterControlPage() {
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                 <div>
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-orange-500">💳</span> Master Rekening Bank &amp; QRIS
+                    <span className="text-orange-500"></span> Master Rekening Bank &amp; QRIS
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Rekening aktif di bawah akan otomatis tampil sebagai opsi transfer pada checkout dan invoice pelanggan.
@@ -878,7 +877,7 @@ export default function SuperAdminMasterControlPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg">
-                      🏦 BANK BCA
+                      BANK BCA
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -947,7 +946,7 @@ export default function SuperAdminMasterControlPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">
-                      🏦 BANK MANDIRI
+                      BANK MANDIRI
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1016,7 +1015,7 @@ export default function SuperAdminMasterControlPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-wider text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-lg">
-                      🏦 BANK BRI
+                      BANK BRI
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1085,7 +1084,7 @@ export default function SuperAdminMasterControlPage() {
                 >
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-2 font-black text-xs uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg">
-                      📲 QRIS OTOMATIS (E-WALLET &amp; M-BANKING)
+                      QRIS OTOMATIS (E-WALLET &amp; M-BANKING)
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -1161,7 +1160,7 @@ export default function SuperAdminMasterControlPage() {
                 }
               >
                 <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-extrabold text-sm uppercase tracking-wider">
-                  <span>👑</span> Fitur Khusus: Impersonasi User (Login Tanpa Password)
+                  <span></span> Fitur Khusus: Impersonasi User (Login Tanpa Password)
                 </div>
 
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -1216,7 +1215,7 @@ export default function SuperAdminMasterControlPage() {
                             : "rounded-xl bg-white border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 hover:border-amber-500 shadow-2xs transition cursor-pointer"
                         }
                       >
-                        👤 {email}
+                        {email}
                       </button>
                     ))}
                   </div>
@@ -1233,7 +1232,7 @@ export default function SuperAdminMasterControlPage() {
               >
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>🛡️</span> Matriks Hak Akses (Role Permission Matrix)
+                    <span></span> Matriks Hak Akses (Role Permission Matrix)
                   </h3>
                 </div>
 
@@ -1279,7 +1278,7 @@ export default function SuperAdminMasterControlPage() {
                         <td className="text-center text-slate-400">-</td>
                         <td className="text-center text-rose-500 font-bold">✗ Ditutup</td>
                         <td className="text-center text-amber-600 dark:text-amber-400 font-black">
-                          👑 Super Only
+                          Super Only
                         </td>
                       </tr>
                       <tr>
@@ -1287,7 +1286,7 @@ export default function SuperAdminMasterControlPage() {
                         <td className="text-center text-slate-400">-</td>
                         <td className="text-center text-rose-500 font-bold">✗ Ditutup</td>
                         <td className="text-center text-amber-600 dark:text-amber-400 font-black">
-                          👑 Super Only
+                          Super Only
                         </td>
                       </tr>
                       <tr>
@@ -1295,7 +1294,7 @@ export default function SuperAdminMasterControlPage() {
                         <td className="text-center text-slate-400">-</td>
                         <td className="text-center text-rose-500 font-bold">✗ Ditutup</td>
                         <td className="text-center text-amber-600 dark:text-amber-400 font-black">
-                          👑 Super Only
+                          Super Only
                         </td>
                       </tr>
                     </tbody>
@@ -1319,7 +1318,7 @@ export default function SuperAdminMasterControlPage() {
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4">
                 <div>
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>📜</span> Log Aktivitas &amp; Keamanan Real-Time (Audit Trail)
+                    <span></span> Log Aktivitas &amp; Keamanan Real-Time (Audit Trail)
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     Semua aktivitas admin, transaksi, dan perubahan konfigurasi sistem tercatat rapi secara berurutan.
@@ -1327,14 +1326,14 @@ export default function SuperAdminMasterControlPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => showToast("🔄 Log aktivitas berhasil diperbarui!")}
+                  onClick={() => showToast("Log aktivitas berhasil diperbarui!")}
                   className={
                     darkMode
                       ? "rounded-xl border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white transition cursor-pointer"
                       : "rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
                   }
                 >
-                  🔄 Refresh Log
+                  Refresh Log
                 </button>
               </div>
 
@@ -1367,7 +1366,7 @@ export default function SuperAdminMasterControlPage() {
                         <span className="font-bold text-slate-700 dark:text-slate-200">{log.actor}</span>
                         {log.role === "super_admin" ? (
                           <span className="rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[9px] font-black px-1.5 py-0.5 uppercase">
-                            👑 SUPER
+                            SUPER
                           </span>
                         ) : log.role === "admin" ? (
                           <span className="rounded-md bg-purple-500/15 border border-purple-500/30 text-purple-600 dark:text-purple-400 text-[9px] font-bold px-1.5 py-0.5 uppercase">
@@ -1430,7 +1429,7 @@ export default function SuperAdminMasterControlPage() {
                 }
               >
                 <div className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-amber-500">💾</span> Database Telemetry
+                  <span className="text-amber-500"></span> Database Telemetry
                 </div>
                 <div className="space-y-2.5 text-xs">
                   <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
@@ -1458,7 +1457,7 @@ export default function SuperAdminMasterControlPage() {
                 }
               >
                 <div className="text-sm font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                  <span className="text-purple-500">🧹</span> Tindakan Pemeliharaan
+                  <span className="text-purple-500"></span> Tindakan Pemeliharaan
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Tindakan darurat untuk membersihkan cache frontend dan me-refresh session buffer backend.

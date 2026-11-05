@@ -525,7 +525,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             {/* BREADCRUMBS */}
             <div className="dash-breadcrumbs">
               <Link href="/dashboard" className="text-slate-500 hover:text-slate-800">
-                🏠 Dashboard
+                Dashboard
               </Link>
               <span>›</span>
               <span>Client Area</span>
@@ -618,7 +618,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {expiringDomains.length > 0 && (
                       <div className="p-2.5 rounded-lg bg-yellow-50 border border-yellow-200 text-xs">
                         <div className="flex items-center gap-1.5 font-bold text-yellow-900 mb-1">
-                          <span>🌐</span>
+                          <span></span>
                           <span>Domain Perlu Perpanjangan ({expiringDomains.length})</span>
                         </div>
                         {expiringDomains.map((d) => {
@@ -644,7 +644,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {unpaidCount > 0 ? (
                       <div className="p-2.5 rounded-lg bg-rose-50/80 border border-rose-200 text-xs">
                         <div className="flex items-center gap-1.5 font-bold text-rose-900 mb-1">
-                          <span>💳</span>
+                          <span></span>
                           <span>Tagihan Menunggu ({unpaidCount})</span>
                         </div>
                         <p className="text-[11px] text-rose-800">
@@ -696,13 +696,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     href="/dashboard/profile"
                     className="block px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
                   >
-                    👤 Profil Saya
+                    Profil Saya
                   </Link>
                   <Link
                     href="/dashboard/invoices"
                     className="block px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
                   >
-                    📄 Riwayat Tagihan
+                    Riwayat Tagihan
                   </Link>
                   <div className="border-t border-slate-100 my-1" />
                   <button
@@ -710,7 +710,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
                   >
-                    🚪 Logout
+                     Logout
                   </button>
                 </div>
               )}

@@ -73,8 +73,7 @@ export default function ForgotPasswordPage() {
 
         <div className="auth-card">
           <div className="auth-icon">
-            🔐
-          </div>
+            </div>
 
           <div className="auth-header">
             <h1>Lupa Password?</h1>

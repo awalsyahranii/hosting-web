@@ -108,7 +108,7 @@ export default function DashboardAdsPage() {
             rel="noopener noreferrer"
             className="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 backdrop-blur-md"
           >
-            <span>💬</span> Konsultasi Optimasi
+            <span></span> Konsultasi Optimasi
           </a>
           <Link
             href="/#google-ads"
@@ -191,7 +191,7 @@ export default function DashboardAdsPage() {
           </div>
         ) : filteredCampaigns.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="text-4xl mb-2">📢</div>
+            <div className="text-4xl mb-2"></div>
             <h3 className="font-bold text-slate-800 text-base">Belum Ada Kampanye Iklan Aktif</h3>
             <p className="text-slate-500 text-xs mt-1 max-w-md mx-auto">
               Tingkatkan pengunjung dan omset bisnis Anda dengan beriklan di halaman 1 Google Search bersama tim ahli kami.
@@ -224,7 +224,7 @@ export default function DashboardAdsPage() {
                   <div className="space-y-2 max-w-xl">
                     <div className="flex items-center gap-2">
                       <span className="px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-extrabold tracking-wide uppercase">
-                        🎯 GOOGLE SEARCH
+                        GOOGLE SEARCH
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
@@ -244,8 +244,8 @@ export default function DashboardAdsPage() {
                     </p>
 
                     <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
-                      <span>📅 Periode: <strong>{camp.start_date} - {camp.end_date}</strong></span>
-                      <span>💰 Dana Harian: <strong>{camp.daily_budget}</strong></span>
+                      <span>Periode: <strong>{camp.start_date} - {camp.end_date}</strong></span>
+                      <span>Dana Harian: <strong>{camp.daily_budget}</strong></span>
                     </div>
                   </div>
 

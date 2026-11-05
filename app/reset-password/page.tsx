@@ -104,8 +104,7 @@ export default function ResetPasswordPage() {
 
         <div className="auth-card">
           <div className="auth-icon">
-            🔑
-          </div>
+            </div>
 
           <div className="auth-header">
             <h1>Reset Password</h1>

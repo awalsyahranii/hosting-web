@@ -358,7 +358,7 @@ export default function AdminUserPage() {
 
     const isSuperAdminAccount = user.role === "super_admin" || user.role === "superadmin";
     const confirmMessage = isSuperAdminAccount
-      ? `👑 PERINGATAN SUPER ADMIN:\nAnda akan menghapus akun dengan hak akses Super Admin: "${user.username}" (${user.email}).\n\nLanjutkan penghapusan permanen?`
+      ? `PERINGATAN SUPER ADMIN:\nAnda akan menghapus akun dengan hak akses Super Admin: "${user.username}" (${user.email}).\n\nLanjutkan penghapusan permanen?`
       : `Apakah Anda yakin ingin menghapus akun user "${user.username}" (${user.email}) dari database?`;
 
     const confirmation = window.confirm(confirmMessage);
@@ -394,7 +394,7 @@ export default function AdminUserPage() {
   const handleDirectImpersonate = (user: User) => {
     if (
       !confirm(
-        `👑 [Super Admin Controller]\nApakah Anda ingin masuk ke dashboard sebagai "${user.username}" (${user.email}) untuk memeriksa layanannya?`
+        `[Super Admin Controller]\nApakah Anda ingin masuk ke dashboard sebagai "${user.username}" (${user.email}) untuk memeriksa layanannya?`
       )
     ) {
       return;
@@ -469,7 +469,7 @@ export default function AdminUserPage() {
               </Link>
               <div className="hidden sm:block pl-3 border-l border-slate-200 dark:border-slate-700">
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-xs font-black text-white shadow-sm">
-                  👑 SUPER ADMIN CONTROL
+                  SUPER ADMIN CONTROL
                 </span>
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function AdminUserPage() {
                     : "mb-2 text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5"
                 }
               >
-                <span>👑</span> MASTER USER &amp; ADMIN MANAGEMENT
+                MASTER USER &amp; ADMIN MANAGEMENT
               </div>
 
               <h1 className="text-3xl font-black tracking-tight md:text-4xl">
@@ -569,28 +569,28 @@ export default function AdminUserPage() {
               darkMode={darkMode}
               title="TOTAL SEMUA PENGGUNA"
               value={totalUsers}
-              icon="👥"
+              icon="users"
               subtitle="Tersimpan di database"
             />
             <StatCard
               darkMode={darkMode}
               title="SUPER ADMIN"
               value={totalSuperAdmin}
-              icon="👑"
+              icon="crown"
               subtitle="Hak akses penuh master"
             />
             <StatCard
               darkMode={darkMode}
               title="ADMIN OPERASIONAL"
               value={totalAdmin}
-              icon="🛡"
+              icon="shield"
               subtitle="Pengelola sistem harian"
             />
             <StatCard
               darkMode={darkMode}
               title="USER / KLIEN"
               value={totalRegularUser}
-              icon="👤"
+              icon="user"
               subtitle="Pelanggan & pemilik akun"
             />
           </div>
@@ -610,9 +610,9 @@ export default function AdminUserPage() {
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
                   { key: "all", label: "Semua Akun", count: totalUsers },
-                  { key: "super_admin", label: "👑 Super Admin", count: totalSuperAdmin },
-                  { key: "admin", label: "🛡️ Admin", count: totalAdmin },
-                  { key: "user", label: "👤 Regular User", count: totalRegularUser },
+                  { key: "super_admin", label: "Super Admin", count: totalSuperAdmin },
+                  { key: "admin", label: "Admin", count: totalAdmin },
+                  { key: "user", label: "Regular User", count: totalRegularUser },
                 ].map((tab) => (
                   <button
                     key={tab.key}
@@ -662,7 +662,7 @@ export default function AdminUserPage() {
             {/* SEARCH INPUT */}
             <div className="relative">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg">
-                🔎
+                <svg className="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               </span>
               <input
                 type="text"
@@ -752,7 +752,7 @@ export default function AdminUserPage() {
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="px-6 py-20 text-center">
-                <div className="mb-3 text-5xl">🔎</div>
+                <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                 <h3 className="font-bold text-base">Tidak Ada User yang Sesuai</h3>
                 <p className={darkMode ? "mt-1 text-xs text-slate-400" : "mt-1 text-xs text-slate-500"}>
                   {search ? `Tidak ditemukan data dengan kata kunci "${search}".` : "Belum ada akun terdaftar pada filter ini."}
@@ -867,15 +867,15 @@ export default function AdminUserPage() {
                           <td className="px-6 py-4">
                             {isSuper ? (
                               <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-1 text-xs font-black text-white shadow-sm">
-                                👑 SUPER ADMIN
+                                SUPER ADMIN
                               </span>
                             ) : isAdmin ? (
                               <span className="inline-flex items-center gap-1 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 px-2.5 py-1 text-xs font-bold">
-                                🛡️ ADMIN
+                                ADMIN
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 px-2.5 py-1 text-xs font-bold">
-                                👤 USER / KLIEN
+                                USER / KLIEN
                               </span>
                             )}
                           </td>
@@ -898,7 +898,7 @@ export default function AdminUserPage() {
                                   onClick={() => handleDirectImpersonate(user)}
                                   className="rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1.5 text-xs font-black text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition flex items-center gap-1 shadow-sm"
                                 >
-                                  <span>👑</span> Masuk Akun
+                                  Masuk Akun
                                 </button>
                               )}
 
@@ -1063,24 +1063,24 @@ export default function AdminUserPage() {
                         : "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-orange-500 focus:bg-white focus:ring-2 focus:ring-orange-500/20 font-bold text-slate-800"
                     }
                   >
-                    <option value="user">👤 User / Klien (Akses Dashboard Klien Biasa)</option>
-                    <option value="admin">🛡️ Admin (Akses Panel Operasional &amp; Transaksi)</option>
-                    <option value="super_admin">👑 Super Admin (Akses Penuh Master &amp; Kelola Akun)</option>
+                    <option value="user">User / Klien (Akses Dashboard Klien Biasa)</option>
+                    <option value="admin">Admin (Akses Panel Operasional &amp; Transaksi)</option>
+                    <option value="super_admin">Super Admin (Akses Penuh Master &amp; Kelola Akun)</option>
                   </select>
                   <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700">
                     {form.role === "super_admin" && (
                       <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                        👑 Super Admin dapat menambah, mengedit, dan menghapus semua admin serta user.
+                        Super Admin dapat menambah, mengedit, dan menghapus semua admin serta user.
                       </span>
                     )}
                     {form.role === "admin" && (
                       <span className="text-purple-600 dark:text-purple-400 font-semibold">
-                        🛡️ Admin dapat mengelola layanan hosting, invoice, konfirmasi pembayaran, dan kupon.
+                        Admin dapat mengelola layanan hosting, invoice, konfirmasi pembayaran, dan kupon.
                       </span>
                     )}
                     {form.role === "user" && (
                       <span>
-                        👤 User hanya dapat mengakses dashboard pelanggan miliknya sendiri untuk order dan kelola layanan.
+                        User hanya dapat mengakses dashboard pelanggan miliknya sendiri untuk order dan kelola layanan.
                       </span>
                     )}
                   </div>

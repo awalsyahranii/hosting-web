@@ -98,7 +98,7 @@ export default function BlogIndexPage() {
 
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10 space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-100/80 border border-orange-200 text-orange-800 text-xs font-bold">
-            <span>📚</span>
+            <svg className="w-3.5 h-3.5 text-orange-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             <span>PUSAT EDUKASI &amp; WAWASAN DIGITAL</span>
           </div>
 
@@ -113,7 +113,7 @@ export default function BlogIndexPage() {
           {/* SEARCH BAR */}
           <div className="pt-4 max-w-xl mx-auto">
             <div className="relative flex items-center">
-              <span className="absolute left-4 text-slate-400 text-base pointer-events-none">🔍</span>
+              <svg className="absolute left-4 w-4 h-4 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 type="text"
                 placeholder="Cari artikel hosting, SEO, domain, atau tips website..."
@@ -175,7 +175,7 @@ export default function BlogIndexPage() {
           </div>
         ) : filteredArticles.length === 0 ? (
           <div className="py-24 text-center bg-white rounded-3xl border border-slate-200 p-8 max-w-lg mx-auto shadow-sm">
-            <span className="text-4xl block mb-3">🔍</span>
+            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400"><svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
             <h3 className="text-lg font-bold text-slate-900">Artikel tidak ditemukan</h3>
             <p className="text-xs text-slate-500 mt-1">
               Tidak ada artikel yang cocok dengan kata kunci atau kategori yang Anda pilih.
@@ -288,9 +288,9 @@ export default function BlogIndexPage() {
                       {/* CONTENT */}
                       <div className="p-5 sm:p-6 space-y-2.5">
                         <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                          <span>📅 {formatDate(article.created_at)}</span>
+                          <span className="inline-flex items-center gap-1"><svg className="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> {formatDate(article.created_at)}</span>
                           <span>•</span>
-                          <span>👁️ {article.views} views</span>
+                          <span className="inline-flex items-center gap-1"><svg className="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {article.views} views</span>
                         </div>
 
                         <Link href={`/blog/${article.slug}`}>
@@ -337,7 +337,7 @@ export default function BlogIndexPage() {
           <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl space-y-4">
             <span className="px-3 py-1 bg-orange-600/30 text-orange-400 border border-orange-500/30 text-[10px] font-extrabold uppercase tracking-wider rounded-full">
-              🚀 Siap Membangun Website Anda?
+              Siap Membangun Website Anda?
             </span>
             <h3 className="text-2xl sm:text-3xl font-black tracking-tight">
               Dapatkan Cloud Hosting NVMe Cepat &amp; Domain Gratis Hari Ini
